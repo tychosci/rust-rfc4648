@@ -95,7 +95,6 @@ fn mk_base64() -> base64 {
             vec::from_mut(targ)
         }
         fn decode(src: [u8]) -> [u8] {
-            let src = src;
             let srclen = vec::len(src);
             let input  = vec::init_elt_mut(4u, 0u8);
             let output = vec::init_elt_mut(4u, 0u8);
