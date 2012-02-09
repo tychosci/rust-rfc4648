@@ -96,6 +96,10 @@ fn mk_base64() -> base64 {
         }
         fn decode(src: [u8]) -> [u8] {
             let srclen = vec::len(src);
+
+            if srclen % 4u != 0u { fail "malformed base64 string"; }
+            if srclen == 0u { ret []; }
+
             let input  = vec::init_elt_mut(4u, 0u8);
             let output = vec::init_elt_mut(4u, 0u8);
             let targ = if src[srclen - 2u] == self.padd {
@@ -167,8 +171,6 @@ fn mk_base64() -> base64 {
                 if output[3] == 64u8 { fail "malformed base64 string"; }
 
                 targ[curr] = ((output[2] & 3u8) << 6u8) | output[3];
-            } else {
-                fail "malformed base64 string";
             }
 
             vec::from_mut(targ)
@@ -221,6 +223,7 @@ mod tests {
     }
     fn setup(t: mode) -> map::hashmap<str, str> {
         let m = map::new_str_hash::<str>();
+        m.insert("", "");
         alt t {
           t_decode | t_urlsafe_decode {
             m.insert("cGxlYXN1cmUu", "pleasure.");
