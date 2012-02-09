@@ -89,7 +89,7 @@ fn mk_base64() -> base64 {
                 } else {
                     table[output[2]]
                 };
-                curr += 1u; targ[curr] = self.padd; curr += 1u;
+                curr += 1u; targ[curr] = self.padd;
             }
 
             vec::from_mut(targ)
