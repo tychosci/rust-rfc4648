@@ -99,9 +99,9 @@ fn mk_base64() -> base64 {
             let srclen = vec::len(src);
             let input  = vec::init_elt_mut(4u, 0u8);
             let output = vec::init_elt_mut(4u, 0u8);
-            let targ = if src[vec::len(src) - 2u] == self.padd {
+            let targ = if src[srclen - 2u] == self.padd {
                 vec::init_elt_mut(srclen / 4u * 3u - 2u, 0u8)
-            } else if src[vec::len(src) - 1u] == self.padd {
+            } else if src[srclen - 1u] == self.padd {
                 vec::init_elt_mut(srclen / 4u * 3u - 1u, 0u8)
             } else {
                 vec::init_elt_mut(srclen / 4u * 3u, 0u8)
