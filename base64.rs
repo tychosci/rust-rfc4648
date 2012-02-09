@@ -177,6 +177,8 @@ fn mk_base64() -> base64 {
                 output[3] = c as u8;
 
                 targ[curr] = ((output[2] & 3u8) << 6u8) | output[3];
+            } else {
+                fail "malformed base64 string";
             }
 
             vec::from_mut(targ)
@@ -258,8 +260,8 @@ mod tests {
               t_urlsafe_decode { from_bytes(b64.urlsafe_decode(bytes(k))) }
               t_urlsafe_encode { from_bytes(b64.urlsafe_encode(bytes(k))) }
             };
-            #debug("expected: %?", expected);
-            #debug("actual:   %?", actual);
+            #debug("expected: %s", expected);
+            #debug("actual:   %s", actual);
             assert expected == actual;
         }
     }
