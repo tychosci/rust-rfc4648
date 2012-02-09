@@ -105,7 +105,6 @@ fn mk_base64() -> base64 {
             } else {
                 vec::init_elt_mut(srclen / 4u * 3u, 0u8)
             };
-            let c = -1;
             let curr = 0u, src_curr = 0u;
             let table = self.table;
 
@@ -116,21 +115,17 @@ fn mk_base64() -> base64 {
                 input[3] = src[src_curr + 3u];
                 srclen -= 4u; src_curr += 4u;
 
-                c = idx(table, input[0]);
-                if c == -1 { fail "malformed base64 string"; }
-                output[0] = c as u8;
+                output[0] = idx(table, input[0]);
+                if output[0] == 64u8 { fail "malformed base64 string"; }
 
-                c = idx(table, input[1]);
-                if c == -1 { fail "malformed base64 string"; }
-                output[1] = c as u8;
+                output[1] = idx(table, input[1]);
+                if output[1] == 64u8 { fail "malformed base64 string"; }
 
-                c = idx(table, input[2]);
-                if c == -1 { fail "malformed base64 string"; }
-                output[2] = c as u8;
+                output[2] = idx(table, input[2]);
+                if output[2] == 64u8 { fail "malformed base64 string"; }
 
-                c = idx(table, input[3]);
-                if c == -1 { fail "malformed base64 string"; }
-                output[3] = c as u8;
+                output[3] = idx(table, input[3]);
+                if output[3] == 64u8 { fail "malformed base64 string"; }
 
                 targ[curr] = (output[0] << 2u8) | (output[1] >> 4u8);
                 curr += 1u;
@@ -149,31 +144,27 @@ fn mk_base64() -> base64 {
                 input[2] = src[src_curr + 2u];
                 input[3] = src[src_curr + 3u];
 
-                c = idx(table, input[0]);
-                if c == -1 { fail "malformed base64 string"; }
-                output[0] = c as u8;
+                output[0] = idx(table, input[0]);
+                if output[0] == 64u8 { fail "malformed base64 string"; }
 
-                c = idx(table, input[1]);
-                if c == -1 { fail "malformed base64 string"; }
-                output[1] = c as u8;
+                output[1] = idx(table, input[1]);
+                if output[1] == 64u8 { fail "malformed base64 string"; }
 
                 targ[curr] = (output[0] << 2u8) | (output[1] >> 4u8);
                 curr += 1u;
 
                 if input[2] == self.padd { ret vec::from_mut(targ); }
 
-                c = idx(table, input[2]);
-                if c == -1 { fail "malformed base64 string"; }
-                output[2] = c as u8;
+                output[2] = idx(table, input[2]);
+                if output[2] == 64u8 { fail "malformed base64 string"; }
 
                 targ[curr] = ((output[1] & 15u8) << 4u8) | (output[2] >> 2u8);
                 curr += 1u;
 
                 if input[3] == self.padd { ret vec::from_mut(targ); }
 
-                c = idx(table, input[3]);
-                if c == -1 { fail "malformed base64 string"; }
-                output[3] = c as u8;
+                output[3] = idx(table, input[3]);
+                if output[3] == 64u8 { fail "malformed base64 string"; }
 
                 targ[curr] = ((output[2] & 3u8) << 6u8) | output[3];
             } else {
@@ -210,13 +201,13 @@ fn mk_base64() -> base64 {
     {padd: 61u8, table: vec::from_mut(table)} as base64
 }
 
-fn idx(elems: [const u8], x: u8) -> int {
-    let i = 0;
-    for e in elems {
-        if e == x { ret i; }
-        i += 1;
+fn idx(elems: [const u8], x: u8) -> u8 {
+    let i = 0u8;
+    while i < 64u8 {
+        if elems[i] == x { break; }
+        i += 1u8;
     }
-    ret -1;
+    ret i;
 }
 
 #[cfg(test)]
