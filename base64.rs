@@ -37,7 +37,7 @@ iface base64 {
 }
 
 fn mk_base64() -> base64 {
-    type _base64 = {padd: u8, table: [u8]};
+    type _base64 = {padd: u8, mutable table: [u8]};
     impl of base64 for _base64 {
         fn encode(src: [u8]) -> [u8] {
             let srclen = vec::len(src);
@@ -176,20 +176,26 @@ fn mk_base64() -> base64 {
             vec::from_mut(targ)
         }
         fn urlsafe_encode(src: [u8]) -> [u8] {
-            let res = self.encode(src);
-            vec::map(res) { |i|
+            let tmp = self.table;
+            self.table = vec::map(tmp) { |i|
                 if i == 43u8 { 45u8 }
                 else if i == 47u8 { 95u8 }
                 else { i }
-            }
+            };
+            let res = self.encode(src);
+            self.table = tmp;
+            res
         }
         fn urlsafe_decode(src: [u8]) -> [u8] {
-            let src0 = vec::map(src) { |i|
-                if i == 45u8 { 43u8 }
-                else if i == 95u8 { 47u8 }
+            let tmp = self.table;
+            self.table = vec::map(tmp) { |i|
+                if i == 43u8 { 45u8 }
+                else if i == 47u8 { 95u8 }
                 else { i }
             };
-            self.decode(src0)
+            let res = self.decode(src);
+            self.table = tmp;
+            res
         }
     }
 
@@ -200,7 +206,7 @@ fn mk_base64() -> base64 {
     table[i] = 43u8; i += 1u8;
     table[i] = 47u8; i += 1u8;
 
-    {padd: 61u8, table: vec::from_mut(table)} as base64
+    {padd: 61u8, mutable table: vec::from_mut(table)} as base64
 }
 
 fn idx(elems: [const u8], x: u8) -> u8 {
