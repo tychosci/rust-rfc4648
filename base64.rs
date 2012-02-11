@@ -37,7 +37,7 @@ iface base64 {
 }
 
 fn mk_base64() -> base64 {
-    type _base64 = {padd: u8, mutable table: [u8]};
+    type _base64 = {padd: u8, table: [mutable u8]};
     impl of base64 for _base64 {
         fn encode(src: [u8]) -> [u8] {
             let srclen = vec::len(src);
@@ -118,10 +118,10 @@ fn mk_base64() -> base64 {
                 input[3] = src[src_curr + 3u];
                 srclen -= 4u; src_curr += 4u;
 
-                output[0] = b64idx(input[0]);
-                output[1] = b64idx(input[1]);
-                output[2] = b64idx(input[2]);
-                output[3] = b64idx(input[3]);
+                output[0] = b64idx(input[0], self.table[62], self.table[63]);
+                output[1] = b64idx(input[1], self.table[62], self.table[63]);
+                output[2] = b64idx(input[2], self.table[62], self.table[63]);
+                output[3] = b64idx(input[3], self.table[62], self.table[63]);
 
                 targ[curr] = (output[0] << 2u8) | (output[1] >> 4u8);
                 curr += 1u;
@@ -140,22 +140,22 @@ fn mk_base64() -> base64 {
                 input[2] = src[src_curr + 2u];
                 input[3] = src[src_curr + 3u];
 
-                output[0] = b64idx(input[0]);
-                output[1] = b64idx(input[1]);
+                output[0] = b64idx(input[0], self.table[62], self.table[63]);
+                output[1] = b64idx(input[1], self.table[62], self.table[63]);
 
                 targ[curr] = (output[0] << 2u8) | (output[1] >> 4u8);
                 curr += 1u;
 
                 if input[2] == self.padd { ret vec::from_mut(targ); }
 
-                output[2] = b64idx(input[2]);
+                output[2] = b64idx(input[2], self.table[62], self.table[63]);
 
                 targ[curr] = ((output[1] & 15u8) << 4u8) | (output[2] >> 2u8);
                 curr += 1u;
 
                 if input[3] == self.padd { ret vec::from_mut(targ); }
 
-                output[3] = b64idx(input[3]);
+                output[3] = b64idx(input[3], self.table[62], self.table[63]);
 
                 targ[curr] = ((output[2] & 3u8) << 6u8) | output[3];
             }
@@ -163,25 +163,19 @@ fn mk_base64() -> base64 {
             vec::from_mut(targ)
         }
         fn urlsafe_encode(src: [u8]) -> [u8] {
-            let tmp = self.table;
-            self.table = vec::map(tmp) { |i|
-                if i == 43u8 { 45u8 }
-                else if i == 47u8 { 95u8 }
-                else { i }
-            };
+            self.table[62] = 45u8;
+            self.table[63] = 95u8;
             let res = self.encode(src);
-            self.table = tmp;
+            self.table[62] = 43u8;
+            self.table[63] = 47u8;
             res
         }
         fn urlsafe_decode(src: [u8]) -> [u8] {
-            let tmp = self.table;
-            self.table = vec::map(tmp) { |i|
-                if i == 43u8 { 45u8 }
-                else if i == 47u8 { 95u8 }
-                else { i }
-            };
+            self.table[62] = 45u8;
+            self.table[63] = 95u8;
             let res = self.decode(src);
-            self.table = tmp;
+            self.table[62] = 43u8;
+            self.table[63] = 47u8;
             res
         }
     }
@@ -193,15 +187,15 @@ fn mk_base64() -> base64 {
     table[i] = 43u8; i += 1u8;
     table[i] = 47u8; i += 1u8;
 
-    {padd: 61u8, mutable table: vec::from_mut(table)} as base64
+    {padd: 61u8, table: table} as base64
 }
 
-inline fn b64idx(x: u8) -> u8 {
+inline fn b64idx(x: u8, y: u8, z: u8) -> u8 {
     if 65u8 <= x && x <= 90u8 { x - 65u8 }
     else if 97u8 <= x && x <= 122u8 { x - 97u8 + 26u8 }
     else if 48u8 <= x && x <= 58u8  { x - 48u8 + 52u8 }
-    else if x == 43u8 { 62u8 }
-    else if x == 47u8 { 63u8 }
+    else if x == y { 62u8 }
+    else if x == z { 63u8 }
     else { fail "malformed base64 string"; }
 }
 
