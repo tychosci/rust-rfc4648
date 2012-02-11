@@ -27,7 +27,7 @@ use std;
 
 import std::map;
 
-export base64, mk_base64;
+export base64, mk;
 
 const padd: u8 = 61u8;
 
@@ -38,7 +38,7 @@ iface base64 {
     fn urlsafe_decode(src: [u8]) -> [u8];
 }
 
-fn mk_base64() -> base64 {
+fn mk() -> base64 {
     type _base64 = {table: [u8]};
 
     impl of base64 for _base64 {
@@ -224,7 +224,7 @@ mod tests {
         m
     }
     fn do_test(t: mode) {
-        let b64 = mk_base64();
+        let b64 = mk();
         let m = setup(t);
         m.keys { |k|
             let expected = m.get(k);
