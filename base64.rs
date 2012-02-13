@@ -156,8 +156,7 @@ fn b64decode(table: [u8], src: [u8]) -> [u8] {
         targ[curr] = (output[0] << 2u8) | (output[1] >> 4u8);
         curr += 1u;
 
-        targ[curr] =
-            ((output[1] & 15u8) << 4u8) | (output[2] >> 2u8);
+        targ[curr] = ((output[1] & 15u8) << 4u8) | (output[2] >> 2u8);
         curr += 1u;
 
         targ[curr] = ((output[2] &  3u8) << 6u8) | output[3];
