@@ -105,9 +105,9 @@ fn b64encode(table: [u8], src: [u8]) -> [u8] {
         input[0] = 0u8; input[1] = 0u8; input[2] = 0u8;
 
         alt srclen {
-          1u { input[0] = src[src_curr]; }
-          2u { input[0] = src[src_curr];
-               input[1] = src[src_curr + 1u]; }
+          1u {input[0] = src[src_curr];}
+          2u {input[0] = src[src_curr];
+              input[1] = src[src_curr + 1u];}
           _  { }
         }
 
