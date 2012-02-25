@@ -11,3 +11,9 @@ TODO
 * write base32 module
 * write base85(ascii85) module
 
+LICENSE
+-------
+
+(MIT License)
+
+See LICENSE for details.
