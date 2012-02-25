@@ -14,6 +14,19 @@
 //     7 H            16 Q            25 Z
 //     8 I            17 R            26 2
 //
+// The "Extended Hex" Base 32 Alphabet
+//
+// Value Encoding  Value Encoding  Value Encoding  Value Encoding
+//     0 0             9 9            18 I            27 R
+//     1 1            10 A            19 J            28 S
+//     2 2            11 B            20 K            29 T
+//     3 3            12 C            21 L            30 U
+//     4 4            13 D            22 M            31 V
+//     5 5            14 E            23 N
+//     6 6            15 F            24 O         (pad) =
+//     7 7            16 G            25 P
+//     8 8            17 H            26 Q
+//
 
 use std;
 
@@ -203,4 +216,6 @@ mod tests {
     fn hex_encode() { do_test(t_hex_encode); }
     #[test]
     fn decode() { do_test(t_decode); }
+    #[test]
+    fn hex_decode() { do_test(t_hex_decode); }
 }
