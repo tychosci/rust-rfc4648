@@ -1,5 +1,11 @@
 rust-encoding
 =============
 
-Rust modules for encoding.
+"encoding" modules for Rust
+
+TODO
+----
+
+* add decode method which ignores whitespace/`\r`/`\n` characters on decoding
+* write base32 module
 
