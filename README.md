@@ -6,7 +6,7 @@ rust-encoding
 TODO
 ----
 
-* add decode method which ignores whitespace/`\r`/`\n` characters on decoding
+* add decode method which ignores whitespace/tab/`\r`/`\n` characters on decoding
 * write base32 module
 * write base85(ascii85) module
 
