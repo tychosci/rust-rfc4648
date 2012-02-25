@@ -88,7 +88,7 @@ fn mk() -> base64 {
 inline fn b64idx(x: u8, y: u8, z: u8) -> u8 {
     if 65u8 <= x && x <= 90u8 { x - 65u8 }
     else if 97u8 <= x && x <= 122u8 { x - 97u8 + 26u8 }
-    else if 48u8 <= x && x <= 58u8  { x - 48u8 + 52u8 }
+    else if 48u8 <= x && x <= 57u8  { x - 48u8 + 52u8 }
     else if x == y { 62u8 }
     else if x == z { 63u8 }
     else { fail "malformed base64 string"; }
