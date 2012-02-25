@@ -175,14 +175,10 @@ fn b64decode(table: [u8], src: [u8]) -> [u8] {
         output[2] = b64idx(input[2], table[62], table[63]);
         output[3] = b64idx(input[3], table[62], table[63]);
 
-        targ[curr] = (output[0] << 2u8) | (output[1] >> 4u8);
-        curr += 1u;
-
-        targ[curr] = ((output[1] & 15u8) << 4u8) | (output[2] >> 2u8);
-        curr += 1u;
-
-        targ[curr] = ((output[2] &  3u8) << 6u8) | output[3];
-        curr += 1u;
+        targ[curr + 0u] = (output[0] << 2u8) | (output[1] >> 4u8);
+        targ[curr + 1u] = ((output[1] & 15u8) << 4u8) | (output[2] >> 2u8);
+        targ[curr + 2u] = ((output[2] &  3u8) << 6u8) | output[3];
+        curr += 3u;
     }
 
     if srclen == 4u {
@@ -194,21 +190,19 @@ fn b64decode(table: [u8], src: [u8]) -> [u8] {
         output[0] = b64idx(input[0], table[62], table[63]);
         output[1] = b64idx(input[1], table[62], table[63]);
 
-        targ[curr] = (output[0] << 2u8) | (output[1] >> 4u8);
-        curr += 1u;
+        targ[curr + 0u] = (output[0] << 2u8) | (output[1] >> 4u8);
 
         if input[2] == padd { ret vec::from_mut(targ); }
 
         output[2] = b64idx(input[2], table[62], table[63]);
 
-        targ[curr] = ((output[1] & 15u8) << 4u8) | (output[2] >> 2u8);
-        curr += 1u;
+        targ[curr + 1u] = ((output[1] & 15u8) << 4u8) | (output[2] >> 2u8);
 
         if input[3] == padd { ret vec::from_mut(targ); }
 
         output[3] = b64idx(input[3], table[62], table[63]);
 
-        targ[curr] = ((output[2] & 3u8) << 6u8) | output[3];
+        targ[curr + 2u] = ((output[2] & 3u8) << 6u8) | output[3];
     }
 
     vec::from_mut(targ)
