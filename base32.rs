@@ -49,13 +49,13 @@ fn mk() -> base32 {
             b32encode(self.table, src)
         }
         fn decode(src: [u8]) -> [u8] {
-            b32decode(self.table, src)
+            b32decode(src, b32idx_normal)
         }
         fn hex_encode(src: [u8]) -> [u8] {
             b32encode(self.table_hex, src)
         }
         fn hex_decode(src: [u8]) -> [u8] {
-            b32decode(self.table_hex, src)
+            b32decode(src, b32idx_hex)
         }
     }
 
@@ -149,7 +149,7 @@ fn b32encode(table: [u8], src: [u8]) -> [u8] {
     vec::from_mut(targ)
 }
 
-fn b32decode(table: [u8], src: [u8]) -> [u8] {
+fn b32decode(src: [u8], b32idx: native fn(u8) -> u8) -> [u8] {
     let srclen = vec::len(src);
 
     if srclen % 8u != 0u { fail "malformed base32 string"; }
@@ -170,7 +170,59 @@ fn b32decode(table: [u8], src: [u8]) -> [u8] {
     };
     let curr = 0u, src_curr = 0u;
 
+    if srclen == 8u {
+        input[0] = src[src_curr];
+        input[1] = src[src_curr + 1u];
+        input[2] = src[src_curr + 2u];
+        input[3] = src[src_curr + 3u];
+        input[4] = src[src_curr + 4u];
+        input[5] = src[src_curr + 5u];
+        input[6] = src[src_curr + 6u];
+        input[7] = src[src_curr + 7u];
+
+        output[0] = b32idx(input[0]);
+        output[1] = b32idx(input[1]);
+
+        targ[curr + 0u] = output[0] << 3u8 | output[1] >> 2u8;
+        if input[2] == padd { ret vec::from_mut(targ); }
+
+        output[2] = b32idx(input[2]);
+        output[3] = b32idx(input[3]);
+
+        targ[curr + 1u] =
+            (output[1] & 0x03_u8) << 6u8 | output[2] << 1u8 | output[3] >> 4u8;
+        if input[4] == padd { ret vec::from_mut(targ); }
+
+        output[4] = b32idx(input[4]);
+
+        targ[curr + 2u] = (output[3] & 0x0f_u8) << 4u8 | output[4] >> 1u8;
+        if input[5] == padd { ret vec::from_mut(targ); }
+
+        output[5] = b32idx(input[5]);
+        output[6] = b32idx(input[6]);
+
+        targ[curr + 3u] =
+            (output[4] & 0x01_u8) << 7u8 | output[5] << 2u8 | output[6] >> 3u8;
+        if input[7] == padd { ret vec::from_mut(targ); }
+
+        output[7] = b32idx(input[7]);
+
+        targ[curr + 4u] = (output[6] & 0x07_u8) << 5u8 | output[7];
+    }
+
     vec::from_mut(targ)
+}
+
+fn b32idx_normal(x: u8) -> u8 {
+    if 65u8 <= x && x <= 90u8 { x - 65u8 }
+    else if 50u8 <= x && x <= 56u8 { x - 50u8 + 26u8 }
+    else { fail "malformed base32 string"; }
+}
+
+fn b32idx_hex(x: u8) -> u8 {
+    if 48u8 <= x && x <= 57u8 { x - 48u8 }
+    else if 65u8 <= x && x <= 90u8 { x - 65u8 + 10u8 }
+    else { fail "malformed base32(hex) string"; }
 }
 
 mod tests {
@@ -185,7 +237,13 @@ mod tests {
     fn setup(t: mode) -> map::hashmap<str, str> {
         let m = map::new_str_hash::<str>();
         alt t {
-          t_decode { }
+          t_decode {
+            m.insert("MZXW6YTB", "fooba");
+            m.insert("MZXW6YQ=", "foob");
+            m.insert("MZXW6===", "foo");
+            m.insert("MZXQ====", "fo");
+            m.insert("MY======", "f");
+          }
           t_encode {
             m.insert("fooba", "MZXW6YTB");
             m.insert("foob",  "MZXW6YQ=");
@@ -193,7 +251,13 @@ mod tests {
             m.insert("fo",    "MZXQ====");
             m.insert("f",     "MY======");
           }
-          t_hex_decode { }
+          t_hex_decode {
+            m.insert("CPNMUOJ1", "fooba");
+            m.insert("CPNMUOG=", "foob");
+            m.insert("CPNMU===", "foo");
+            m.insert("CPNG====", "fo");
+            m.insert("CO======", "f");
+          }
           t_hex_encode {
             m.insert("fooba", "CPNMUOJ1");
             m.insert("foob",  "CPNMUOG=");
