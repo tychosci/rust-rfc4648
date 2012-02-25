@@ -1,5 +1,5 @@
-rust-base64
-===========
+rust-encoding
+=============
 
-base64 module for Rust.
+Rust modules for encoding.
 
