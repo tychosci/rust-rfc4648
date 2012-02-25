@@ -155,7 +155,22 @@ fn b32decode(table: [u8], src: [u8]) -> [u8] {
     if srclen % 8u != 0u { fail "malformed base32 string"; }
     if srclen == 0u { ret []; }
 
-    []
+    let input = vec::init_elt_mut(8u, 0u8);
+    let output = vec::init_elt_mut(8u, 0u8);
+    let targ = if src[srclen - 6u] == padd {
+        vec::init_elt_mut(srclen / 8u * 5u - 4u, 0u8)
+    } else if src[srclen - 4u] == padd {
+        vec::init_elt_mut(srclen / 8u * 5u - 3u, 0u8)
+    } else if src[srclen - 3u] == padd {
+        vec::init_elt_mut(srclen / 8u * 5u - 2u, 0u8)
+    } else if src[srclen - 1u] == padd {
+        vec::init_elt_mut(srclen / 8u * 5u - 1u, 0u8)
+    } else {
+        vec::init_elt_mut(srclen / 8u * 5u, 0u8)
+    };
+    let curr = 0u, src_curr = 0u;
+
+    vec::from_mut(targ)
 }
 
 mod tests {
