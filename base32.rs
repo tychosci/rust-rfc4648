@@ -30,7 +30,7 @@
 
 use std;
 
-export mk;
+export base32, mk;
 
 const padd: u8 = 61u8;
 
