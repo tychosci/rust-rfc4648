@@ -85,7 +85,7 @@ fn mk() -> base64 {
     {table: vec::from_mut(table)} as base64
 }
 
-inline fn b64idx(x: u8, y: u8, z: u8) -> u8 {
+fn b64idx(x: u8, y: u8, z: u8) -> u8 {
     if 65u8 <= x && x <= 90u8 { x - 65u8 }
     else if 97u8 <= x && x <= 122u8 { x - 97u8 + 26u8 }
     else if 48u8 <= x && x <= 57u8  { x - 48u8 + 52u8 }
@@ -116,10 +116,11 @@ fn b64encode(table: [u8], src: [u8]) -> [u8] {
         output[2] = ((input[1] & 15u8) << 2u8) | (input[2] >> 6u8);
         output[3] = input[2] & 63u8;
 
-        targ[curr] = table[output[0]]; curr += 1u;
-        targ[curr] = table[output[1]]; curr += 1u;
-        targ[curr] = table[output[2]]; curr += 1u;
-        targ[curr] = table[output[3]]; curr += 1u;
+        targ[curr + 0u] = table[output[0]];
+        targ[curr + 1u] = table[output[1]];
+        targ[curr + 2u] = table[output[2]];
+        targ[curr + 3u] = table[output[3]];
+        curr += 4u;
     }
 
     if srclen != 0u {
@@ -136,10 +137,10 @@ fn b64encode(table: [u8], src: [u8]) -> [u8] {
         output[1] = ((input[0] &  3u8) << 4u8) | (input[1] >> 4u8);
         output[2] = ((input[1] & 15u8) << 2u8) | (input[2] >> 6u8);
 
-        targ[curr] = table[output[0]]; curr += 1u;
-        targ[curr] = table[output[1]]; curr += 1u;
-        targ[curr] = if srclen == 1u { padd } else { table[output[2]] };
-        curr += 1u; targ[curr] = padd;
+        targ[curr + 0u] = table[output[0]];
+        targ[curr + 1u] = table[output[1]];
+        targ[curr + 2u] = if srclen == 1u { padd } else { table[output[2]] };
+        targ[curr + 3u] = padd;
     }
 
     vec::from_mut(targ)

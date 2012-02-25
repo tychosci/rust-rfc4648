@@ -99,14 +99,15 @@ fn b32encode(table: [u8], src: [u8]) -> [u8] {
         output[6] = (input[3] & 0x03_u8) << 3u8 | input[4] >> 5u8;
         output[7] = input[4] & 0x1f_u8;
 
-        targ[curr] = table[output[0]]; curr += 1u;
-        targ[curr] = table[output[1]]; curr += 1u;
-        targ[curr] = table[output[2]]; curr += 1u;
-        targ[curr] = table[output[3]]; curr += 1u;
-        targ[curr] = table[output[4]]; curr += 1u;
-        targ[curr] = table[output[5]]; curr += 1u;
-        targ[curr] = table[output[6]]; curr += 1u;
-        targ[curr] = table[output[7]]; curr += 1u;
+        targ[curr + 0u] = table[output[0]];
+        targ[curr + 1u] = table[output[1]];
+        targ[curr + 2u] = table[output[2]];
+        targ[curr + 3u] = table[output[3]];
+        targ[curr + 4u] = table[output[4]];
+        targ[curr + 5u] = table[output[5]];
+        targ[curr + 6u] = table[output[6]];
+        targ[curr + 7u] = table[output[7]];
+        curr += 8u;
     }
 
     if srclen != 0u {
@@ -135,19 +136,14 @@ fn b32encode(table: [u8], src: [u8]) -> [u8] {
         output[5] = (input[3] & 0x7f_u8) >> 2u8;
         output[6] = (input[3] & 0x03_u8) << 3u8 | input[4] >> 5u8;
 
-        targ[curr] = table[output[0]]; curr += 1u;
-        targ[curr] = table[output[1]]; curr += 1u;
-        targ[curr] =
-            if srclen > 1u { table[output[2]] } else { padd }; curr += 1u;
-        targ[curr] =
-            if srclen > 1u { table[output[3]] } else { padd }; curr += 1u;
-        targ[curr] =
-            if srclen > 2u { table[output[4]] } else { padd }; curr += 1u;
-        targ[curr] =
-            if srclen > 3u { table[output[5]] } else { padd }; curr += 1u;
-        targ[curr] =
-            if srclen > 3u { table[output[6]] } else { padd }; curr += 1u;
-        targ[curr] = padd;
+        targ[curr + 0u] = table[output[0]];
+        targ[curr + 1u] = table[output[1]];
+        targ[curr + 2u] = if srclen > 1u { table[output[2]] } else { padd };
+        targ[curr + 3u] = if srclen > 1u { table[output[3]] } else { padd };
+        targ[curr + 4u] = if srclen > 2u { table[output[4]] } else { padd };
+        targ[curr + 5u] = if srclen > 3u { table[output[5]] } else { padd };
+        targ[curr + 6u] = if srclen > 3u { table[output[6]] } else { padd };
+        targ[curr + 7u] = padd;
     }
 
     vec::from_mut(targ)
