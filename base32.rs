@@ -48,11 +48,11 @@ fn mk() -> base32 {
         fn encode(src: [u8]) -> [u8] {
             b32encode(self.table, src)
         }
-        fn decode(src: [u8]) -> [u8] {
-            b32decode(src, b32idx_normal)
-        }
         fn hex_encode(src: [u8]) -> [u8] {
             b32encode(self.table_hex, src)
+        }
+        fn decode(src: [u8]) -> [u8] {
+            b32decode(src, b32idx_normal)
         }
         fn hex_decode(src: [u8]) -> [u8] {
             b32decode(src, b32idx_hex)
@@ -170,6 +170,36 @@ fn b32decode(src: [u8], b32idx: native fn(u8) -> u8) -> [u8] {
     };
     let curr = 0u, src_curr = 0u;
 
+    while srclen > 8u {
+        input[0] = src[src_curr];
+        input[1] = src[src_curr + 1u];
+        input[2] = src[src_curr + 2u];
+        input[3] = src[src_curr + 3u];
+        input[4] = src[src_curr + 4u];
+        input[5] = src[src_curr + 5u];
+        input[6] = src[src_curr + 6u];
+        input[7] = src[src_curr + 7u];
+        srclen -= 8u; src_curr += 8u;
+
+        output[0] = b32idx(input[0]);
+        output[1] = b32idx(input[1]);
+        output[2] = b32idx(input[2]);
+        output[3] = b32idx(input[3]);
+        output[4] = b32idx(input[4]);
+        output[5] = b32idx(input[5]);
+        output[6] = b32idx(input[6]);
+        output[7] = b32idx(input[7]);
+
+        targ[curr + 0u] = output[0] << 3u8 | output[1] >> 2u8;
+        targ[curr + 1u] =
+            (output[1] & 0x03_u8) << 6u8 | output[2] << 1u8 | output[3] >> 4u8;
+        targ[curr + 2u] = (output[3] & 0x0f_u8) << 4u8 | output[4] >> 1u8;
+        targ[curr + 3u] =
+            (output[4] & 0x01_u8) << 7u8 | output[5] << 2u8 | output[6] >> 3u8;
+        targ[curr + 4u] = (output[6] & 0x07_u8) << 5u8 | output[7];
+        curr += 5u;
+    }
+
     if srclen == 8u {
         input[0] = src[src_curr];
         input[1] = src[src_curr + 1u];
@@ -238,6 +268,7 @@ mod tests {
         let m = map::new_str_hash::<str>();
         alt t {
           t_decode {
+            m.insert("MZXW6YTBOI======", "foobar");
             m.insert("MZXW6YTB", "fooba");
             m.insert("MZXW6YQ=", "foob");
             m.insert("MZXW6===", "foo");
@@ -245,6 +276,7 @@ mod tests {
             m.insert("MY======", "f");
           }
           t_encode {
+            m.insert("foobar", "MZXW6YTBOI======");
             m.insert("fooba", "MZXW6YTB");
             m.insert("foob",  "MZXW6YQ=");
             m.insert("foo",   "MZXW6===");
@@ -252,6 +284,7 @@ mod tests {
             m.insert("f",     "MY======");
           }
           t_hex_decode {
+            m.insert("CPNMUOJ1E8======", "foobar");
             m.insert("CPNMUOJ1", "fooba");
             m.insert("CPNMUOG=", "foob");
             m.insert("CPNMU===", "foo");
@@ -259,6 +292,7 @@ mod tests {
             m.insert("CO======", "f");
           }
           t_hex_encode {
+            m.insert("foobar", "CPNMUOJ1E8======");
             m.insert("fooba", "CPNMUOJ1");
             m.insert("foob",  "CPNMUOG=");
             m.insert("foo",   "CPNMU===");
