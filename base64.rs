@@ -55,8 +55,10 @@ const padd: u8 = 61u8;
 iface base64 {
     fn encode(src: [u8]) -> [u8];
     fn decode(src: [u8]) -> [u8];
+    fn decode_w(src: [u8]) -> [u8];
     fn urlsafe_encode(src: [u8]) -> [u8];
     fn urlsafe_decode(src: [u8]) -> [u8];
+    fn urlsafe_decode_w(src: [u8]) -> [u8];
 }
 
 fn mk() -> base64 {
@@ -74,6 +76,12 @@ fn mk() -> base64 {
         }
         fn urlsafe_decode(src: [u8]) -> [u8] {
             b64decode(self.table + [45u8, 95u8], src)
+        }
+        fn decode_w(src: [u8]) -> [u8] {
+            b64decode_w(self.table + [43u8, 47u8], src)
+        }
+        fn urlsafe_decode_w(src: [u8]) -> [u8] {
+            b64decode_w(self.table + [45u8, 95u8], src)
         }
     }
 
@@ -208,6 +216,62 @@ fn b64decode(table: [u8], src: [u8]) -> [u8] {
     vec::from_mut(targ)
 }
 
+fn b64decode_w(table: [u8], src: [u8]) -> [u8] {
+    let srclen = vec::len(src);
+
+    if srclen == 0u { ret []; }
+
+    let targ = if src[srclen - 2u] == padd {
+        vec::init_elt_mut(srclen / 4u * 3u - 2u, 0u8)
+    } else if src[srclen - 1u] == padd {
+        vec::init_elt_mut(srclen / 4u * 3u - 1u, 0u8)
+    } else {
+        vec::init_elt_mut(srclen / 4u * 3u, 0u8)
+    };
+    let end = false, i = 0, in = 0u8;
+    let output = vec::init_elt_mut(4u, 0u8), outlen = 4;
+    let src_curr = 0u, curr = 0u;
+
+    while srclen > 0u && !end {
+        i = 0;
+        while i < 4 {
+            if srclen == 0u {
+                fail "malformed base64 string";
+            }
+            in = src[src_curr]; srclen -= 1u; src_curr += 1u;
+            // ignore whitespace, tab, "\r", "\n"
+            if in == 13u8 || in == 10u8 ||
+               in == 32u8 || in == 9u8 {
+                cont;
+            }
+            if in == padd && i >= 2 && srclen < 4u {
+                if srclen > 0u && src[src_curr] != padd {
+                    fail "malformed base64 string";
+                }
+                outlen = i; end = true;
+                break;
+            }
+            output[i] = b64idx(in, table[62], table[63]);
+            i += 1;
+        }
+        if outlen == 4 {
+            targ[curr + 0u] = (output[0] << 2u8) | (output[1] >> 4u8);
+            targ[curr + 1u] = ((output[1] & 15u8) << 4u8) | (output[2] >> 2u8);
+            targ[curr + 2u] = ((output[2] &  3u8) << 6u8) | output[3];
+            curr += 3u;
+        } else if outlen == 3 {
+            targ[curr + 0u] = (output[0] << 2u8) | (output[1] >> 4u8);
+            targ[curr + 1u] = ((output[1] & 15u8) << 4u8) | (output[2] >> 2u8);
+            curr += 2u;
+        } else if outlen == 2 {
+            targ[curr + 0u] = (output[0] << 2u8) | (output[1] >> 4u8);
+            curr += 1u;
+        }
+    }
+
+    vec::slice(vec::from_mut(targ), 0u, curr)
+}
+
 #[cfg(test)]
 mod tests {
     import core::str::{from_bytes, bytes};
@@ -215,20 +279,22 @@ mod tests {
         t_decode,
         t_encode,
         t_urlsafe_encode,
-        t_urlsafe_decode
+        t_urlsafe_decode,
+        t_decode_w,
+        t_urlsafe_decode_w,
     }
     fn setup(t: mode) -> map::hashmap<str, str> {
         let m = map::new_str_hash::<str>();
         m.insert("", "");
         alt t {
-          t_decode | t_urlsafe_decode {
+          t_decode | t_urlsafe_decode | t_decode_w | t_urlsafe_decode_w {
             m.insert("cGxlYXN1cmUu", "pleasure.");
             m.insert("bGVhc3VyZS4=",  "leasure.");
             m.insert("ZWFzdXJlLg==",   "easure.");
             m.insert("YXN1cmUu",        "asure.");
             m.insert("c3VyZS4=",         "sure.");
           }
-          t_encode | t_urlsafe_encode {
+           t_encode | t_urlsafe_encode {
             m.insert("pleasure.", "cGxlYXN1cmUu");
             m.insert("leasure.",  "bGVhc3VyZS4=");
             m.insert("easure.",   "ZWFzdXJlLg==");
@@ -248,9 +314,11 @@ mod tests {
               t_encode { from_bytes(b64.encode(bytes(k))) }
               t_urlsafe_decode { from_bytes(b64.urlsafe_decode(bytes(k))) }
               t_urlsafe_encode { from_bytes(b64.urlsafe_encode(bytes(k))) }
+              t_decode_w { from_bytes(b64.decode_w(bytes(k))) }
+              t_urlsafe_decode_w { from_bytes(b64.urlsafe_decode_w(bytes(k))) }
             };
-            #debug("expected: %s", expected);
-            #debug("actual:   %s", actual);
+            #debug("  expected: %s", expected);
+            #debug("  actual:   %s", actual);
             assert expected == actual;
         }
     }
@@ -262,4 +330,8 @@ mod tests {
     fn urlsafe_decode() { do_test(t_urlsafe_decode); }
     #[test]
     fn urlsafe_encode() { do_test(t_urlsafe_encode); }
+    #[test]
+    fn decode_w() { do_test(t_decode_w); }
+    #[test]
+    fn urlsafe_decode_w() { do_test(t_urlsafe_decode_w); }
 }
