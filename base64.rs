@@ -287,7 +287,14 @@ mod tests {
         let m = map::new_str_hash::<str>();
         m.insert("", "");
         alt t {
-          t_decode | t_urlsafe_decode | t_decode_w | t_urlsafe_decode_w {
+          t_decode_w | t_urlsafe_decode_w {
+            m.insert("cGxl    YXN1cmUu", "pleasure.");
+            m.insert("bGVhc 3VyZS4=",  "leasure.");
+            m.insert("Z W F z d X J l L g==",   "easure.");
+            m.insert("YXN1c\r\nmUu",        "asure.");
+            m.insert("c3Vy\tZS4=",         "sure.");
+          }
+          t_decode | t_urlsafe_decode {
             m.insert("cGxlYXN1cmUu", "pleasure.");
             m.insert("bGVhc3VyZS4=",  "leasure.");
             m.insert("ZWFzdXJlLg==",   "easure.");
