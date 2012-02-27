@@ -158,6 +158,7 @@ fn b64encode(table: [u8], src: [u8]) -> [u8] {
     vec::from_mut(targ)
 }
 
+// strict
 fn b64decode(table: [u8], src: [u8]) -> [u8] {
     let srclen = vec::len(src);
 
@@ -224,6 +225,7 @@ fn b64decode(table: [u8], src: [u8]) -> [u8] {
     vec::from_mut(targ)
 }
 
+// lenient
 fn b64decode2(table: [u8], src: [u8]) -> [u8] {
     let srclen = vec::len(src);
 
