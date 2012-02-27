@@ -104,14 +104,18 @@ fn b64idx(x: u8, y: u8, z: u8) -> u8 {
 
 fn b64encode(table: [u8], src: [u8]) -> [u8] {
     let srclen = vec::len(src);
-    let targ = if srclen % 3u == 0u {
-        vec::init_elt_mut((srclen / 3u) * 4u, 0u8)
-    } else {
-        vec::init_elt_mut((srclen / 3u + 1u) * 4u, 0u8)
-    };
+
+    let targ: [mutable u8] = [mutable];
     let input = vec::init_elt_mut(3u, 0u8);
     let output = vec::init_elt_mut(4u, 0u8);
     let curr = 0u, src_curr = 0u;
+    let targlen = if srclen % 3u == 0u {
+        (srclen / 3u) * 4u
+    } else {
+        (srclen / 3u + 1u) * 4u
+    };
+    vec::reserve(targ, targlen);
+    unsafe { vec::unsafe::set_len(targ, targlen); }
 
     while srclen > 2u {
         input[0] = src[src_curr];
@@ -160,16 +164,20 @@ fn b64decode(table: [u8], src: [u8]) -> [u8] {
     if srclen % 4u != 0u { fail "malformed base64 string"; }
     if srclen == 0u { ret []; }
 
+    let targ: [mutable u8] = [mutable];
     let input  = vec::init_elt_mut(4u, 0u8);
     let output = vec::init_elt_mut(4u, 0u8);
-    let targ = if src[srclen - 2u] == padd {
-        vec::init_elt_mut(srclen / 4u * 3u - 2u, 0u8)
-    } else if src[srclen - 1u] == padd {
-        vec::init_elt_mut(srclen / 4u * 3u - 1u, 0u8)
-    } else {
-        vec::init_elt_mut(srclen / 4u * 3u, 0u8)
-    };
     let curr = 0u, src_curr = 0u;
+    let targlen =
+        if src[srclen - 2u] == padd && src[srclen - 1u] == padd {
+            srclen / 4u * 3u - 2u
+        } else if src[srclen - 1u] == padd {
+            srclen / 4u * 3u - 1u
+        } else {
+            srclen / 4u * 3u
+        };
+    vec::reserve(targ, targlen);
+    unsafe { vec::unsafe::set_len(targ, targlen); }
 
     while srclen > 4u {
         input[0] = src[src_curr];
@@ -221,16 +229,20 @@ fn b64decode2(table: [u8], src: [u8]) -> [u8] {
 
     if srclen == 0u { ret []; }
 
-    let targ = if src[srclen - 2u] == padd {
-        vec::init_elt_mut(srclen / 4u * 3u - 2u, 0u8)
-    } else if src[srclen - 1u] == padd {
-        vec::init_elt_mut(srclen / 4u * 3u - 1u, 0u8)
-    } else {
-        vec::init_elt_mut(srclen / 4u * 3u, 0u8)
-    };
+    let targ: [mutable u8] = [mutable];
     let end = false, i = 0, in = 0u8;
     let output = vec::init_elt_mut(4u, 0u8), outlen = 4;
     let src_curr = 0u, curr = 0u;
+    let targlen =
+        if src[srclen - 2u] == padd && src[srclen - 1u] == padd {
+            srclen / 4u * 3u - 2u
+        } else if src[srclen - 1u] == padd {
+            srclen / 4u * 3u - 1u
+        } else {
+            srclen / 4u * 3u
+        };
+    vec::reserve(targ, targlen);
+    unsafe { vec::unsafe::set_len(targ, targlen); }
 
     while srclen > 0u && !end {
         i = 0;

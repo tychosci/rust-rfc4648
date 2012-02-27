@@ -73,14 +73,18 @@ fn mk() -> base32 {
 
 fn b32encode(table: [u8], src: [u8]) -> [u8] {
     let srclen = vec::len(src);
-    let targ = if srclen % 5u == 0u {
-        vec::init_elt_mut(srclen / 5u * 8u, 0u8)
-    } else {
-        vec::init_elt_mut((srclen / 5u + 1u) * 8u, 0u8)
-    };
+    let targ: [mutable u8] = [mutable];
     let input = vec::init_elt_mut(5u, 0u8);
     let output = vec::init_elt_mut(8u, 0u8);
     let curr = 0u, src_curr = 0u;
+    let targlen =
+        if srclen % 5u == 0u {
+            (srclen / 5u) * 8u
+        } else {
+            (srclen / 5u + 1u) * 8u
+        };
+    vec::reserve(targ, targlen);
+    unsafe { vec::unsafe::set_len(targ, targlen); }
 
     while srclen > 4u {
         input[0] = src[src_curr];
@@ -155,20 +159,24 @@ fn b32decode(src: [u8], b32idx: native fn(u8) -> u8) -> [u8] {
     if srclen % 8u != 0u { fail "malformed base32 string"; }
     if srclen == 0u { ret []; }
 
+    let targ: [mutable u8] = [mutable];
     let input = vec::init_elt_mut(8u, 0u8);
     let output = vec::init_elt_mut(8u, 0u8);
-    let targ = if src[srclen - 6u] == padd {
-        vec::init_elt_mut(srclen / 8u * 5u - 4u, 0u8)
-    } else if src[srclen - 4u] == padd {
-        vec::init_elt_mut(srclen / 8u * 5u - 3u, 0u8)
-    } else if src[srclen - 3u] == padd {
-        vec::init_elt_mut(srclen / 8u * 5u - 2u, 0u8)
-    } else if src[srclen - 1u] == padd {
-        vec::init_elt_mut(srclen / 8u * 5u - 1u, 0u8)
-    } else {
-        vec::init_elt_mut(srclen / 8u * 5u, 0u8)
-    };
     let curr = 0u, src_curr = 0u;
+    let targlen =
+        if src[srclen - 6u] == padd {
+            srclen / 8u * 5u - 4u
+        } else if src[srclen - 4u] == padd {
+            srclen / 8u * 5u - 3u
+        } else if src[srclen - 3u] == padd {
+            srclen / 8u * 5u - 2u
+        } else if src[srclen - 1u] == padd {
+            srclen / 8u * 5u - 1u
+        } else {
+            srclen / 8u * 5u
+        };
+    vec::reserve(targ, targlen);
+    unsafe { vec::unsafe::set_len(targ, targlen); }
 
     while srclen > 8u {
         input[0] = src[src_curr];
