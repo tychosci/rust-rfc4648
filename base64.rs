@@ -283,7 +283,18 @@ fn b64decode2(table: [u8], src: [u8]) -> [u8] {
         }
     }
 
-    vec::slice(vec::from_mut(targ), 0u, curr)
+    let result: [mutable u8] = [mutable];
+    vec::reserve(result, curr);
+    vec::as_buf(result) { |dest|
+        vec::as_buf(targ) { |src|
+            if dest != ptr::null() && curr > 0u {
+                unsafe { ptr::memcpy(dest, src, curr); }
+            }
+        }
+    }
+    unsafe { vec::unsafe::set_len(result, curr); }
+
+    vec::from_mut(result)
 }
 
 #[cfg(test)]
