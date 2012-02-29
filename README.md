@@ -10,6 +10,7 @@ TODO
 * add fail case to tests
 * write base85(ascii85) module
 * documentation
+* rewrite/add base32/64 functions to make it stream-based.
 
 LICENSE
 -------
