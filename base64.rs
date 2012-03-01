@@ -300,15 +300,59 @@ fn b64decode2(table: [u8], src: [u8]) -> [u8] {
 
 // FIXME write
 mod stream {
-    type base64 = {
-        out: io::writer,        // buffer, file, sockets, etc.
+    type encoder = {
+        base: io::writer,       // buffer, file, sockets, etc.
         buf: [mutable u8],      // buffer for fringe
-        cap: uint,              // capacity of ``buf''
+        buflen: uint,           // length of ``buf''
         outbuf: [mutable u8],   // buffer for output
     };
+    type decoder = {
+        base: io::reader,       // buffer, file, sockets, etc.
+        buf: [mutable u8],      // buffer for fringe
+        buflen: uint,           // length of ``buf''
+        outbuf: [mutable u8],   // buffer for output
+    };
+    // FIXME write
+    impl of io::writer for encoder {
+        fn write(v: [const u8]) {
+            self.base.write(v);
+        }
+        fn seek(offset: int, whence: io::seek_style) {
+            self.base.seek(offset, whence);
+        }
+        fn tell() -> uint {
+            self.base.tell()
+        }
+        fn flush() -> int {
+            self.base.flush()
+        }
+    }
+    // FIXME write
+    impl of io::reader for decoder {
+        fn read_bytes(len: uint) -> [u8] {
+            self.base.read_bytes(len)
+        }
+        fn read_byte() -> int {
+            self.base.read_byte()
+        }
+        fn unread_byte(byte: int) {
+            self.base.unread_byte(byte);
+        }
+        fn eof() -> bool {
+            self.base.eof()
+        }
+        fn seek(offset: int, whence: io::seek_style) {
+            self.base.seek(offset, whence)
+        }
+        fn tell() -> uint {
+            self.base.tell()
+        }
+    }
+    // FIXME write
     fn mk_encoder(eo: io::writer) {
     }
-    fn mk_decoder(eo: io::writer) {
+    // FIXME write
+    fn mk_decoder(eo: io::reader) {
     }
 }
 
