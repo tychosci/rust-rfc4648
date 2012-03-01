@@ -300,19 +300,15 @@ fn b64decode2(table: [u8], src: [u8]) -> [u8] {
 
 // FIXME write
 mod stream {
-    type encoder = {
+    type base64 = {
         out: io::writer,        // buffer, file, sockets, etc.
-        buf: [mutable u8],      // < 4 bytes
+        buf: [mutable u8],      // buffer for fringe
+        cap: uint,              // capacity of ``buf''
         outbuf: [mutable u8],   // buffer for output
     };
-    type decoder = {
-        out: io::writer,        // buffer, file, sockets, etc.
-        buf: [mutable u8],      // < 3 bytes
-        outbuf: [mutable u8],   // buffer for output
-    };
-    fn mk_encoder(ei: io::writer) {
+    fn mk_encoder(eo: io::writer) {
     }
-    fn mk_decoder(ei: io::writer) {
+    fn mk_decoder(eo: io::writer) {
     }
 }
 
