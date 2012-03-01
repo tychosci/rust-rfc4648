@@ -425,4 +425,28 @@ mod tests {
     fn decode2() { do_test(t_decode2); }
     #[test]
     fn urlsafe_decode2() { do_test(t_urlsafe_decode2); }
+    #[test]
+    fn tmp_stream_encoder() {
+        // let reader = io::string_reader("foo");
+        // let expected = "Zm9y";
+        // let result = base64::with_str_encoder { |encoder|
+        //     reader.iter { |data|
+        //         encoder.write(data);
+        //     }
+        // };
+        // assert expected == result;
+        assert true;
+    }
+    #[test]
+    fn tmp_stream_decoder() {
+        // let decoder = base64::string_decoder("Zm9y");
+        // let expected = "foo";
+        // let result = io::with_str_writer { |buf|
+        //     decoder.iter { |data|
+        //         buf.write(data);
+        //     }
+        // };
+        // assert expected == result;
+        assert true;
+    }
 }
