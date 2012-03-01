@@ -300,19 +300,21 @@ fn b64decode2(table: [u8], src: [u8]) -> [u8] {
 
 // FIXME write
 mod stream {
+    // XXX ``encoder'' should implement ``io::writer''?
     type encoder = {
-        buf: [mutable u8],
-        out: [mutable u8],
+        out: io::writer,        // buffer, file, sockets, etc.
+        buf: [mutable u8],      // < 4 bytes
+        outbuf: [mutable u8],   // buffer for output
     };
+    // XXX ``decoder'' should implement ``io::writer''?
     type decoder = {
-        buf: [mutable u8],
-        out: [mutable u8],
+        out: io::writer,        // buffer, file, sockets, etc.
+        buf: [mutable u8],      // < 3 bytes
+        outbuf: [mutable u8],   // buffer for output
     };
-    // encode with io::reader (buffer, file, sockets)
-    fn mk_encoder(ei: io::reader) {
+    fn mk_encoder(ei: io::writer) {
     }
-    // decode with io::reader (buffer, file, sockets)
-    fn mk_decoder(ei: io::reader) {
+    fn mk_decoder(ei: io::writer) {
     }
 }
 
