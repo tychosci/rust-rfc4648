@@ -46,6 +46,7 @@
 
 use std;
 
+import std::io;
 import std::map;
 
 export base64, mk;
@@ -295,6 +296,24 @@ fn b64decode2(table: [u8], src: [u8]) -> [u8] {
     unsafe { vec::unsafe::set_len(result, curr); }
 
     vec::from_mut(result)
+}
+
+// FIXME write
+mod stream {
+    type encoder = {
+        buf: [mutable u8],
+        out: [mutable u8],
+    };
+    type decoder = {
+        buf: [mutable u8],
+        out: [mutable u8],
+    };
+    // encode with io::reader (buffer, file, sockets)
+    fn mk_encoder(ei: io::reader) {
+    }
+    // decode with io::reader (buffer, file, sockets)
+    fn mk_decoder(ei: io::reader) {
+    }
 }
 
 #[cfg(test)]
