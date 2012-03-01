@@ -349,10 +349,10 @@ mod stream {
         }
     }
     // FIXME write
-    fn mk_encoder(eo: io::writer) {
+    fn mk_encoder(_eo: io::writer) {
     }
     // FIXME write
-    fn mk_decoder(eo: io::reader) {
+    fn mk_decoder(_ei: io::reader) {
     }
 }
 
