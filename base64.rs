@@ -303,13 +303,13 @@ mod stream {
     type encoder = {
         base: io::writer,       // buffer, file, sockets, etc.
         buf: [mutable u8],      // buffer for fringe
-        buflen: uint,           // length of ``buf''
+        mutable buflen: uint,   // current length of ``buf''
         outbuf: [mutable u8],   // buffer for output
     };
     type decoder = {
         base: io::reader,       // buffer, file, sockets, etc.
         buf: [mutable u8],      // buffer for fringe
-        buflen: uint,           // length of ``buf''
+        mutable buflen: uint,   // current length of ``buf''
         outbuf: [mutable u8],   // buffer for output
     };
     // FIXME write
