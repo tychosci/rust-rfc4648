@@ -300,13 +300,11 @@ fn b64decode2(table: [u8], src: [u8]) -> [u8] {
 
 // FIXME write
 mod stream {
-    // XXX ``encoder'' should implement ``io::writer''?
     type encoder = {
         out: io::writer,        // buffer, file, sockets, etc.
         buf: [mutable u8],      // < 4 bytes
         outbuf: [mutable u8],   // buffer for output
     };
-    // XXX ``decoder'' should implement ``io::writer''?
     type decoder = {
         out: io::writer,        // buffer, file, sockets, etc.
         buf: [mutable u8],      // < 3 bytes
