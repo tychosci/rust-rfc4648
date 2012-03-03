@@ -59,11 +59,11 @@ fn mk() -> base32 {
         }
     }
 
-    let table = vec::init_elt_mut(32u, 0u8), i = 0u8;
+    let table = vec::to_mut(vec::init_elt(32u, 0u8)), i = 0u8;
     u8::range(65u8, 91u8)  { |j| table[i] = j; i += 1u8; }
     u8::range(50u8, 56u8)  { |j| table[i] = j; i += 1u8; }
 
-    let table_hex = vec::init_elt_mut(32u, 0u8), i = 0u8;
+    let table_hex = vec::to_mut(vec::init_elt(32u, 0u8)), i = 0u8;
     u8::range(48u8, 58u8)  { |j| table_hex[i] = j; i += 1u8; }
     u8::range(65u8, 87u8)  { |j| table_hex[i] = j; i += 1u8; }
 
@@ -74,8 +74,8 @@ fn mk() -> base32 {
 fn b32encode(table: [u8], src: [u8]) -> [u8] {
     let srclen = vec::len(src);
     let targ: [mutable u8] = [mutable];
-    let input = vec::init_elt_mut(5u, 0u8);
-    let output = vec::init_elt_mut(8u, 0u8);
+    let input = vec::to_mut(vec::init_elt(5u, 0u8));
+    let output = vec::to_mut(vec::init_elt(8u, 0u8));
     let curr = 0u, src_curr = 0u;
     let targlen =
         if srclen % 5u == 0u {
@@ -160,8 +160,8 @@ fn b32decode(src: [u8], b32idx: native fn(u8) -> u8) -> [u8] {
     if srclen == 0u { ret []; }
 
     let targ: [mutable u8] = [mutable];
-    let input = vec::init_elt_mut(8u, 0u8);
-    let output = vec::init_elt_mut(8u, 0u8);
+    let input = vec::to_mut(vec::init_elt(8u, 0u8));
+    let output = vec::to_mut(vec::init_elt(8u, 0u8));
     let curr = 0u, src_curr = 0u;
     let targlen =
         if src[srclen - 6u] == padd {
