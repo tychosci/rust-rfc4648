@@ -46,8 +46,8 @@
 
 use std;
 
-import std::io;
 import std::map;
+import std::map::hashmap;
 
 export base64, mk;
 
@@ -86,7 +86,7 @@ fn mk() -> base64 {
         }
     }
 
-    let table = vec::to_mut(vec::init_elt(62u, 0u8)), i = 0u8;
+    let table = vec::to_mut(vec::from_elem(62u, 0u8)), i = 0u8;
     u8::range(65u8, 91u8)  { |j| table[i] = j; i += 1u8; }
     u8::range(97u8, 123u8) { |j| table[i] = j; i += 1u8; }
     u8::range(48u8, 58u8)  { |j| table[i] = j; i += 1u8; }
@@ -107,8 +107,8 @@ fn b64encode(table: [u8], src: [u8]) -> [u8] {
     let srclen = vec::len(src);
 
     let targ: [mutable u8] = [mutable];
-    let input = vec::to_mut(vec::init_elt(3u, 0u8));
-    let output = vec::to_mut(vec::init_elt(4u, 0u8));
+    let input = vec::to_mut(vec::from_elem(3u, 0u8));
+    let output = vec::to_mut(vec::from_elem(4u, 0u8));
     let curr = 0u, src_curr = 0u;
     let targlen = if srclen % 3u == 0u {
         (srclen / 3u) * 4u
@@ -167,8 +167,8 @@ fn b64decode(table: [u8], src: [u8]) -> [u8] {
     if srclen == 0u { ret []; }
 
     let targ: [mutable u8] = [mutable];
-    let input  = vec::to_mut(vec::init_elt(4u, 0u8));
-    let output = vec::to_mut(vec::init_elt(4u, 0u8));
+    let input  = vec::to_mut(vec::from_elem(4u, 0u8));
+    let output = vec::to_mut(vec::from_elem(4u, 0u8));
     let curr = 0u, src_curr = 0u;
     let targlen =
         if src[srclen - 2u] == padd && src[srclen - 1u] == padd {
@@ -234,7 +234,7 @@ fn b64decode2(table: [u8], src: [u8]) -> [u8] {
 
     let targ: [mutable u8] = [mutable];
     let end = false, i = 0, in = 0u8;
-    let output = vec::to_mut(vec::init_elt(4u, 0u8)), outlen = 4;
+    let output = vec::to_mut(vec::from_elem(4u, 0u8)), outlen = 4;
     let src_curr = 0u, curr = 0u;
     let targlen =
         if src[srclen - 2u] == padd && src[srclen - 1u] == padd {
