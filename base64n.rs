@@ -53,6 +53,7 @@ const PAD: u8 = 61u8;
 iface enc {
     fn encode(dst: [mutable u8], src: [u8]);
     fn encode_byte(src: [u8]) -> [u8];
+    fn encode_str(src: str) -> str;
     // FIXME `decode` should return desired length of `dst`
     fn decode(dst: [mutable u8], src: [u8]);
     fn decode_byte(src: [u8]) -> [u8];
@@ -74,6 +75,10 @@ fn mk() -> enc {
             let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
             self.encode(dst, src);
             vec::from_mut(dst)
+        }
+        fn encode_str(src: str) -> str {
+            let src = str::bytes(src);
+            str::from_bytes(self.encode_byte(src))
         }
         fn decode_byte(src: [u8]) -> [u8] { [] }
     }
