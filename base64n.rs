@@ -44,6 +44,8 @@
 //    16 Q            33 h            50 y         (pad) =
 //
 
+use std;
+
 import vec::len;
 
 const PAD: u8 = 61u8;
@@ -126,7 +128,7 @@ fn b64encode(table: [u8], dst: [mutable u8], src: [u8]) {
             dst[dst_curr + 1u] |= (src[src_curr + 1u] >> 4u8);
             dst[dst_curr + 2u] |= (src[src_curr + 1u] << 2u8) & 0x3f_u8;
             dst[dst_curr + 2u] |= (src[src_curr + 2u] >> 6u8);
-            dst[dst_curr + 3u] |= (src[src_curr + 3u]) & 0x3f_u8;
+            dst[dst_curr + 3u] |= (src[src_curr + 2u]) & 0x3f_u8;
         }
 
         dst[dst_curr + 0u] = table[dst[dst_curr + 0u]];
@@ -150,4 +152,15 @@ fn b64encode(table: [u8], dst: [mutable u8], src: [u8]) {
 
 fn b64decode(table: [u8], dst: [mutable u8], src: [u8]) {
     // FIXME write
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_encode_byte() {
+        let src = [102u8, 111u8, 111u8, 98u8, 97u8, 114u8];
+        let enc = mk();
+        let res = enc.encode_byte(src);
+        assert res == [90u8, 109u8, 57u8, 118u8, 89u8, 109u8, 70u8, 121u8];
+    }
 }
