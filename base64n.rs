@@ -61,6 +61,7 @@ iface enc {
     fn decode(dst: [mutable u8], src: [u8]);
     fn decode_u(dst: [mutable u8], src: [u8]);
     fn decode_bytes(src: [u8]) -> [u8];
+    fn decode_bytes_u(src: [u8]) -> [u8];
 }
 
 fn mk() -> enc {
@@ -95,10 +96,13 @@ fn mk() -> enc {
             str::from_bytes(self.encode_bytes_u(src))
         }
         fn decode(dst: [mutable u8], src: [u8]) {
-            // FIXME need self.decode_map instead of self.table.
             b64decode(self.decode_map, dst, src);
         }
+        fn decode_u(dst: [mutable u8], src: [u8]) {
+            b64decode(self.decode_map_u, dst, src);
+        }
         fn decode_bytes(src: [u8]) -> [u8] { [] }
+        fn decode_bytes_u(src: [u8]) -> [u8] { [] }
     }
 
     let table = vec::to_mut(vec::from_elem(64u, 0u8)), i = 0u8;
