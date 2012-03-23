@@ -51,21 +51,24 @@ const PAD: u8 = 61u8;
 iface enc {
     fn encode(dst: [mutable u8], src: [u8]);
     fn encode_byte(src: [u8]) -> [u8];
-}
-
-iface dec {
+    // FIXME `decode` should return desired length of `dst`
     fn decode(dst: [mutable u8], src: [u8]);
     fn decode_byte(src: [u8]) -> [u8];
 }
 
-fn mk_enc() -> enc {
+fn mk() -> enc {
     type _enc = {table: [u8]};
 
     impl of enc for _enc {
         fn encode(dst: [mutable u8], src: [u8]) {
             b64encode(self.table, dst, src);
         }
+        fn decode(dst: [mutable u8], src: [u8]) {
+            // FIXME need self.decode_map instead of self.table.
+            b64decode(self.table, dst, src);
+        }
         fn encode_byte(src: [u8]) -> [u8] { [] }
+        fn decode_byte(src: [u8]) -> [u8] { [] }
     }
 
     let table = vec::to_mut(vec::from_elem(62u, 0u8)), i = 0u8;
@@ -138,4 +141,8 @@ fn b64encode(table: [u8], dst: [mutable u8], src: [u8]) {
         src_curr += 3u;
         dst_curr += 4u;
     }
+}
+
+fn b64decode(table: [u8], dst: [mutable u8], src: [u8]) {
+    // FIXME write
 }
