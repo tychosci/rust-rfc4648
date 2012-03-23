@@ -105,7 +105,8 @@ fn mk() -> enc {
         fn decode_bytes_u(src: [u8]) -> [u8] { [] }
     }
 
-    let table = vec::to_mut(vec::from_elem(64u, 0u8)), i = 0u8;
+    let mut i = 0u8;
+    let table = vec::to_mut(vec::from_elem(64u, 0u8));
     u8::range(65u8, 91u8)  { |j| table[i] = j; i += 1u8; }
     u8::range(97u8, 123u8) { |j| table[i] = j; i += 1u8; }
     u8::range(48u8, 58u8)  { |j| table[i] = j; i += 1u8; }
@@ -148,10 +149,10 @@ fn b64encode(table: [u8], dst: [mutable u8], src: [u8]) {
         ret;
     }
 
-    let src_length = len(src);
-    let dst_length = len(dst);
-    let dst_curr = 0u;
-    let src_curr = 0u;
+    let mut src_length = len(src);
+    let mut dst_length = len(dst);
+    let mut dst_curr = 0u;
+    let mut src_curr = 0u;
 
     if dst_length % 4u != 0u {
         fail "dst's length should be divisible by 4";
