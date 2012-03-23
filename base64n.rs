@@ -168,4 +168,11 @@ mod tests {
         let res = enc.encode_byte(src);
         assert res == [90u8, 109u8, 57u8, 118u8, 89u8, 109u8, 70u8, 121u8];
     }
+    #[test]
+    fn test_encode_str() {
+        let src = "foobar";
+        let enc = mk();
+        let res = enc.encode_str(src);
+        assert res == "Zm9vYmFy";
+    }
 }
