@@ -64,7 +64,7 @@ fn mk() -> enc {
 
     impl of enc for _enc {
         fn encode(dst: [mutable u8], src: [u8]) {
-            b64encode(self.table, dst, src);
+            b64encode(self.table + [43u8, 47u8], dst, src);
         }
         fn decode(dst: [mutable u8], src: [u8]) {
             // FIXME need self.decode_map instead of self.table.
