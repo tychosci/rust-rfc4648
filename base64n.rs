@@ -52,7 +52,7 @@ const PAD: u8 = 61u8;
 
 iface enc {
     fn encode(dst: [mutable u8], src: [u8]);
-    fn encode_byte(src: [u8]) -> [u8];
+    fn encode_bytes(src: [u8]) -> [u8];
     fn encode_str(src: str) -> str;
     // FIXME `decode` should return desired length of `dst`
     fn decode(dst: [mutable u8], src: [u8]);
@@ -70,7 +70,7 @@ fn mk() -> enc {
             // FIXME need self.decode_map instead of self.table.
             b64decode(self.table, dst, src);
         }
-        fn encode_byte(src: [u8]) -> [u8] {
+        fn encode_bytes(src: [u8]) -> [u8] {
             let dst_length = encoded_len(len(src));
             let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
             self.encode(dst, src);
@@ -78,7 +78,7 @@ fn mk() -> enc {
         }
         fn encode_str(src: str) -> str {
             let src = str::bytes(src);
-            str::from_bytes(self.encode_byte(src))
+            str::from_bytes(self.encode_bytes(src))
         }
         fn decode_byte(src: [u8]) -> [u8] { [] }
     }
@@ -162,10 +162,10 @@ fn b64decode(table: [u8], dst: [mutable u8], src: [u8]) {
 #[cfg(test)]
 mod tests {
     #[test]
-    fn test_encode_byte() {
+    fn test_encode_bytes() {
         let src = [102u8, 111u8, 111u8, 98u8, 97u8, 114u8];
         let enc = mk();
-        let res = enc.encode_byte(src);
+        let res = enc.encode_bytes(src);
         assert res == [90u8, 109u8, 57u8, 118u8, 89u8, 109u8, 70u8, 121u8];
     }
     #[test]
