@@ -44,4 +44,98 @@
 //    16 Q            33 h            50 y         (pad) =
 //
 
-// FIXME write
+import vec::len;
+
+const PAD: u8 = 61u8;
+
+iface enc {
+    fn encode(dst: [mutable u8], src: [u8]);
+    fn encode_byte(src: [u8]) -> [u8];
+}
+
+iface dec {
+    fn decode(dst: [mutable u8], src: [u8]);
+    fn decode_byte(src: [u8]) -> [u8];
+}
+
+fn mk_enc() -> enc {
+    type _enc = {table: [u8]};
+
+    impl of enc for _enc {
+        fn encode(dst: [mutable u8], src: [u8]) {
+            b64encode(self.table, dst, src);
+        }
+        fn encode_byte(src: [u8]) -> [u8] { [] }
+    }
+
+    let table = vec::to_mut(vec::from_elem(62u, 0u8)), i = 0u8;
+    u8::range(65u8, 91u8)  { |j| table[i] = j; i += 1u8; }
+    u8::range(97u8, 123u8) { |j| table[i] = j; i += 1u8; }
+    u8::range(48u8, 58u8)  { |j| table[i] = j; i += 1u8; }
+
+    {table: vec::from_mut(table)} as enc
+}
+
+fn encoded_len(src_length: uint) -> uint {
+    (src_length + 2u) / 3u * 4u
+}
+
+fn decoded_len(src_length: uint) -> uint {
+    src_length / 4u * 3u
+}
+
+fn b64encode(table: [u8], dst: [mutable u8], src: [u8]) {
+    if len(src) == 0u {
+        ret;
+    }
+
+    let src_length = len(src);
+    let dst_length = len(dst);
+    let dst_curr = 0u;
+    let src_curr = 0u;
+
+    if dst_length % 4u != 0u {
+        fail "dst's length should be divisible by 4";
+    }
+
+    while src_length > 0u {
+        dst[dst_curr + 0u] = 0u8;
+        dst[dst_curr + 1u] = 0u8;
+        dst[dst_curr + 2u] = 0u8;
+        dst[dst_curr + 3u] = 0u8;
+
+        if src_length == 1u {
+            dst[dst_curr + 0u] |= (src[src_curr + 0u]) >> 2u8;
+            dst[dst_curr + 1u] |= (src[src_curr + 0u] << 4u8) & 0x3f_u8;
+        } else if src_length == 2u {
+            dst[dst_curr + 0u] |= (src[src_curr + 0u]) >> 2u8;
+            dst[dst_curr + 1u] |= (src[src_curr + 0u] << 4u8) & 0x3f_u8;
+            dst[dst_curr + 1u] |= (src[src_curr + 1u] >> 4u8);
+            dst[dst_curr + 2u] |= (src[src_curr + 1u] << 2u8) & 0x3f_u8;
+        } else {
+            dst[dst_curr + 0u] |= (src[src_curr + 0u]) >> 2u8;
+            dst[dst_curr + 1u] |= (src[src_curr + 0u] << 4u8) & 0x3f_u8;
+            dst[dst_curr + 1u] |= (src[src_curr + 1u] >> 4u8);
+            dst[dst_curr + 2u] |= (src[src_curr + 1u] << 2u8) & 0x3f_u8;
+            dst[dst_curr + 2u] |= (src[src_curr + 2u] >> 6u8);
+            dst[dst_curr + 3u] |= (src[src_curr + 3u]) & 0x3f_u8;
+        }
+
+        dst[dst_curr + 0u] = table[dst[dst_curr + 0u]];
+        dst[dst_curr + 1u] = table[dst[dst_curr + 1u]];
+        dst[dst_curr + 2u] = table[dst[dst_curr + 2u]];
+        dst[dst_curr + 3u] = table[dst[dst_curr + 3u]];
+
+        if src_length < 3u {
+            dst[dst_curr + 3u] = PAD;
+            if src_length < 2u {
+                dst[dst_curr + 2u] = PAD;
+            }
+            break;
+        }
+
+        src_length -= 3u;
+        src_curr += 3u;
+        dst_curr += 4u;
+    }
+}
