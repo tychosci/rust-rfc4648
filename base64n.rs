@@ -67,7 +67,12 @@ fn mk() -> enc {
             // FIXME need self.decode_map instead of self.table.
             b64decode(self.table, dst, src);
         }
-        fn encode_byte(src: [u8]) -> [u8] { [] }
+        fn encode_byte(src: [u8]) -> [u8] {
+            let dst_length = encoded_len(len(src));
+            let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
+            self.encode(dst, src);
+            vec::from_mut(dst)
+        }
         fn decode_byte(src: [u8]) -> [u8] { [] }
     }
 
