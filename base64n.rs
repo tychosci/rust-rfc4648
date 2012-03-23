@@ -199,7 +199,7 @@ fn b64encode(table: [u8], dst: [mutable u8], src: [u8]) {
     }
 }
 
-fn b64decode(table: [u8], dst: [mutable u8], src: [u8]) {
+fn b64decode(decode_map: [u8], dst: [mutable u8], src: [u8]) {
     // FIXME write
 }
 
