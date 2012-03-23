@@ -52,23 +52,27 @@ const PAD: u8 = 61u8;
 
 iface enc {
     fn encode(dst: [mutable u8], src: [u8]);
+    fn encode_u(dst: [mutable u8], src: [u8]);
     fn encode_bytes(src: [u8]) -> [u8];
+    fn encode_bytes_u(src: [u8]) -> [u8];
     fn encode_str(src: str) -> str;
-    // FIXME `decode` should return desired length of `dst`
+    fn encode_str_u(src: str) -> str;
+    // FIXME `decode` and `decode_u` should return desired length of `dst`
     fn decode(dst: [mutable u8], src: [u8]);
-    fn decode_byte(src: [u8]) -> [u8];
+    fn decode_u(dst: [mutable u8], src: [u8]);
+    fn decode_bytes(src: [u8]) -> [u8];
 }
 
 fn mk() -> enc {
-    type _enc = {table: [u8]};
+    type _enc = {table: [u8], table_u: [u8],
+                 decode_map: [u8], decode_map_u: [u8]};
 
     impl of enc for _enc {
         fn encode(dst: [mutable u8], src: [u8]) {
-            b64encode(self.table + [43u8, 47u8], dst, src);
+            b64encode(self.table, dst, src);
         }
-        fn decode(dst: [mutable u8], src: [u8]) {
-            // FIXME need self.decode_map instead of self.table.
-            b64decode(self.table, dst, src);
+        fn encode_u(dst: [mutable u8], src: [u8]) {
+            b64encode(self.table_u, dst, src);
         }
         fn encode_bytes(src: [u8]) -> [u8] {
             let dst_length = encoded_len(len(src));
@@ -76,19 +80,55 @@ fn mk() -> enc {
             self.encode(dst, src);
             vec::from_mut(dst)
         }
+        fn encode_bytes_u(src: [u8]) -> [u8] {
+            let dst_length = encoded_len(len(src));
+            let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
+            self.encode_u(dst, src);
+            vec::from_mut(dst)
+        }
         fn encode_str(src: str) -> str {
             let src = str::bytes(src);
             str::from_bytes(self.encode_bytes(src))
         }
-        fn decode_byte(src: [u8]) -> [u8] { [] }
+        fn encode_str_u(src: str) -> str {
+            let src = str::bytes(src);
+            str::from_bytes(self.encode_bytes_u(src))
+        }
+        fn decode(dst: [mutable u8], src: [u8]) {
+            // FIXME need self.decode_map instead of self.table.
+            b64decode(self.decode_map, dst, src);
+        }
+        fn decode_bytes(src: [u8]) -> [u8] { [] }
     }
 
-    let table = vec::to_mut(vec::from_elem(62u, 0u8)), i = 0u8;
+    let table = vec::to_mut(vec::from_elem(64u, 0u8)), i = 0u8;
     u8::range(65u8, 91u8)  { |j| table[i] = j; i += 1u8; }
     u8::range(97u8, 123u8) { |j| table[i] = j; i += 1u8; }
     u8::range(48u8, 58u8)  { |j| table[i] = j; i += 1u8; }
+    table[i] = 43u8; table[i + 1u8] = 47u8;
 
-    {table: vec::from_mut(table)} as enc
+    let table_u = table;
+    table_u[i] = 45u8; table_u[i + 1u8] = 95u8;
+
+    let decode_map = vec::to_mut(vec::from_elem(256u, 0xff_u8));
+    let decode_map_u = vec::to_mut(vec::from_elem(256u, 0xff_u8));
+
+    i = 0u8;
+    while i < 64u8 {
+        decode_map[table[i]] = i as u8;
+        i += 1u8;
+    }
+
+    i = 0u8;
+    while i < 64u8 {
+        decode_map_u[table_u[i]] = i as u8;
+        i += 1u8;
+    }
+
+    {table: vec::from_mut(table),
+     table_u: vec::from_mut(table_u),
+     decode_map: vec::from_mut(decode_map),
+     decode_map_u: vec::from_mut(decode_map_u)} as enc
 }
 
 fn encoded_len(src_length: uint) -> uint {
