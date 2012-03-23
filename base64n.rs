@@ -219,4 +219,18 @@ mod tests {
         let res = enc.encode_str(src);
         assert res == "Zm9vYmFy";
     }
+    #[test]
+    fn test_encode_bytes_u() {
+        let src = [102u8, 111u8, 111u8, 98u8, 97u8, 63u8];
+        let enc = mk();
+        let res = enc.encode_bytes_u(src);
+        assert res == [90u8, 109u8, 57u8, 118u8, 89u8, 109u8, 69u8, 95u8];
+    }
+    #[test]
+    fn test_encode_str_u() {
+        let src = "fooba?";
+        let enc = mk();
+        let res = enc.encode_str_u(src);
+        assert res == "Zm9vYmE_";
+    }
 }
