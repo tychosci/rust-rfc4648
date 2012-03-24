@@ -57,7 +57,6 @@ iface enc {
     fn encode_bytes_u(src: [u8]) -> [u8];
     fn encode_str(src: str) -> str;
     fn encode_str_u(src: str) -> str;
-    // FIXME `decode` and `decode_u` should return desired length of `dst`
     fn decode(dst: [mutable u8], src: [u8]) -> uint;
     fn decode_u(dst: [mutable u8], src: [u8]) -> uint;
     fn decode_bytes(src: [u8]) -> [u8];
