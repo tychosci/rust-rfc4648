@@ -1,5 +1,5 @@
 //
-// base64n.rs - new base64 module
+// base64.rs - base64 module
 //
 // The Base64 Alphabet
 //
