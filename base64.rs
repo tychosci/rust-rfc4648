@@ -131,13 +131,13 @@ fn mk() -> enc {
 
     i = 0u8;
     while i < 64u8 {
-        decode_map[table[i]] = i as u8;
+        decode_map[table[i]] = i;
         i += 1u8;
     }
 
     i = 0u8;
     while i < 64u8 {
-        decode_map_u[table_u[i]] = i as u8;
+        decode_map_u[table_u[i]] = i;
         i += 1u8;
     }
 
