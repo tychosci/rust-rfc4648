@@ -58,8 +58,8 @@ iface enc {
     fn encode_str(src: str) -> str;
     fn encode_str_u(src: str) -> str;
     // FIXME `decode` and `decode_u` should return desired length of `dst`
-    fn decode(dst: [mutable u8], src: [u8]);
-    fn decode_u(dst: [mutable u8], src: [u8]);
+    fn decode(dst: [mutable u8], src: [u8]) -> uint;
+    fn decode_u(dst: [mutable u8], src: [u8]) -> uint;
     fn decode_bytes(src: [u8]) -> [u8];
     fn decode_bytes_u(src: [u8]) -> [u8];
 }
@@ -95,14 +95,24 @@ fn mk() -> enc {
             let src = str::bytes(src);
             str::from_bytes(self.encode_bytes_u(src))
         }
-        fn decode(dst: [mutable u8], src: [u8]) {
-            b64decode(self.decode_map, dst, src);
+        fn decode(dst: [mutable u8], src: [u8]) -> uint {
+            b64decode(self.decode_map, dst, src)
         }
-        fn decode_u(dst: [mutable u8], src: [u8]) {
-            b64decode(self.decode_map_u, dst, src);
+        fn decode_u(dst: [mutable u8], src: [u8]) -> uint {
+            b64decode(self.decode_map_u, dst, src)
         }
-        fn decode_bytes(src: [u8]) -> [u8] { [] }
-        fn decode_bytes_u(src: [u8]) -> [u8] { [] }
+        fn decode_bytes(src: [u8]) -> [u8] {
+            let dst_length = decoded_len(len(src));
+            let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
+            let res = self.decode(dst, src);
+            vec::slice(vec::from_mut(dst), 0u, res)
+        }
+        fn decode_bytes_u(src: [u8]) -> [u8] {
+            let dst_length = decoded_len(len(src));
+            let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
+            let res = self.decode_u(dst, src);
+            vec::slice(vec::from_mut(dst), 0u, res)
+        }
     }
 
     let mut i = 0u8;
@@ -200,8 +210,63 @@ fn b64encode(table: [u8], dst: [mutable u8], src: [u8]) {
     }
 }
 
-fn b64decode(decode_map: [u8], dst: [mutable u8], src: [u8]) {
-    // FIXME write
+fn b64decode(decode_map: [u8], dst: [mutable u8], src: [u8]) -> uint {
+    let buf = vec::to_mut(vec::from_elem(4u, 0u8));
+    let mut src_length = len(src);
+    let mut src_curr = 0u;
+    let mut dst_curr = 0u;
+    let mut src_temp = 0u;
+    let mut buf_len = 4u;
+    let mut end = false;
+    let mut chr = 0u8;
+    let mut i = 0u;
+
+    while src_length > 0u && !end {
+        buf[0] = 0xff_u8; buf[1] = 0xff_u8;
+        buf[2] = 0xff_u8; buf[3] = 0xff_u8;
+
+        i = 0u;
+        while i < 4u {
+            if src_length == 0u {
+                fail "malformed base64 string";
+            }
+            chr = src[src_temp]; src_temp += 1u;
+            if chr == 10u8 || chr == 13u8 {
+                cont;
+            }
+            if chr == PAD && i >= 2u && src_length <= 4u {
+                if src_length > 0u && src[src_temp - 1u] != PAD {
+                    fail "malformed base64 string";
+                }
+                buf_len = i;
+                end = true;
+                break;
+            }
+            buf[i] = decode_map[chr];
+            if buf[i] == 0xff_u8 {
+                fail "malformed base64 string";
+            }
+            i += 1u;
+        }
+
+        if buf_len == 2u {
+            dst[dst_curr + 0u] = buf[0] << 2u8 | buf[1] >> 4u8;
+        } else if buf_len == 3u {
+            dst[dst_curr + 0u] = buf[0] << 2u8 | buf[1] >> 4u8;
+            dst[dst_curr + 1u] = (buf[1] & 0x0f_u8) << 4u8 | buf[2] >> 2u8;
+        } else {
+            dst[dst_curr + 0u] = buf[0] << 2u8 | buf[1] >> 4u8;
+            dst[dst_curr + 1u] = (buf[1] & 0x0f_u8) << 4u8 | buf[2] >> 2u8;
+            dst[dst_curr + 2u] = (buf[2] & 0x03_u8) << 6u8 | buf[3];
+        }
+
+        src_length -= 4u;
+        dst_curr += buf_len - 1u;
+        src_curr = src_temp;
+        src_temp = src_curr;
+    }
+
+    dst_curr
 }
 
 #[cfg(test)]
@@ -233,5 +298,19 @@ mod tests {
         let enc = mk();
         let res = enc.encode_str_u(src);
         assert res == "Zm9vYmE_";
+    }
+    #[test]
+    fn test_decode_bytes() {
+        let src = [90u8, 109u8, 57u8, 118u8, 89u8, 109u8, 69u8, PAD];
+        let enc = mk();
+        let res = enc.decode_bytes(src);
+        assert res == [102u8, 111u8, 111u8, 98u8, 97u8];
+    }
+    #[test]
+    fn test_decode_bytes_u() {
+        let src = [90u8, 109u8, 57u8, 118u8, 89u8, 109u8, 69u8, 95u8];
+        let enc = mk();
+        let res = enc.decode_bytes_u(src);
+        assert res == [102u8, 111u8, 111u8, 98u8, 97u8, 63u8];
     }
 }
