@@ -46,6 +46,8 @@
 
 use std;
 
+export mk, enc;
+
 import vec::len;
 
 const PAD: u8 = 61u8;
