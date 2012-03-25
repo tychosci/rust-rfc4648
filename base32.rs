@@ -323,7 +323,7 @@ fn b32decode(decode_map: [u8], dst: [mutable u8], src: [u8]) -> uint {
 
         alt buf_len {
           2u      { dst_curr += 1u; }
-          3u | 4u { dst_curr += 2u; }            
+          3u | 4u { dst_curr += 2u; }
           5u      { dst_curr += 3u; }
           6u | 7u { dst_curr += 4u; }
           8u      { dst_curr += 5u; }
