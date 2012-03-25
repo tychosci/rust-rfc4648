@@ -76,10 +76,35 @@ fn mk() -> enc {
         }
     }
 
-    {table: [],
-     table_h: [],
-     decode_map: [],
-     decode_map_h: []} as enc
+    let mut i = 0u8;
+    let table = vec::to_mut(vec::from_elem(32u, 0u8));
+    u8::range(65u8, 91u8) { |j| table[i] = j; i += 1u8; }
+    u8::range(50u8, 56u8) { |j| table[i] = j; i += 1u8; }
+
+    i = 0u8;
+    let table_h = vec::to_mut(vec::from_elem(32u, 0u8));
+    u8::range(48u8, 58u8) { |j| table_h[i] = j; i += 1u8; }
+    u8::range(65u8, 87u8) { |j| table_h[i] = j; i += 1u8; }
+
+    let decode_map = vec::to_mut(vec::from_elem(256u, 0xff_u8));
+    let decode_map_h = vec::to_mut(vec::from_elem(256u, 0xff_u8));
+
+    i = 0u8;
+    while i < 32u8 {
+        decode_map[table[i]] = i;
+        i += 1u8;
+    }
+
+    i = 0u8;
+    while i < 32u8 {
+        decode_map_h[table_h[i]] = i;
+        i += 1u8;
+    }
+
+    {table: vec::from_mut(table),
+     table_h: vec::from_mut(table_h),
+     decode_map: vec::from_mut(decode_map),
+     decode_map_h: vec::from_mut(decode_map_h)} as enc
 }
 
 fn b32encode(table: [u8], dst: [mutable u8], src: [u8]) {
