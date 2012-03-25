@@ -41,8 +41,8 @@ iface enc {
     fn encode_bytes_h(src: [u8]) -> [u8];
     fn encode_str(src: str) -> str;
     fn encode_str_h(src: str) -> str;
-    fn decode(dst: [mutable u8], src: [u8]);
-    fn decode_h(dst: [mutable u8], src: [u8]);
+    fn decode(dst: [mutable u8], src: [u8]) -> uint;
+    fn decode_h(dst: [mutable u8], src: [u8]) -> uint;
     fn decode_bytes(src: [u8]) -> [u8];
     fn decode_bytes_h(src: [u8]) -> [u8];
 }
@@ -78,17 +78,23 @@ fn mk() -> enc {
             let src = str::bytes(src);
             str::from_bytes(self.encode_bytes_h(src))
         }
-        fn decode(dst: [mutable u8], src: [u8]) {
-            b32decode(self.decode_map, dst, src);
+        fn decode(dst: [mutable u8], src: [u8]) -> uint {
+            b32decode(self.decode_map, dst, src)
         }
-        fn decode_h(dst: [mutable u8], src: [u8]) {
-            b32decode(self.decode_map_h, dst, src);
+        fn decode_h(dst: [mutable u8], src: [u8]) -> uint {
+            b32decode(self.decode_map_h, dst, src)
         }
         fn decode_bytes(src: [u8]) -> [u8] {
-            []
+            let dst_length = decoded_len(len(src));
+            let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
+            let res = self.decode(dst, src);
+            vec::slice(vec::from_mut(dst), 0u, res)
         }
         fn decode_bytes_h(src: [u8]) -> [u8] {
-            []
+            let dst_length = decoded_len(len(src));
+            let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
+            let res = self.decode_h(dst, src);
+            vec::slice(vec::from_mut(dst), 0u, res)
         }
     }
 
@@ -125,6 +131,10 @@ fn mk() -> enc {
 
 fn encoded_len(src_length: uint) -> uint {
     (src_length + 4u) / 5u * 8u
+}
+
+fn decoded_len(src_length: uint) -> uint {
+    src_length / 8u * 5u
 }
 
 fn b32encode(table: [u8], dst: [mutable u8], src: [u8]) {
@@ -225,7 +235,8 @@ fn b32encode(table: [u8], dst: [mutable u8], src: [u8]) {
     }
 }
 
-fn b32decode(decode_map: [u8], dst: [mutable u8], src: [u8]) {
+fn b32decode(decode_map: [u8], dst: [mutable u8], src: [u8]) -> uint {
+    0u // FIXME write
 }
 
 #[cfg(test)]
