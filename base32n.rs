@@ -28,4 +28,66 @@
 //     8 8            17 H            26 Q
 //
 
-// FIXME write
+use std;
+
+import vec::len;
+
+const PAD: u8 = 61u8;
+
+iface enc {
+    fn encode(dst: [mutable u8], src: [u8]);
+    fn encode_h(dst: [mutable u8], src: [u8]);
+    fn encode_bytes(src: [u8]) -> [u8];
+    fn encode_bytes_h(src: [u8]) -> [u8];
+    fn decode(dst: [mutable u8], src: [u8]);
+    fn decode_h(dst: [mutable u8], src: [u8]);
+    fn decode_bytes(src: [u8]) -> [u8];
+    fn decode_bytes_h(src: [u8]) -> [u8];
+}
+
+fn mk() -> enc {
+    type _enc = {table: [u8], table_h: [u8],
+                 decode_map: [u8], decode_map_h: [u8]};
+
+    impl of enc for _enc {
+        fn encode(dst: [mutable u8], src: [u8]) {
+            b32encode(self.table, dst, src);
+        }
+        fn encode_h(dst: [mutable u8], src: [u8]) {
+            b32encode(self.table_h, dst, src);
+        }
+        fn encode_bytes(src: [u8]) -> [u8] {
+            []
+        }
+        fn encode_bytes_h(src: [u8]) -> [u8] {
+            []
+        }
+        fn decode(dst: [mutable u8], src: [u8]) {
+            b32decode(self.decode_map, dst, src);
+        }
+        fn decode_h(dst: [mutable u8], src: [u8]) {
+            b32decode(self.decode_map_h, dst, src);
+        }
+        fn decode_bytes(src: [u8]) -> [u8] {
+            []
+        }
+        fn decode_bytes_h(src: [u8]) -> [u8] {
+            []
+        }
+    }
+
+    {table: [],
+     table_h: [],
+     decode_map: [],
+     decode_map_h: []} as enc
+}
+
+fn b32encode(table: [u8], dst: [mutable u8], src: [u8]) {
+}
+
+fn b32decode(decode_map: [u8], dst: [mutable u8], src: [u8]) {
+}
+
+#[cfg(test)]
+mod tests {
+}
