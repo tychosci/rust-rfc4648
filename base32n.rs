@@ -236,7 +236,100 @@ fn b32encode(table: [u8], dst: [mutable u8], src: [u8]) {
 }
 
 fn b32decode(decode_map: [u8], dst: [mutable u8], src: [u8]) -> uint {
-    0u // FIXME write
+    let buf = vec::to_mut(vec::from_elem(8u, 0u8));
+    let mut src_length = len(src);
+    let mut src_curr = 0u;
+    let mut dst_curr = 0u;
+    let mut src_temp = 0u;
+    let mut buf_len = 8u;
+    let mut end = false;
+    let mut chr = 0u8;
+    let mut i = 0u;
+
+    while src_length > 0u && !end {
+        buf[0] = 0xff_u8; buf[1] = 0xff_u8;
+        buf[2] = 0xff_u8; buf[3] = 0xff_u8;
+        buf[4] = 0xff_u8; buf[5] = 0xff_u8;
+        buf[6] = 0xff_u8; buf[7] = 0xff_u8;
+
+        i = 0u;
+        while i < 8u {
+            if src_length == 0u {
+                fail "malformed base32 string";
+            }
+            chr = src[src_temp]; src_temp += 1u;
+            if chr == 10u8 || chr == 13u8 {
+                cont;
+            }
+            if chr == PAD && i >= 2u && src_length <= 8u {
+                let mut j = 0u;
+                while j < (8u - i - 1u) {
+                    if src_length > j && src[src_temp + j - 1u] != PAD {
+                        fail "malformed base32 string";
+                    }
+                    j += 1u;
+                }
+                buf_len = i;
+                end = true;
+                break;
+            }
+            buf[i] = decode_map[chr];
+            if buf[i] == 0xff_u8 {
+                fail "malformed base32 string";
+            }
+            i += 1u;
+        }
+
+        alt buf_len {
+          2u {
+            dst[dst_curr + 0u] = buf[0u] << 3u8 | buf[1u] >> 2u8;
+          }
+          3u {
+            dst[dst_curr + 0u] = buf[0u] << 3u8 | buf[1u] >> 2u8;
+            dst[dst_curr + 1u] = (buf[1u] & 0x03_u8) << 6u8 | buf[2u] << 1u8;
+          }
+          4u {
+            dst[dst_curr + 0u] = buf[0u] << 3u8 | buf[1u] >> 2u8;
+            dst[dst_curr + 1u] = (buf[1u] & 0x03_u8) << 6u8 | buf[2u] << 1u8;
+            dst[dst_curr + 1u] |= buf[3u] >> 4u8;
+            dst[dst_curr + 2u] = (buf[3u] & 0x0f_u8) << 4u8;
+          }
+          5u | 6u {
+            dst[dst_curr + 0u] = buf[0u] << 3u8 | buf[1u] >> 2u8;
+            dst[dst_curr + 1u] = (buf[1u] & 0x03_u8) << 6u8 | buf[2u] << 1u8;
+            dst[dst_curr + 1u] |= buf[3u] >> 4u8;
+            dst[dst_curr + 2u] = (buf[3u] & 0x0f_u8) << 4u8;
+            dst[dst_curr + 2u] |= buf[4u] >> 1u8;
+            dst[dst_curr + 3u] = (buf[4u] & 0x01_u8) << 7u8 | buf[5u] << 2u8;
+          }
+          7u | 8u {
+            dst[dst_curr + 0u] = buf[0u] << 3u8 | buf[1u] >> 2u8;
+            dst[dst_curr + 1u] = (buf[1u] & 0x03_u8) << 6u8 | buf[2u] << 1u8;
+            dst[dst_curr + 1u] |= buf[3u] >> 4u8;
+            dst[dst_curr + 2u] = (buf[3u] & 0x0f_u8) << 4u8;
+            dst[dst_curr + 2u] |= buf[4u] >> 1u8;
+            dst[dst_curr + 3u] = (buf[4u] & 0x01_u8) << 7u8 | buf[5u] << 2u8;
+            dst[dst_curr + 3u] |= buf[6u] >> 3u8;
+            dst[dst_curr + 4u] = (buf[6u] & 0x07_u8) << 5u8 | buf[7u];
+          }
+          _ { fail "malformed base32 string"; }
+        }
+
+        src_length -= 8u;
+        src_curr = src_temp;
+        src_temp = src_curr;
+
+        alt buf_len {
+          2u      { dst_curr += 1u; }
+          3u | 4u { dst_curr += 2u; }            
+          5u      { dst_curr += 3u; }
+          6u | 7u { dst_curr += 4u; }
+          8u      { dst_curr += 5u; }
+          _       { fail "malformed base32 string"; }
+        }
+    }
+
+    dst_curr
 }
 
 #[cfg(test)]
@@ -304,6 +397,42 @@ mod tests {
 
         while i < last {
             let res = enc.encode_str_h(src[i]);
+            #debug("res = %?", res);
+            assert exp[i] == res;
+            i += 1u;
+        }
+    }
+    #[test]
+    fn test_decode_bytes() {
+        let src = ["", "MY======", "MZXQ====", "MZXW6===",
+                   "MZXW6YQ=", "MZXW6YTB", "MZXW6YTBOI======"];
+        let exp = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
+        let src = vec::map(src) {|e| str::bytes(e) };
+        let exp = vec::map(exp) {|e| str::bytes(e) };
+        let enc = mk();
+        let last = len(src);
+        let mut i = 0u;
+
+        while i < last {
+            let res = enc.decode_bytes(src[i]);
+            #debug("res = %?", res);
+            assert exp[i] == res;
+            i += 1u;
+        }
+    }
+    #[test]
+    fn test_decode_bytes_h() {
+        let src = ["", "CO======", "CPNG====", "CPNMU===",
+                   "CPNMUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"];
+        let exp = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
+        let src = vec::map(src) {|e| str::bytes(e) };
+        let exp = vec::map(exp) {|e| str::bytes(e) };
+        let enc = mk();
+        let last = len(src);
+        let mut i = 0u;
+
+        while i < last {
+            let res = enc.decode_bytes_h(src[i]);
             #debug("res = %?", res);
             assert exp[i] == res;
             i += 1u;
