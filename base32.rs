@@ -1,5 +1,5 @@
 //
-// base32n.rs - new base32 module
+// base32.rs - base32 module
 //
 // The Base32 Alphabet
 //
