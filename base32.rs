@@ -30,7 +30,7 @@
 
 use std;
 
-export mk, enc;
+export mk, enc, encode, encode_h, decode, decode_h;
 
 import vec::len;
 
@@ -129,6 +129,26 @@ fn mk() -> enc {
      table_h: vec::from_mut(table_h),
      decode_map: vec::from_mut(decode_map),
      decode_map_h: vec::from_mut(decode_map_h)} as enc
+}
+
+fn encode(src: [u8]) -> [u8] {
+    let enc = mk();
+    enc.encode_bytes(src)
+}
+
+fn encode_h(src: [u8]) -> [u8] {
+    let enc = mk();
+    enc.encode_bytes_h(src)
+}
+
+fn decode(src: [u8]) -> [u8] {
+    let enc = mk();
+    enc.decode_bytes(src)
+}
+
+fn decode_h(src: [u8]) -> [u8] {
+    let enc = mk();
+    enc.decode_bytes_h(src)
 }
 
 fn encoded_len(src_length: uint) -> uint {
