@@ -7,6 +7,7 @@ TODO
 ----
 
 * write base85(ascii85) module
+* provide stream abstraction
 * documentation
 
 LICENSE
