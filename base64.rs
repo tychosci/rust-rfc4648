@@ -274,44 +274,100 @@ fn b64decode(decode_map: [u8], dst: [mutable u8], src: [u8]) -> uint {
 mod tests {
     #[test]
     fn test_encode_bytes() {
-        let src = [102u8, 111u8, 111u8, 98u8, 97u8, 114u8];
+        let src = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
+        let exp = ["", "Zg==", "Zm8=", "Zm9v",
+                   "Zm9vYg==", "Zm9vYmE=", "Zm9vYmFy"];
+        let src = vec::map(src) {|e| str::bytes(e) };
+        let exp = vec::map(exp) {|e| str::bytes(e) };
         let enc = mk();
-        let res = enc.encode_bytes(src);
-        assert res == [90u8, 109u8, 57u8, 118u8, 89u8, 109u8, 70u8, 121u8];
+        let last = len(src);
+        let mut i = 0u;
+
+        while i < last {
+            let res = enc.encode_bytes(src[i]);
+            assert res == exp[i];
+            i += 1u;
+        }
     }
     #[test]
     fn test_encode_str() {
-        let src = "foobar";
+        let src = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"];
+        let exp = ["", "Zg==", "Zm8=", "Zm8+",
+                   "Zm9vYg==", "Zm9vYmE=", "Zm8/YmE/"];
         let enc = mk();
-        let res = enc.encode_str(src);
-        assert res == "Zm9vYmFy";
+        let last = len(src);
+        let mut i = 0u;
+
+        while i < last {
+            let res = enc.encode_str(src[i]);
+            assert res == exp[i];
+            i += 1u;
+        }
     }
     #[test]
     fn test_encode_bytes_u() {
-        let src = [102u8, 111u8, 111u8, 98u8, 97u8, 63u8];
+        let src = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"];
+        let exp = ["", "Zg==", "Zm8=", "Zm8-",
+                   "Zm9vYg==", "Zm9vYmE=", "Zm8_YmE_"];
+        let src = vec::map(src) {|e| str::bytes(e) };
+        let exp = vec::map(exp) {|e| str::bytes(e) };
         let enc = mk();
-        let res = enc.encode_bytes_u(src);
-        assert res == [90u8, 109u8, 57u8, 118u8, 89u8, 109u8, 69u8, 95u8];
+        let last = len(src);
+        let mut i = 0u;
+
+        while i < last {
+            let res = enc.encode_bytes_u(src[i]);
+            assert res == exp[i];
+            i += 1u;
+        }
     }
     #[test]
     fn test_encode_str_u() {
-        let src = "fooba?";
+        let src = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"];
+        let exp = ["", "Zg==", "Zm8=", "Zm8-",
+                   "Zm9vYg==", "Zm9vYmE=", "Zm8_YmE_"];
         let enc = mk();
-        let res = enc.encode_str_u(src);
-        assert res == "Zm9vYmE_";
+        let last = len(src);
+        let mut i = 0u;
+
+        while i < last {
+            let res = enc.encode_str_u(src[i]);
+            assert res == exp[i];
+            i += 1u;
+        }
     }
     #[test]
     fn test_decode_bytes() {
-        let src = [90u8, 109u8, 57u8, 118u8, 89u8, 109u8, 69u8, PAD];
+        let src = ["", "Zg==", "Zm8=", "Zm8+",
+                   "Zm9vYg==", "Zm9vYmE=", "Zm8/YmE/"];
+        let exp = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"];
+        let src = vec::map(src) {|e| str::bytes(e) };
+        let exp = vec::map(exp) {|e| str::bytes(e) };
         let enc = mk();
-        let res = enc.decode_bytes(src);
-        assert res == [102u8, 111u8, 111u8, 98u8, 97u8];
+        let last = len(src);
+        let mut i = 0u;
+
+        while i < last {
+            let res = enc.decode_bytes(src[i]);
+            assert res == exp[i];
+            i += 1u;
+        }
     }
     #[test]
     fn test_decode_bytes_u() {
-        let src = [90u8, 109u8, 57u8, 118u8, 89u8, 109u8, 69u8, 95u8];
+        let src = ["", "Zg==", "Zm8=", "Zm8-",
+                   "Zm9vYg==", "Zm9vYmE=", "Zm8_YmE_"];
+        let exp = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"];
+        let src = vec::map(src) {|e| str::bytes(e) };
+        let exp = vec::map(exp) {|e| str::bytes(e) };
         let enc = mk();
-        let res = enc.decode_bytes_u(src);
-        assert res == [102u8, 111u8, 111u8, 98u8, 97u8, 63u8];
+        let last = len(src);
+        let mut i = 0u;
+
+        while i < last {
+            let res = enc.decode_bytes_u(src[i]);
+            assert res == exp[i];
+            i += 1u;
+        }
     }
 }
