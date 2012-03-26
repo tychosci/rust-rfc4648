@@ -7,5 +7,6 @@
 #[license = "MIT license"];
 #[crate_type = "lib"];
 
+mod base16;
 mod base32;
 mod base64;
