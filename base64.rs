@@ -53,14 +53,14 @@ import vec::len;
 const PAD: u8 = 61u8;
 
 iface enc {
-    fn encode(dst: [mutable u8], src: [u8]);
-    fn encode_u(dst: [mutable u8], src: [u8]);
+    fn encode(dst: [mut u8], src: [u8]);
+    fn encode_u(dst: [mut u8], src: [u8]);
     fn encode_bytes(src: [u8]) -> [u8];
     fn encode_bytes_u(src: [u8]) -> [u8];
     fn encode_str(src: str) -> str;
     fn encode_str_u(src: str) -> str;
-    fn decode(dst: [mutable u8], src: [u8]) -> uint;
-    fn decode_u(dst: [mutable u8], src: [u8]) -> uint;
+    fn decode(dst: [mut u8], src: [u8]) -> uint;
+    fn decode_u(dst: [mut u8], src: [u8]) -> uint;
     fn decode_bytes(src: [u8]) -> [u8];
     fn decode_bytes_u(src: [u8]) -> [u8];
 }
@@ -70,10 +70,10 @@ fn mk() -> enc {
                  decode_map: [u8], decode_map_u: [u8]};
 
     impl of enc for _enc {
-        fn encode(dst: [mutable u8], src: [u8]) {
+        fn encode(dst: [mut u8], src: [u8]) {
             b64encode(self.table, dst, src);
         }
-        fn encode_u(dst: [mutable u8], src: [u8]) {
+        fn encode_u(dst: [mut u8], src: [u8]) {
             b64encode(self.table_u, dst, src);
         }
         fn encode_bytes(src: [u8]) -> [u8] {
@@ -96,10 +96,10 @@ fn mk() -> enc {
             let src = str::bytes(src);
             str::from_bytes(self.encode_bytes_u(src))
         }
-        fn decode(dst: [mutable u8], src: [u8]) -> uint {
+        fn decode(dst: [mut u8], src: [u8]) -> uint {
             b64decode(self.decode_map, dst, src)
         }
-        fn decode_u(dst: [mutable u8], src: [u8]) -> uint {
+        fn decode_u(dst: [mut u8], src: [u8]) -> uint {
             b64decode(self.decode_map_u, dst, src)
         }
         fn decode_bytes(src: [u8]) -> [u8] {
@@ -175,7 +175,7 @@ fn decoded_len(src_length: uint) -> uint {
     src_length / 4u * 3u
 }
 
-fn b64encode(table: [u8], dst: [mutable u8], src: [u8]) {
+fn b64encode(table: [u8], dst: [mut u8], src: [u8]) {
     if len(src) == 0u {
         ret;
     }
@@ -231,7 +231,7 @@ fn b64encode(table: [u8], dst: [mutable u8], src: [u8]) {
     }
 }
 
-fn b64decode(decode_map: [u8], dst: [mutable u8], src: [u8]) -> uint {
+fn b64decode(decode_map: [u8], dst: [mut u8], src: [u8]) -> uint {
     let buf = vec::to_mut(vec::from_elem(4u, 0u8));
     let mut src_length = len(src);
     let mut src_curr = 0u;
