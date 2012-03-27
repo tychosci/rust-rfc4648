@@ -7,6 +7,8 @@
 #[license = "MIT license"];
 #[crate_type = "lib"];
 
+#[doc = "\"encoding\" modules for Rust"];
+
 mod base16;
 mod base32;
 mod base64;
