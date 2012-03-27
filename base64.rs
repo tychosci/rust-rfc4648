@@ -44,6 +44,14 @@
 //    16 Q            33 h            50 y         (pad) =
 //
 
+#[doc = "
+
+    Base64 module
+
+    See <http://tools.ietf.org/html/rfc4648#section-4> for details.
+
+"];
+
 use std;
 
 export mk, enc, encode, encode_u, decode, decode_u;
@@ -62,13 +70,88 @@ type enc_t = {
 iface enc {
     fn encode(dst: [mut u8], src: [u8]);
     fn encode_u(dst: [mut u8], src: [u8]);
-    fn encode_bytes(src: [u8]) -> [u8];
-    fn encode_bytes_u(src: [u8]) -> [u8];
-    fn encode_str(src: str) -> str;
-    fn encode_str_u(src: str) -> str;
     fn decode(dst: [mut u8], src: [u8]) -> uint;
     fn decode_u(dst: [mut u8], src: [u8]) -> uint;
+    #[doc = "
+    Encode input bytes to base64-encoded bytes.
+
+    # Arguments
+
+    * src - bytes for encoding
+
+    # Return
+
+    base64-encoded bytes
+    "]
+    fn encode_bytes(src: [u8]) -> [u8];
+    #[doc = "
+    Encode input bytes to base64-encoded bytes.
+
+    Note that this method is for url and filename safe base64 encoding.
+    See <http://tools.ietf.org/html/rfc4648#section-5> for details.
+
+    # Arguments
+
+    * src - bytes for encoding
+
+    # Return
+
+    base64-encoded bytes
+    "]
+    fn encode_bytes_u(src: [u8]) -> [u8];
+    #[doc = "
+    Encode given string to base64-encoded string
+
+    # Arguments
+
+    * src - string for encoding
+
+    # Return
+
+    base64-encoded string
+    "]
+    fn encode_str(src: str) -> str;
+    #[doc = "
+    Encode given string to base64-encoded string
+
+    Note that this method is for url and filename safe base64 encoding.
+    See <http://tools.ietf.org/html/rfc4648#section-5> for details.
+
+    # Arguments
+
+    * src - string for encoding
+
+    # Return
+
+    base64-encoded string
+    "]
+    fn encode_str_u(src: str) -> str;
+    #[doc = "
+    Decode base64-encoded bytes to its original bytes.
+
+    # Arguments
+
+    * src - base64-encoded bytes
+
+    # Return
+
+    decoded bytes
+    "]
     fn decode_bytes(src: [u8]) -> [u8];
+    #[doc = "
+    Decode base64-encoded bytes to its original bytes.
+
+    Note that this method is for url and filename safe base64 encoding.
+    See <http://tools.ietf.org/html/rfc4648#section-5> for details.
+
+    # Arguments
+
+    * src - base64-encoded bytes
+
+    # Return
+
+    decoded bytes
+    "]
     fn decode_bytes_u(src: [u8]) -> [u8];
 }
 
@@ -78,6 +161,12 @@ impl of enc for enc_t {
     }
     fn encode_u(dst: [mut u8], src: [u8]) {
         b64encode(self.table_u, dst, src);
+    }
+    fn decode(dst: [mut u8], src: [u8]) -> uint {
+        b64decode(self.decode_map, dst, src)
+    }
+    fn decode_u(dst: [mut u8], src: [u8]) -> uint {
+        b64decode(self.decode_map_u, dst, src)
     }
     fn encode_bytes(src: [u8]) -> [u8] {
         let dst_length = encoded_len(len(src));
@@ -99,12 +188,6 @@ impl of enc for enc_t {
         let src = str::bytes(src);
         str::from_bytes(self.encode_bytes_u(src))
     }
-    fn decode(dst: [mut u8], src: [u8]) -> uint {
-        b64decode(self.decode_map, dst, src)
-    }
-    fn decode_u(dst: [mut u8], src: [u8]) -> uint {
-        b64decode(self.decode_map_u, dst, src)
-    }
     fn decode_bytes(src: [u8]) -> [u8] {
         let dst_length = decoded_len(len(src));
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
@@ -120,6 +203,14 @@ impl of enc for enc_t {
 }
 
 fn mk() -> enc {
+    #[doc = "
+    Make instance of interface `enc`
+
+    # Return
+
+    instance of interface `enc`
+    "];
+
     let mut i = 0u8;
     let table = vec::to_mut(vec::from_elem(64u, 0u8));
     u8::range(65u8, 91u8)  { |j| table[i] = j; i += 1u8; }
@@ -152,21 +243,89 @@ fn mk() -> enc {
 }
 
 fn encode(src: [u8]) -> [u8] {
+    #[doc = "
+    Shortcut for enc#encode_bytes
+
+    Table of base64 alphabet and decode map is allocated
+    every time when this function is called, so it's
+    recommended to use `mk` and then `encode_bytes` instead
+    if it's necessary to use this function many times.
+
+    # Arguments
+
+    * src - bytes for encoding
+
+    # Return
+
+    base64-encoded bytes
+    "];
+
     let enc = mk();
     enc.encode_bytes(src)
 }
 
 fn encode_u(src: [u8]) -> [u8] {
+    #[doc = "
+    Shortcut for enc#encode_bytes_u
+
+    Table of base64 alphabet and decode map is allocated
+    every time when this function is called, so it's
+    recommended to use `mk` and then `encode_bytes_u` instead
+    if it's necessary to use this function many times.
+
+    # Arguments
+
+    * src - bytes for encoding
+
+    # Return
+
+    base64-encoded bytes (url and filename safe)
+    "];
+
     let enc = mk();
     enc.encode_bytes_u(src)
 }
 
 fn decode(src: [u8]) -> [u8] {
+    #[doc = "
+    Shortcut for enc#decode_bytes
+
+    Table of base64 alphabet and decode map is allocated
+    every time when this function is called, so it's
+    recommended to use `mk` and then `decode_bytes` instead
+    if it's necessary to use this function many times.
+
+    # Arguments
+
+    * src - base64-encoded bytes
+
+    # Return
+
+    decoded bytes
+    "];
+
     let enc = mk();
     enc.decode_bytes(src)
 }
 
 fn decode_u(src: [u8]) -> [u8] {
+    #[doc = "
+    Shortcut for enc#decode_bytes_u
+
+    Table of base64 alphabet and decode map is allocated
+    every time when this function is called, so it's
+    recommended to use `mk` and then `decode_bytes_u` instead
+    if it's necessary to use this function many times.
+
+    # Arguments
+
+    * src - base64-encoded bytes
+
+    # Return
+
+    decoded bytes
+    "];
+
     let enc = mk();
     enc.decode_bytes_u(src)
 }
