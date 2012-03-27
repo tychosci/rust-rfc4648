@@ -7,7 +7,6 @@ TODO
 ----
 
 * provide stream abstraction
-* documentation
 
 LICENSE
 -------
