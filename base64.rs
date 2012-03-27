@@ -246,7 +246,7 @@ fn encode(src: [u8]) -> [u8] {
     #[doc = "
     Shortcut for enc#encode_bytes
 
-    Table of base64 alphabet and decode map is allocated
+    Table of base64 alphabet and decode map are allocated
     every time when this function is called, so it's
     recommended to use `mk` and then `encode_bytes` instead
     if it's necessary to use this function many times.
@@ -268,7 +268,7 @@ fn encode_u(src: [u8]) -> [u8] {
     #[doc = "
     Shortcut for enc#encode_bytes_u
 
-    Table of base64 alphabet and decode map is allocated
+    Table of base64 alphabet and decode map are allocated
     every time when this function is called, so it's
     recommended to use `mk` and then `encode_bytes_u` instead
     if it's necessary to use this function many times.
@@ -290,7 +290,7 @@ fn decode(src: [u8]) -> [u8] {
     #[doc = "
     Shortcut for enc#decode_bytes
 
-    Table of base64 alphabet and decode map is allocated
+    Table of base64 alphabet and decode map are allocated
     every time when this function is called, so it's
     recommended to use `mk` and then `decode_bytes` instead
     if it's necessary to use this function many times.
@@ -312,7 +312,7 @@ fn decode_u(src: [u8]) -> [u8] {
     #[doc = "
     Shortcut for enc#decode_bytes_u
 
-    Table of base64 alphabet and decode map is allocated
+    Table of base64 alphabet and decode map are allocated
     every time when this function is called, so it's
     recommended to use `mk` and then `decode_bytes_u` instead
     if it's necessary to use this function many times.
