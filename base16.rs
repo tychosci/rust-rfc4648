@@ -16,6 +16,8 @@ export mk, enc, encode, decode;
 
 import vec::len;
 
+type enc_t = {table: [u8], decode_map: [u8]};
+
 iface enc {
     fn encode(dst: [mut u8], src: [u8]);
     fn encode_bytes(src: [u8]) -> [u8];
@@ -23,30 +25,28 @@ iface enc {
     fn decode_bytes(src: [u8]) -> [u8];
 }
 
-fn mk() -> enc {
-    type _enc = {table: [u8], decode_map: [u8]};
-
-    impl of enc for _enc {
-        fn encode(dst: [mut u8], src: [u8]) {
-            b16encode(self.table, dst, src);
-        }
-        fn encode_bytes(src: [u8]) -> [u8] {
-            let dst_len = encoded_len(len(src));
-            let dst = vec::to_mut(vec::from_elem(dst_len, 0u8));
-            self.encode(dst, src);
-            vec::from_mut(dst)
-        }
-        fn decode(dst: [mut u8], src: [u8]) -> uint {
-            b16decode(self.decode_map, dst, src)
-        }
-        fn decode_bytes(src: [u8]) -> [u8] {
-            let dst_len = decoded_len(len(src));
-            let dst = vec::to_mut(vec::from_elem(dst_len, 0u8));
-            let end = self.decode(dst, src);
-            vec::slice(vec::from_mut(dst), 0u, end)
-        }
+impl of enc for enc_t {
+    fn encode(dst: [mut u8], src: [u8]) {
+        b16encode(self.table, dst, src);
     }
+    fn encode_bytes(src: [u8]) -> [u8] {
+        let dst_len = encoded_len(len(src));
+        let dst = vec::to_mut(vec::from_elem(dst_len, 0u8));
+        self.encode(dst, src);
+        vec::from_mut(dst)
+    }
+    fn decode(dst: [mut u8], src: [u8]) -> uint {
+        b16decode(self.decode_map, dst, src)
+    }
+    fn decode_bytes(src: [u8]) -> [u8] {
+        let dst_len = decoded_len(len(src));
+        let dst = vec::to_mut(vec::from_elem(dst_len, 0u8));
+        let end = self.decode(dst, src);
+        vec::slice(vec::from_mut(dst), 0u, end)
+    }
+}
 
+fn mk() -> enc {
     let table = str::bytes("0123456789ABCDEF");
     let decode_map = vec::to_mut(vec::from_elem(256u, 0xff_u8));
 

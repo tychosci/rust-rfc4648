@@ -52,6 +52,13 @@ import vec::len;
 
 const PAD: u8 = 61u8;
 
+type enc_t = {
+    table: [u8],
+    table_u: [u8],
+    decode_map: [u8],
+    decode_map_u: [u8]
+};
+
 iface enc {
     fn encode(dst: [mut u8], src: [u8]);
     fn encode_u(dst: [mut u8], src: [u8]);
@@ -65,57 +72,54 @@ iface enc {
     fn decode_bytes_u(src: [u8]) -> [u8];
 }
 
-fn mk() -> enc {
-    type _enc = {table: [u8], table_u: [u8],
-                 decode_map: [u8], decode_map_u: [u8]};
-
-    impl of enc for _enc {
-        fn encode(dst: [mut u8], src: [u8]) {
-            b64encode(self.table, dst, src);
-        }
-        fn encode_u(dst: [mut u8], src: [u8]) {
-            b64encode(self.table_u, dst, src);
-        }
-        fn encode_bytes(src: [u8]) -> [u8] {
-            let dst_length = encoded_len(len(src));
-            let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
-            self.encode(dst, src);
-            vec::from_mut(dst)
-        }
-        fn encode_bytes_u(src: [u8]) -> [u8] {
-            let dst_length = encoded_len(len(src));
-            let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
-            self.encode_u(dst, src);
-            vec::from_mut(dst)
-        }
-        fn encode_str(src: str) -> str {
-            let src = str::bytes(src);
-            str::from_bytes(self.encode_bytes(src))
-        }
-        fn encode_str_u(src: str) -> str {
-            let src = str::bytes(src);
-            str::from_bytes(self.encode_bytes_u(src))
-        }
-        fn decode(dst: [mut u8], src: [u8]) -> uint {
-            b64decode(self.decode_map, dst, src)
-        }
-        fn decode_u(dst: [mut u8], src: [u8]) -> uint {
-            b64decode(self.decode_map_u, dst, src)
-        }
-        fn decode_bytes(src: [u8]) -> [u8] {
-            let dst_length = decoded_len(len(src));
-            let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
-            let res = self.decode(dst, src);
-            vec::slice(vec::from_mut(dst), 0u, res)
-        }
-        fn decode_bytes_u(src: [u8]) -> [u8] {
-            let dst_length = decoded_len(len(src));
-            let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
-            let res = self.decode_u(dst, src);
-            vec::slice(vec::from_mut(dst), 0u, res)
-        }
+impl of enc for enc_t {
+    fn encode(dst: [mut u8], src: [u8]) {
+        b64encode(self.table, dst, src);
     }
+    fn encode_u(dst: [mut u8], src: [u8]) {
+        b64encode(self.table_u, dst, src);
+    }
+    fn encode_bytes(src: [u8]) -> [u8] {
+        let dst_length = encoded_len(len(src));
+        let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
+        self.encode(dst, src);
+        vec::from_mut(dst)
+    }
+    fn encode_bytes_u(src: [u8]) -> [u8] {
+        let dst_length = encoded_len(len(src));
+        let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
+        self.encode_u(dst, src);
+        vec::from_mut(dst)
+    }
+    fn encode_str(src: str) -> str {
+        let src = str::bytes(src);
+        str::from_bytes(self.encode_bytes(src))
+    }
+    fn encode_str_u(src: str) -> str {
+        let src = str::bytes(src);
+        str::from_bytes(self.encode_bytes_u(src))
+    }
+    fn decode(dst: [mut u8], src: [u8]) -> uint {
+        b64decode(self.decode_map, dst, src)
+    }
+    fn decode_u(dst: [mut u8], src: [u8]) -> uint {
+        b64decode(self.decode_map_u, dst, src)
+    }
+    fn decode_bytes(src: [u8]) -> [u8] {
+        let dst_length = decoded_len(len(src));
+        let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
+        let res = self.decode(dst, src);
+        vec::slice(vec::from_mut(dst), 0u, res)
+    }
+    fn decode_bytes_u(src: [u8]) -> [u8] {
+        let dst_length = decoded_len(len(src));
+        let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
+        let res = self.decode_u(dst, src);
+        vec::slice(vec::from_mut(dst), 0u, res)
+    }
+}
 
+fn mk() -> enc {
     let mut i = 0u8;
     let table = vec::to_mut(vec::from_elem(64u, 0u8));
     u8::range(65u8, 91u8)  { |j| table[i] = j; i += 1u8; }
