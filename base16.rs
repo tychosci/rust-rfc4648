@@ -10,6 +10,14 @@
 //      3 3             7 7            11 B            15 F
 //
 
+#[doc = "
+
+    Base16 Module
+
+    See <http://tools.ietf.org/html/rfc4648#section-8> for details.
+
+"];
+
 use std;
 
 export mk, enc, encode, decode;
@@ -20,8 +28,30 @@ type enc_t = {table: [u8], decode_map: [u8]};
 
 iface enc {
     fn encode(dst: [mut u8], src: [u8]);
-    fn encode_bytes(src: [u8]) -> [u8];
     fn decode(dst: [mut u8], src: [u8]) -> uint;
+    #[doc = "
+    Encode input bytes to hex-encoded bytes.
+
+    # Arguments
+
+    * src - bytes for encoding
+
+    # Return
+
+    hex-encoded bytes
+    "]
+    fn encode_bytes(src: [u8]) -> [u8];
+    #[doc = "
+    Decode hex-encoded bytes to its original bytes.
+
+    # Arguments
+
+    * src - hex-encoded bytes
+
+    # Return
+
+    decoded bytes
+    "]
     fn decode_bytes(src: [u8]) -> [u8];
 }
 
@@ -29,14 +59,14 @@ impl of enc for enc_t {
     fn encode(dst: [mut u8], src: [u8]) {
         b16encode(self.table, dst, src);
     }
+    fn decode(dst: [mut u8], src: [u8]) -> uint {
+        b16decode(self.decode_map, dst, src)
+    }
     fn encode_bytes(src: [u8]) -> [u8] {
         let dst_len = encoded_len(len(src));
         let dst = vec::to_mut(vec::from_elem(dst_len, 0u8));
         self.encode(dst, src);
         vec::from_mut(dst)
-    }
-    fn decode(dst: [mut u8], src: [u8]) -> uint {
-        b16decode(self.decode_map, dst, src)
     }
     fn decode_bytes(src: [u8]) -> [u8] {
         let dst_len = decoded_len(len(src));
@@ -47,6 +77,14 @@ impl of enc for enc_t {
 }
 
 fn mk() -> enc {
+    #[doc = "
+    Make instance of interface `enc`
+
+    # Return
+
+    instance of interface `enc`
+    "];
+
     let table = str::bytes("0123456789ABCDEF");
     let decode_map = vec::to_mut(vec::from_elem(256u, 0xff_u8));
 
@@ -67,11 +105,45 @@ fn mk() -> enc {
 }
 
 fn encode(src: [u8]) -> [u8] {
+    #[doc = "
+    Shortcut for enc#encode_bytes
+
+    Table of hex alphabet and decode map is allocated
+    every time when this function is called, so it's
+    recommended to use `mk` and then `encode_bytes` instead
+    if it's necessary to use this function many times.
+
+    # Arguments
+
+    * src - bytes for encoding
+
+    # Return
+
+    hex-encoded bytes
+    "];
+
     let enc = mk();
     enc.encode_bytes(src)
 }
 
 fn decode(src: [u8]) -> [u8] {
+    #[doc = "
+    Shortcut for enc#decode_bytes
+
+    Table of hex alphabet and decode map is allocated
+    every time when this function is called, so it's
+    recommended to use `mk` and then `decode_bytes` instead
+    if it's necessary to use this function many times.
+
+    # Arguments
+
+    * src - hex-encoded bytes
+
+    # Return
+
+    decoded bytes
+    "];
+
     let enc = mk();
     enc.decode_bytes(src)
 }
