@@ -200,7 +200,7 @@ fn mk() -> enc {
     u8::range(65u8, 91u8) {|j| table[i] = j; i += 1u8; }
     u8::range(50u8, 56u8) {|j| table[i] = j; i += 1u8; }
 
-    i = 0u8;
+    let mut i = 0u8;
     let table_h = vec::to_mut(vec::from_elem(32u, 0u8));
     u8::range(48u8, 58u8) {|j| table_h[i] = j; i += 1u8; }
     u8::range(65u8, 87u8) {|j| table_h[i] = j; i += 1u8; }
@@ -208,17 +208,8 @@ fn mk() -> enc {
     let decode_map = vec::to_mut(vec::from_elem(256u, 0xff_u8));
     let decode_map_h = vec::to_mut(vec::from_elem(256u, 0xff_u8));
 
-    i = 0u8;
-    while i < 32u8 {
-        decode_map[table[i]] = i;
-        i += 1u8;
-    }
-
-    i = 0u8;
-    while i < 32u8 {
-        decode_map_h[table_h[i]] = i;
-        i += 1u8;
-    }
+    u8::range(0u8, 32u8) {|i| decode_map[table[i]] = i; }
+    u8::range(0u8, 32u8) {|i| decode_map_h[table_h[i]] = i; }
 
     {table: vec::from_mut(table),
      table_h: vec::from_mut(table_h),
@@ -448,12 +439,10 @@ fn b32decode(decode_map: [u8], dst: [mut u8], src: [u8]) -> uint {
                 cont;
             }
             if chr == PAD && i >= 2u && src_length < 8u {
-                let mut j = 0u;
-                while j < (8u - i - 1u) {
+                uint::range(0u, (8u - i - 1u)) {|j|
                     if src_length > j && src[src_curr + j] != PAD {
                         fail "malformed base32 string";
                     }
-                    j += 1u;
                 }
                 buf_len = i;
                 end = true;

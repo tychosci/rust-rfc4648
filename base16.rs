@@ -88,17 +88,8 @@ fn mk() -> enc {
     let table = str::bytes("0123456789ABCDEF");
     let decode_map = vec::to_mut(vec::from_elem(256u, 0xff_u8));
 
-    let mut i = 0u8;
-    while i < 16u8 {
-        decode_map[table[i]] = i;
-        i += 1u8;
-    }
-
-    i -= 6u8;
-    while i < 16u8 {
-        decode_map[table[i] + 32u8] = i;
-        i += 1u8;
-    }
+    u8::range(0u8, 16u8) {|i| decode_map[table[i]] = i; }
+    u8::range(10u8, 16u8) {|i| decode_map[table[i] + 32u8] = i; }
 
     {table: table,
      decode_map: vec::from_mut(decode_map)} as enc
@@ -152,17 +143,9 @@ fn encoded_len(src_len: uint) -> uint { src_len * 2u }
 fn decoded_len(src_len: uint) -> uint { src_len / 2u }
 
 fn b16encode(table: [u8], dst: [mut u8], src: [u8]) {
-    let mut src_length = len(src);
-    let mut i = 0u;
-    let mut j = 0u;
-
-    while src_length > 0u {
-        dst[i] = table[src[j] >> 4u8];
-        dst[i + 1u] = table[src[j] & 0x0f_u8];
-
-        src_length -= 1u;
-        i += 2u;
-        j += 1u;
+    uint::range(0u, len(src)) {|j|
+        dst[j + 1u * j] = table[src[j] >> 4u8];
+        dst[j + 1u + 1u * j] = table[src[j] & 0x0f_u8];
     }
 }
 
@@ -174,7 +157,7 @@ fn b16decode(decode_map: [u8], dst: [mut u8], src: [u8]) -> uint {
     let mut chr2 = 0u8;
 
     while src_length > 0u {
-        if src[i] == 10u8 || src[j] == 13u8 || src[i] == 32u8 {
+        if src[i] == 10u8 || src[i] == 13u8 || src[i] == 32u8 {
             src_length -= 1u;
             i += 1u;
             cont;

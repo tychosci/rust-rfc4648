@@ -224,17 +224,8 @@ fn mk() -> enc {
     let decode_map = vec::to_mut(vec::from_elem(256u, 0xff_u8));
     let decode_map_u = vec::to_mut(vec::from_elem(256u, 0xff_u8));
 
-    i = 0u8;
-    while i < 64u8 {
-        decode_map[table[i]] = i;
-        i += 1u8;
-    }
-
-    i = 0u8;
-    while i < 64u8 {
-        decode_map_u[table_u[i]] = i;
-        i += 1u8;
-    }
+    u8::range(0u8, 64u8) {|i| decode_map[table[i]] = i; }
+    u8::range(0u8, 64u8) {|i| decode_map_u[table_u[i]] = i; }
 
     {table: vec::from_mut(table),
      table_u: vec::from_mut(table_u),
