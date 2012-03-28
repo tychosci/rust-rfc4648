@@ -197,13 +197,13 @@ fn mk() -> enc {
 
     let mut i = 0u8;
     let table = vec::to_mut(vec::from_elem(32u, 0u8));
-    u8::range(65u8, 91u8) { |j| table[i] = j; i += 1u8; }
-    u8::range(50u8, 56u8) { |j| table[i] = j; i += 1u8; }
+    u8::range(65u8, 91u8) {|j| table[i] = j; i += 1u8; }
+    u8::range(50u8, 56u8) {|j| table[i] = j; i += 1u8; }
 
     i = 0u8;
     let table_h = vec::to_mut(vec::from_elem(32u, 0u8));
-    u8::range(48u8, 58u8) { |j| table_h[i] = j; i += 1u8; }
-    u8::range(65u8, 87u8) { |j| table_h[i] = j; i += 1u8; }
+    u8::range(48u8, 58u8) {|j| table_h[i] = j; i += 1u8; }
+    u8::range(65u8, 87u8) {|j| table_h[i] = j; i += 1u8; }
 
     let decode_map = vec::to_mut(vec::from_elem(256u, 0xff_u8));
     let decode_map_h = vec::to_mut(vec::from_elem(256u, 0xff_u8));
@@ -530,7 +530,6 @@ mod tests {
 
         uint::range(0u, len(src)) {|i|
             let res = enc.encode_bytes(src[i]);
-            #debug("res = %?", res);
             assert exp[i] == res;
         }
     }
@@ -545,7 +544,6 @@ mod tests {
 
         uint::range(0u, len(src)) {|i|
             let res = enc.encode_bytes_h(src[i]);
-            #debug("res = %?", res);
             assert exp[i] == res;
         }
     }
@@ -558,7 +556,6 @@ mod tests {
 
         uint::range(0u, len(src)) {|i|
             let res = enc.encode_str(src[i]);
-            #debug("res = %?", res);
             assert exp[i] == res;
         }
     }
@@ -571,7 +568,6 @@ mod tests {
 
         uint::range(0u, len(src)) {|i|
             let res = enc.encode_str_h(src[i]);
-            #debug("res = %?", res);
             assert exp[i] == res;
         }
     }
@@ -586,7 +582,6 @@ mod tests {
 
         uint::range(0u, len(src)) {|i|
             let res = enc.decode_bytes(src[i]);
-            #debug("res = %?", res);
             assert exp[i] == res;
         }
     }
@@ -601,7 +596,6 @@ mod tests {
 
         uint::range(0u, len(src)) {|i|
             let res = enc.decode_bytes_h(src[i]);
-            #debug("res = %?", res);
             assert exp[i] == res;
         }
     }

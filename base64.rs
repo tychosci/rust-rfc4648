@@ -213,9 +213,9 @@ fn mk() -> enc {
 
     let mut i = 0u8;
     let table = vec::to_mut(vec::from_elem(64u, 0u8));
-    u8::range(65u8, 91u8)  { |j| table[i] = j; i += 1u8; }
-    u8::range(97u8, 123u8) { |j| table[i] = j; i += 1u8; }
-    u8::range(48u8, 58u8)  { |j| table[i] = j; i += 1u8; }
+    u8::range(65u8, 91u8)  {|j| table[i] = j; i += 1u8; }
+    u8::range(97u8, 123u8) {|j| table[i] = j; i += 1u8; }
+    u8::range(48u8, 58u8)  {|j| table[i] = j; i += 1u8; }
     table[i] = 43u8; table[i + 1u8] = 47u8;
 
     let table_u = table;
