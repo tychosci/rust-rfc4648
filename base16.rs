@@ -18,8 +18,6 @@
 
 "];
 
-use std;
-
 export mk, enc, encode, decode;
 
 import vec::len;

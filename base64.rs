@@ -52,8 +52,6 @@
 
 "];
 
-use std;
-
 export mk, enc, encode, encode_u, decode, decode_u;
 
 import vec::len;
@@ -329,14 +327,6 @@ fn decoded_len(src_length: uint) -> uint {
     src_length / 4u * 3u
 }
 
-fn iter(start: uint, end: uint, f: fn(uint) -> bool) {
-    let mut i = start;
-    while i < end {
-        if !f(i) { break; }
-        i += 1u;
-    }
-}
-
 fn b64encode(table: [u8], dst: [mut u8], src: [u8]) {
     let src_length = len(src);
     let dst_length = len(dst);
@@ -349,7 +339,7 @@ fn b64encode(table: [u8], dst: [mut u8], src: [u8]) {
         fail "dst's length should be divisible by 4";
     }
 
-    for iter(0u, (src_length + 2u) / 3u) {|i|
+    for util::iter(0u, (src_length + 2u) / 3u) {|i|
         let src_curr = 3u * i;
         let dst_curr = 4u * i;
         let remain = src_length - src_curr;

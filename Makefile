@@ -18,16 +18,10 @@ b64: libencoding
 setup-test:
 	mkdir -p $(TESTDIR)
 
-test-all: setup-test test-base64 test-base32 test-base16
+test: setup-test test-encoding
 
-test-base64: base64.rs
-	rustc $< --test -o $(TESTDIR)/$@
-
-test-base32: base32.rs
-	rustc $< --test -o $(TESTDIR)/$@
-
-test-base16: base16.rs
-	rustc $< --test -o $(TESTDIR)/$@
+test-encoding: encoding.rc
+	rustc -O $< --test --out-dir $(TESTDIR)
 
 clean:
 	rm -r libencoding-*.dSYM

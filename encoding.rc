@@ -9,6 +9,12 @@
 
 #[doc = "\"encoding\" modules for Rust"];
 
+use std;
+
+export base16, base32, base64;
+
 mod base16;
 mod base32;
 mod base64;
+
+mod util;

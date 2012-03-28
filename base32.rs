@@ -36,8 +36,6 @@
 
 "];
 
-use std;
-
 export mk, enc, encode, encode_h, decode, decode_h;
 
 import vec::len;
@@ -314,20 +312,22 @@ fn decoded_len(src_length: uint) -> uint {
 }
 
 fn b32encode(table: [u8], dst: [mut u8], src: [u8]) {
-    if len(src) == 0u {
+    let src_length = len(src);
+    let dst_length = len(dst);
+
+    if src_length == 0u {
         ret;
     }
-
-    let mut src_length = len(src);
-    let mut dst_length = len(dst);
-    let mut dst_curr = 0u;
-    let mut src_curr = 0u;
 
     if dst_length % 8u != 0u {
         fail "dst's length should be divisible by 8";
     }
 
-    while src_length > 0u {
+    for util::iter(0u, (src_length + 4u) / 5u) {|i|
+        let src_curr = 5u * i;
+        let dst_curr = 8u * i;
+        let remain = src_length - src_curr;
+
         dst[dst_curr + 0u] = 0u8;
         dst[dst_curr + 1u] = 0u8;
         dst[dst_curr + 2u] = 0u8;
@@ -337,16 +337,16 @@ fn b32encode(table: [u8], dst: [mut u8], src: [u8]) {
         dst[dst_curr + 6u] = 0u8;
         dst[dst_curr + 7u] = 0u8;
 
-        if src_length == 1u {
+        if remain == 1u {
             dst[dst_curr + 0u] |= src[src_curr + 0u] >> 3u8;
             dst[dst_curr + 1u] |= (src[src_curr + 0u] << 2u8) & 0x1f_u8;
-        } else if src_length == 2u {
+        } else if remain == 2u {
             dst[dst_curr + 0u] |= src[src_curr + 0u] >> 3u8;
             dst[dst_curr + 1u] |= (src[src_curr + 0u] << 2u8) & 0x1f_u8;
             dst[dst_curr + 1u] |= (src[src_curr + 1u] >> 6u8) & 0x1f_u8;
             dst[dst_curr + 2u] |= (src[src_curr + 1u] >> 1u8) & 0x1f_u8;
             dst[dst_curr + 3u] |= (src[src_curr + 1u] << 4u8) & 0x1f_u8;
-        } else if src_length == 3u {
+        } else if remain == 3u {
             dst[dst_curr + 0u] |= src[src_curr + 0u] >> 3u8;
             dst[dst_curr + 1u] |= (src[src_curr + 0u] << 2u8) & 0x1f_u8;
             dst[dst_curr + 1u] |= (src[src_curr + 1u] >> 6u8) & 0x1f_u8;
@@ -354,7 +354,7 @@ fn b32encode(table: [u8], dst: [mut u8], src: [u8]) {
             dst[dst_curr + 3u] |= (src[src_curr + 1u] << 4u8) & 0x1f_u8;
             dst[dst_curr + 3u] |= (src[src_curr + 2u] >> 4u8) & 0x1f_u8;
             dst[dst_curr + 4u] |= (src[src_curr + 2u] << 1u8) & 0x1f_u8;
-        } else if src_length == 4u {
+        } else if remain == 4u {
             dst[dst_curr + 0u] |= src[src_curr + 0u] >> 3u8;
             dst[dst_curr + 1u] |= (src[src_curr + 0u] << 2u8) & 0x1f_u8;
             dst[dst_curr + 1u] |= (src[src_curr + 1u] >> 6u8) & 0x1f_u8;
@@ -389,14 +389,14 @@ fn b32encode(table: [u8], dst: [mut u8], src: [u8]) {
         dst[dst_curr + 6u] = table[dst[dst_curr + 6u]];
         dst[dst_curr + 7u] = table[dst[dst_curr + 7u]];
 
-        if src_length < 5u {
+        if remain < 5u {
             dst[dst_curr + 7u] = PAD;
-            if src_length < 4u {
+            if remain < 4u {
                 dst[dst_curr + 6u] = PAD;
                 dst[dst_curr + 5u] = PAD;
-                if src_length < 3u {
+                if remain < 3u {
                     dst[dst_curr + 4u] = PAD;
-                    if src_length < 2u {
+                    if remain < 2u {
                         dst[dst_curr + 3u] = PAD;
                         dst[dst_curr + 2u] = PAD;
                     }
@@ -404,10 +404,6 @@ fn b32encode(table: [u8], dst: [mut u8], src: [u8]) {
             }
             break;
         }
-
-        src_length -= 5u;
-        src_curr += 5u;
-        dst_curr += 8u;
     }
 }
 
