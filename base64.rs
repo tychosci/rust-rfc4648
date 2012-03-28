@@ -399,27 +399,30 @@ fn b64decode(decode_map: [u8], dst: [mut u8], src: [u8]) -> uint {
     let mut src_length = len(src);
     let mut src_curr = 0u;
     let mut dst_curr = 0u;
-    let mut src_temp = 0u;
     let mut buf_len = 4u;
     let mut end = false;
     let mut chr = 0u8;
     let mut i = 0u;
 
     while src_length > 0u && !end {
-        buf[0] = 0xff_u8; buf[1] = 0xff_u8;
-        buf[2] = 0xff_u8; buf[3] = 0xff_u8;
+        buf[0] = 0xff_u8;
+        buf[1] = 0xff_u8;
+        buf[2] = 0xff_u8;
+        buf[3] = 0xff_u8;
 
         i = 0u;
         while i < 4u {
             if src_length == 0u {
                 fail "malformed base64 string";
             }
-            chr = src[src_temp]; src_temp += 1u;
+            chr = src[src_curr];
+            src_curr += 1u;
+            src_length -= 1u;
             if chr == 10u8 || chr == 13u8 {
                 cont;
             }
-            if chr == PAD && i >= 2u && src_length <= 4u {
-                if src_length > 0u && src[src_temp - 1u] != PAD {
+            if chr == PAD && i >= 2u && src_length < 4u {
+                if src_length > 0u && src[src_curr] != PAD {
                     fail "malformed base64 string";
                 }
                 buf_len = i;
@@ -444,10 +447,7 @@ fn b64decode(decode_map: [u8], dst: [mut u8], src: [u8]) -> uint {
             dst[dst_curr + 2u] = (buf[2] & 0x03_u8) << 6u8 | buf[3];
         }
 
-        src_length -= 4u;
         dst_curr += buf_len - 1u;
-        src_curr = src_temp;
-        src_temp = src_curr;
     }
 
     dst_curr

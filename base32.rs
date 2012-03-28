@@ -425,7 +425,6 @@ fn b32decode(decode_map: [u8], dst: [mut u8], src: [u8]) -> uint {
     let mut src_length = len(src);
     let mut src_curr = 0u;
     let mut dst_curr = 0u;
-    let mut src_temp = 0u;
     let mut buf_len = 8u;
     let mut end = false;
     let mut chr = 0u8;
@@ -442,14 +441,16 @@ fn b32decode(decode_map: [u8], dst: [mut u8], src: [u8]) -> uint {
             if src_length == 0u {
                 fail "malformed base32 string";
             }
-            chr = src[src_temp]; src_temp += 1u;
+            chr = src[src_curr];
+            src_curr += 1u;
+            src_length -= 1u;
             if chr == 10u8 || chr == 13u8 {
                 cont;
             }
-            if chr == PAD && i >= 2u && src_length <= 8u {
+            if chr == PAD && i >= 2u && src_length < 8u {
                 let mut j = 0u;
                 while j < (8u - i - 1u) {
-                    if src_length > j && src[src_temp + j - 1u] != PAD {
+                    if src_length > j && src[src_curr + j] != PAD {
                         fail "malformed base32 string";
                     }
                     j += 1u;
@@ -499,10 +500,6 @@ fn b32decode(decode_map: [u8], dst: [mut u8], src: [u8]) -> uint {
           }
           _ { fail "malformed base32 string"; }
         }
-
-        src_length -= 8u;
-        src_curr = src_temp;
-        src_temp = src_curr;
 
         alt buf_len {
           2u      { dst_curr += 1u; }
