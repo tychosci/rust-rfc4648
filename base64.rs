@@ -339,7 +339,7 @@ fn b64encode(table: [u8], dst: [mut u8], src: [u8]) {
         fail "dst's length should be divisible by 4";
     }
 
-    for util::iter(0u, (src_length + 2u) / 3u) {|i|
+    for util::range(0u, (src_length + 2u) / 3u) {|i|
         let src_curr = 3u * i;
         let dst_curr = 4u * i;
         let remain = src_length - src_curr;

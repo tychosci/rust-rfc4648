@@ -323,7 +323,7 @@ fn b32encode(table: [u8], dst: [mut u8], src: [u8]) {
         fail "dst's length should be divisible by 8";
     }
 
-    for util::iter(0u, (src_length + 4u) / 5u) {|i|
+    for util::range(0u, (src_length + 4u) / 5u) {|i|
         let src_curr = 5u * i;
         let dst_curr = 8u * i;
         let remain = src_length - src_curr;
