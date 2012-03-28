@@ -329,30 +329,40 @@ fn decoded_len(src_length: uint) -> uint {
     src_length / 4u * 3u
 }
 
+fn iter(start: uint, end: uint, f: fn(uint) -> bool) {
+    let mut i = start;
+    while i < end {
+        if !f(i) { break; }
+        i += 1u;
+    }
+}
+
 fn b64encode(table: [u8], dst: [mut u8], src: [u8]) {
-    if len(src) == 0u {
+    let src_length = len(src);
+    let dst_length = len(dst);
+
+    if src_length == 0u {
         ret;
     }
-
-    let mut src_length = len(src);
-    let mut dst_length = len(dst);
-    let mut dst_curr = 0u;
-    let mut src_curr = 0u;
 
     if dst_length % 4u != 0u {
         fail "dst's length should be divisible by 4";
     }
 
-    while src_length > 0u {
+    for iter(0u, (src_length + 2u) / 3u) {|i|
+        let src_curr = 3u * i;
+        let dst_curr = 4u * i;
+        let remain = src_length - src_curr;
+
         dst[dst_curr + 0u] = 0u8;
         dst[dst_curr + 1u] = 0u8;
         dst[dst_curr + 2u] = 0u8;
         dst[dst_curr + 3u] = 0u8;
 
-        if src_length == 1u {
+        if remain == 1u {
             dst[dst_curr + 0u] |= (src[src_curr + 0u]) >> 2u8;
             dst[dst_curr + 1u] |= (src[src_curr + 0u] << 4u8) & 0x3f_u8;
-        } else if src_length == 2u {
+        } else if remain == 2u {
             dst[dst_curr + 0u] |= (src[src_curr + 0u]) >> 2u8;
             dst[dst_curr + 1u] |= (src[src_curr + 0u] << 4u8) & 0x3f_u8;
             dst[dst_curr + 1u] |= (src[src_curr + 1u] >> 4u8);
@@ -371,17 +381,13 @@ fn b64encode(table: [u8], dst: [mut u8], src: [u8]) {
         dst[dst_curr + 2u] = table[dst[dst_curr + 2u]];
         dst[dst_curr + 3u] = table[dst[dst_curr + 3u]];
 
-        if src_length < 3u {
+        if remain < 3u {
             dst[dst_curr + 3u] = PAD;
-            if src_length < 2u {
+            if remain < 2u {
                 dst[dst_curr + 2u] = PAD;
             }
             break;
         }
-
-        src_length -= 3u;
-        src_curr += 3u;
-        dst_curr += 4u;
     }
 }
 
