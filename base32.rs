@@ -527,14 +527,11 @@ mod tests {
         let src = vec::map(src0)  {|e| str::bytes(e) };
         let exp = vec::map(exp0) {|e| str::bytes(e) };
         let enc = mk();
-        let last = len(src);
-        let mut i = 0u;
 
-        while i < last {
+        uint::range(0u, len(src)) {|i|
             let res = enc.encode_bytes(src[i]);
             #debug("res = %?", res);
             assert exp[i] == res;
-            i += 1u;
         }
     }
     #[test]
@@ -545,14 +542,11 @@ mod tests {
         let src = vec::map(src0)  {|e| str::bytes(e) };
         let exp = vec::map(exp0) {|e| str::bytes(e) };
         let enc = mk();
-        let last = len(src);
-        let mut i = 0u;
 
-        while i < last {
+        uint::range(0u, len(src)) {|i|
             let res = enc.encode_bytes_h(src[i]);
             #debug("res = %?", res);
             assert exp[i] == res;
-            i += 1u;
         }
     }
     #[test]
@@ -561,14 +555,11 @@ mod tests {
         let exp = ["", "MY======", "MZXQ====", "MZXW6===",
                    "MZXW6YQ=", "MZXW6YTB", "MZXW6YTBOI======"];
         let enc = mk();
-        let last = len(src);
-        let mut i = 0u;
 
-        while i < last {
+        uint::range(0u, len(src)) {|i|
             let res = enc.encode_str(src[i]);
             #debug("res = %?", res);
             assert exp[i] == res;
-            i += 1u;
         }
     }
     #[test]
@@ -577,14 +568,11 @@ mod tests {
         let exp = ["", "CO======", "CPNG====", "CPNMU===",
                    "CPNMUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"];
         let enc = mk();
-        let last = len(src);
-        let mut i = 0u;
 
-        while i < last {
+        uint::range(0u, len(src)) {|i|
             let res = enc.encode_str_h(src[i]);
             #debug("res = %?", res);
             assert exp[i] == res;
-            i += 1u;
         }
     }
     #[test]
@@ -595,14 +583,11 @@ mod tests {
         let src = vec::map(src) {|e| str::bytes(e) };
         let exp = vec::map(exp) {|e| str::bytes(e) };
         let enc = mk();
-        let last = len(src);
-        let mut i = 0u;
 
-        while i < last {
+        uint::range(0u, len(src)) {|i|
             let res = enc.decode_bytes(src[i]);
             #debug("res = %?", res);
             assert exp[i] == res;
-            i += 1u;
         }
     }
     #[test]
@@ -613,14 +598,11 @@ mod tests {
         let src = vec::map(src) {|e| str::bytes(e) };
         let exp = vec::map(exp) {|e| str::bytes(e) };
         let enc = mk();
-        let last = len(src);
-        let mut i = 0u;
 
-        while i < last {
+        uint::range(0u, len(src)) {|i|
             let res = enc.decode_bytes_h(src[i]);
             #debug("res = %?", res);
             assert exp[i] == res;
-            i += 1u;
         }
     }
 }
