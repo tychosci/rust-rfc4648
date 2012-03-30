@@ -189,14 +189,14 @@ impl of enc for enc_t {
     fn decode_bytes(src: [u8]) -> [u8] {
         let dst_length = decoded_len(len(src));
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
-        let res = self.decode(dst, src);
-        vec::slice(vec::from_mut(dst), 0u, res)
+        let end = self.decode(dst, src);
+        vec::slice(vec::from_mut(dst), 0u, end)
     }
     fn decode_bytes_u(src: [u8]) -> [u8] {
         let dst_length = decoded_len(len(src));
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
-        let res = self.decode_u(dst, src);
-        vec::slice(vec::from_mut(dst), 0u, res)
+        let end = self.decode_u(dst, src);
+        vec::slice(vec::from_mut(dst), 0u, end)
     }
 }
 
