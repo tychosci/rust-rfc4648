@@ -55,6 +55,7 @@
 export mk, enc, encode, encode_u, decode, decode_u;
 
 import vec::len;
+import comm::{port, chan, send, recv};
 
 const PAD: u8 = 61u8;
 
@@ -64,6 +65,13 @@ type enc_t = {
     decode_map: [u8],
     decode_map_u: [u8]
 };
+
+type enc_w = { c: chan<op_w> };
+type enc_r = { p: port<reply>, c: chan<op_r> };
+
+enum op_w  { close_w, flush_w, w([u8]) }
+enum op_r  { close_r, r(u8) }
+enum reply { closed, eof, ok([u8])  }
 
 iface enc {
     fn encode(dst: [mut u8], src: [u8]);

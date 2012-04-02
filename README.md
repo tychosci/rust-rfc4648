@@ -7,6 +7,7 @@ TODO
 ----
 
 * provide stream abstraction
+* Add module for url-escaping
 
 LICENSE
 -------
