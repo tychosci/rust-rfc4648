@@ -431,7 +431,7 @@ fn b32decode(decode_map: [u8], dst: [mut u8], src: [u8]) -> uint {
             chr = src[src_curr];
             src_curr += 1u;
             src_length -= 1u;
-            if chr == 10u8 || chr == 13u8 {
+            if char::is_whitespace(chr as char) {
                 cont;
             }
             if chr == PAD && i >= 2u && src_length < 8u {
@@ -556,7 +556,7 @@ mod tests {
     #[test]
     fn test_decode_bytes() {
         let src = ["", "MY======", "MZXQ====", "MZXW6===",
-                   "MZXW6YQ=", "MZXW6YTB", "MZXW6YTBOI======"];
+                   "\tMZXW\r\n6YQ=", "MZXW6YTB", "MZXW6YTBOI======"];
         let exp = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
         let src = vec::map(src) {|e| str::bytes(e) };
         let exp = vec::map(exp) {|e| str::bytes(e) };
@@ -570,7 +570,7 @@ mod tests {
     #[test]
     fn test_decode_bytes_h() {
         let src = ["", "CO======", "CPNG====", "CPNMU===",
-                   "CPNMUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"];
+                   "\tCPNM\r\nUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"];
         let exp = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
         let src = vec::map(src) {|e| str::bytes(e) };
         let exp = vec::map(exp) {|e| str::bytes(e) };
