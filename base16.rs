@@ -155,7 +155,7 @@ fn b16decode(decode_map: [u8], dst: [mut u8], src: [u8]) -> uint {
     let mut chr2 = 0u8;
 
     while src_length > 0u {
-        if src[i] == 10u8 || src[i] == 13u8 || src[i] == 32u8 {
+        if char::is_whitespace(src[i] as char) {
             src_length -= 1u;
             i += 1u;
             cont;
@@ -187,7 +187,7 @@ mod tests {
     }
     #[test]
     fn test_decode() {
-        let src = str::bytes("66 6f 6f");
+        let src = str::bytes("\t66 6f\r\n 6f");
         let exp = str::bytes("foo");
         let res = decode(src);
         assert res == exp;
