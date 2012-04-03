@@ -327,11 +327,11 @@ fn decode_u(src: [u8]) -> [u8] {
     enc.decode_bytes_u(src)
 }
 
-fn encoded_len(src_length: uint) -> uint {
+pure fn encoded_len(src_length: uint) -> uint {
     (src_length + 2u) / 3u * 4u
 }
 
-fn decoded_len(src_length: uint) -> uint {
+pure fn decoded_len(src_length: uint) -> uint {
     src_length / 4u * 3u
 }
 
