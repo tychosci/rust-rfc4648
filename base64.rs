@@ -73,6 +73,9 @@ enum op_w  { close_w, flush_w, w([u8]) }
 enum op_r  { close_r, r(u8) }
 enum reply { closed, eof, ok([u8])  }
 
+// FIXME
+// `enc` iface on base16/32/64.rs should be polymorphic.
+// Probably traits and non-scalar constants make it possible.
 iface enc {
     fn encode(dst: [mut u8], src: [u8]);
     fn encode_u(dst: [mut u8], src: [u8]);
