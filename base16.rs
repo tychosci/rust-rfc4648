@@ -3,11 +3,11 @@
 //
 // The Base 16 Alphabet
 //
-//  Value Encoding  Value Encoding  Value Encoding  Value Encoding
-//      0 0             4 4             8 8            12 C
-//      1 1             5 5             9 9            13 D
-//      2 2             6 6            10 A            14 E
-//      3 3             7 7            11 B            15 F
+// Value Encoding  Value Encoding  Value Encoding  Value Encoding
+//     0 0             4 4             8 8            12 C
+//     1 1             5 5             9 9            13 D
+//     2 2             6 6            10 A            14 E
+//     3 3             7 7            11 B            15 F
 //
 
 #[doc = "
