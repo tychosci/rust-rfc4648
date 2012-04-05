@@ -6,12 +6,7 @@ import vec::len;
 
 export query_escape, query_unescape;
 
-enum enc_mode {
-    query,
-    path,
-    fragment,
-    userinfo
-}
+enum enc_mode { query, path, fragment, userinfo }
 
 fn query_escape(s: str) -> str { url_escape(s, query) }
 fn query_unescape(s: str) -> str { url_unescape(s, query) }
