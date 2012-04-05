@@ -17,4 +17,6 @@ mod base16;
 mod base32;
 mod base64;
 
+mod url;
+
 mod util;
