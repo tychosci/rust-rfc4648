@@ -137,7 +137,9 @@ fn decode(src: [u8]) -> [u8] {
     enc.decode_bytes(src)
 }
 
+#[inline(always)]
 pure fn encoded_len(src_len: uint) -> uint { src_len * 2u }
+#[inline(always)]
 pure fn decoded_len(src_len: uint) -> uint { src_len / 2u }
 
 fn b16encode(table: [u8], dst: [mut u8], src: [u8]) {
