@@ -24,8 +24,8 @@ test-encoding: encoding.rc
 	rustc -O $< --test --out-dir $(TESTDIR)
 
 clean:
-	rm -r libencoding-*.dSYM
-	rm -r libencoding-*.dylib
+	-rm -r libencoding-*.dSYM
+	-rm -r libencoding-*.dylib
 	if [ -d "$(TESTDIR)" ]; then rm -r $(TESTDIR); fi
 	if [ -e "$(BINDIR)/b64" ]; then rm -r $(BINDIR)/b64; fi
 	if [ -e "$(BINDIR)/b64.dSYM" ]; then rm -r $(BINDIR)/b64.dSYM; fi
