@@ -17,7 +17,7 @@ fn query_escape(s: str) -> str { url_escape(s, query) }
 fn query_unescape(s: str) -> str { url_unescape(s, query) }
 
 #[inline(always)]
-fn ishex(c: u8) -> bool {
+pure fn ishex(c: u8) -> bool {
     if 48u8 <= c && c <= 57u8 { true }
     else if 65u8 <= c && c <= 90u8  { true }
     else if 97u8 <= c && c <= 122u8 { true }
@@ -25,14 +25,14 @@ fn ishex(c: u8) -> bool {
 }
 
 #[inline(always)]
-fn unhex(c: u8) -> u8 {
+pure fn unhex(c: u8) -> u8 {
     if 48u8 <= c && c <= 57u8 { c - 48u8 }
     else if 65u8 <= c && c <= 90u8  { c - 65u8 + 10u8 }
     else if 97u8 <= c && c <= 122u8 { c - 97u8 + 10u8 }
     else { fail "should be unreachable"; }
 }
 
-fn should_escape(c: u8, mode: enc_mode) -> bool {
+pure fn should_escape(c: u8, mode: enc_mode) -> bool {
     alt c {
       65u8 to 90u8  { ret false; } // A .. Z
       97u8 to 122u8 { ret false; } // a .. z
