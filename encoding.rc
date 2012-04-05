@@ -11,7 +11,7 @@
 
 use std;
 
-export base16, base32, base64;
+export base16, base32, base64, url;
 
 mod base16;
 mod base32;
