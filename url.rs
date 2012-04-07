@@ -27,6 +27,7 @@ pure fn unhex(c: u8) -> u8 {
     else { fail "should be unreachable"; }
 }
 
+#[inline(always)]
 pure fn should_escape(c: u8, mode: enc_mode) -> bool {
     alt c {
       65u8 to 90u8  { ret false; } // A .. Z
