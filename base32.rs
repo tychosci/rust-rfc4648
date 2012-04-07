@@ -36,7 +36,7 @@
 
 "];
 
-export mk, enc, encode, encode_h, decode, decode_h;
+export mk, enc, encode, hex_encode, decode, hex_decode;
 
 import vec::len;
 
@@ -237,7 +237,7 @@ fn encode(src: [u8]) -> [u8] {
     enc.encode_bytes(src)
 }
 
-fn encode_h(src: [u8]) -> [u8] {
+fn hex_encode(src: [u8]) -> [u8] {
     #[doc = "
     Shortcut for enc#encode_bytes_h
 
@@ -281,7 +281,7 @@ fn decode(src: [u8]) -> [u8] {
     enc.decode_bytes(src)
 }
 
-fn decode_h(src: [u8]) -> [u8] {
+fn hex_decode(src: [u8]) -> [u8] {
     #[doc = "
     Shortcut for enc#decode_bytes_h
 

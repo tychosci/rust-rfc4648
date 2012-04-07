@@ -52,7 +52,7 @@
 
 "];
 
-export mk, enc, encode, encode_u, decode, decode_u;
+export mk, enc, encode, urlsafe_encode, decode, urlsafe_decode;
 
 import vec::len;
 import comm::{port, chan, send, recv};
@@ -264,7 +264,7 @@ fn encode(src: [u8]) -> [u8] {
     enc.encode_bytes(src)
 }
 
-fn encode_u(src: [u8]) -> [u8] {
+fn urlsafe_encode(src: [u8]) -> [u8] {
     #[doc = "
     Shortcut for enc#encode_bytes_u
 
@@ -308,7 +308,7 @@ fn decode(src: [u8]) -> [u8] {
     enc.decode_bytes(src)
 }
 
-fn decode_u(src: [u8]) -> [u8] {
+fn urlsafe_decode(src: [u8]) -> [u8] {
     #[doc = "
     Shortcut for enc#decode_bytes_u
 
