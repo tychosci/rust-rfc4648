@@ -341,44 +341,44 @@ fn b32encode(table: [u8], dst: [mut u8], src: [u8]) {
 
         if remain == 1u {
             dst[dst_curr + 0u] |= src[src_curr + 0u] >> 3u8;
-            dst[dst_curr + 1u] |= (src[src_curr + 0u] << 2u8) & 0x1f_u8;
+            dst[dst_curr + 1u] |= src[src_curr + 0u] << 2u8 & 0x1f_u8;
         } else if remain == 2u {
             dst[dst_curr + 0u] |= src[src_curr + 0u] >> 3u8;
-            dst[dst_curr + 1u] |= (src[src_curr + 0u] << 2u8) & 0x1f_u8;
-            dst[dst_curr + 1u] |= (src[src_curr + 1u] >> 6u8) & 0x1f_u8;
-            dst[dst_curr + 2u] |= (src[src_curr + 1u] >> 1u8) & 0x1f_u8;
-            dst[dst_curr + 3u] |= (src[src_curr + 1u] << 4u8) & 0x1f_u8;
+            dst[dst_curr + 1u] |= src[src_curr + 0u] << 2u8 & 0x1f_u8;
+            dst[dst_curr + 1u] |= src[src_curr + 1u] >> 6u8 & 0x1f_u8;
+            dst[dst_curr + 2u] |= src[src_curr + 1u] >> 1u8 & 0x1f_u8;
+            dst[dst_curr + 3u] |= src[src_curr + 1u] << 4u8 & 0x1f_u8;
         } else if remain == 3u {
             dst[dst_curr + 0u] |= src[src_curr + 0u] >> 3u8;
-            dst[dst_curr + 1u] |= (src[src_curr + 0u] << 2u8) & 0x1f_u8;
-            dst[dst_curr + 1u] |= (src[src_curr + 1u] >> 6u8) & 0x1f_u8;
-            dst[dst_curr + 2u] |= (src[src_curr + 1u] >> 1u8) & 0x1f_u8;
-            dst[dst_curr + 3u] |= (src[src_curr + 1u] << 4u8) & 0x1f_u8;
-            dst[dst_curr + 3u] |= (src[src_curr + 2u] >> 4u8) & 0x1f_u8;
-            dst[dst_curr + 4u] |= (src[src_curr + 2u] << 1u8) & 0x1f_u8;
+            dst[dst_curr + 1u] |= src[src_curr + 0u] << 2u8 & 0x1f_u8;
+            dst[dst_curr + 1u] |= src[src_curr + 1u] >> 6u8 & 0x1f_u8;
+            dst[dst_curr + 2u] |= src[src_curr + 1u] >> 1u8 & 0x1f_u8;
+            dst[dst_curr + 3u] |= src[src_curr + 1u] << 4u8 & 0x1f_u8;
+            dst[dst_curr + 3u] |= src[src_curr + 2u] >> 4u8 & 0x1f_u8;
+            dst[dst_curr + 4u] |= src[src_curr + 2u] << 1u8 & 0x1f_u8;
         } else if remain == 4u {
             dst[dst_curr + 0u] |= src[src_curr + 0u] >> 3u8;
-            dst[dst_curr + 1u] |= (src[src_curr + 0u] << 2u8) & 0x1f_u8;
-            dst[dst_curr + 1u] |= (src[src_curr + 1u] >> 6u8) & 0x1f_u8;
-            dst[dst_curr + 2u] |= (src[src_curr + 1u] >> 1u8) & 0x1f_u8;
-            dst[dst_curr + 3u] |= (src[src_curr + 1u] << 4u8) & 0x1f_u8;
-            dst[dst_curr + 3u] |= (src[src_curr + 2u] >> 4u8) & 0x1f_u8;
-            dst[dst_curr + 4u] |= (src[src_curr + 2u] << 1u8) & 0x1f_u8;
-            dst[dst_curr + 4u] |= (src[src_curr + 3u] >> 7u8);
-            dst[dst_curr + 5u] |= (src[src_curr + 3u] >> 2u8) & 0x1f_u8;
-            dst[dst_curr + 6u] |= (src[src_curr + 3u] << 3u8) & 0x1f_u8;
+            dst[dst_curr + 1u] |= src[src_curr + 0u] << 2u8 & 0x1f_u8;
+            dst[dst_curr + 1u] |= src[src_curr + 1u] >> 6u8 & 0x1f_u8;
+            dst[dst_curr + 2u] |= src[src_curr + 1u] >> 1u8 & 0x1f_u8;
+            dst[dst_curr + 3u] |= src[src_curr + 1u] << 4u8 & 0x1f_u8;
+            dst[dst_curr + 3u] |= src[src_curr + 2u] >> 4u8 & 0x1f_u8;
+            dst[dst_curr + 4u] |= src[src_curr + 2u] << 1u8 & 0x1f_u8;
+            dst[dst_curr + 4u] |= src[src_curr + 3u] >> 7u8;
+            dst[dst_curr + 5u] |= src[src_curr + 3u] >> 2u8 & 0x1f_u8;
+            dst[dst_curr + 6u] |= src[src_curr + 3u] << 3u8 & 0x1f_u8;
         } else {
             dst[dst_curr + 0u] |= src[src_curr + 0u] >> 3u8;
-            dst[dst_curr + 1u] |= (src[src_curr + 0u] << 2u8) & 0x1f_u8;
-            dst[dst_curr + 1u] |= (src[src_curr + 1u] >> 6u8) & 0x1f_u8;
-            dst[dst_curr + 2u] |= (src[src_curr + 1u] >> 1u8) & 0x1f_u8;
-            dst[dst_curr + 3u] |= (src[src_curr + 1u] << 4u8) & 0x1f_u8;
-            dst[dst_curr + 3u] |= (src[src_curr + 2u] >> 4u8) & 0x1f_u8;
-            dst[dst_curr + 4u] |= (src[src_curr + 2u] << 1u8) & 0x1f_u8;
-            dst[dst_curr + 4u] |= (src[src_curr + 3u] >> 7u8);
-            dst[dst_curr + 5u] |= (src[src_curr + 3u] >> 2u8) & 0x1f_u8;
-            dst[dst_curr + 6u] |= (src[src_curr + 3u] << 3u8) & 0x1f_u8;
-            dst[dst_curr + 6u] |= (src[src_curr + 4u] >> 5u8);
+            dst[dst_curr + 1u] |= src[src_curr + 0u] << 2u8 & 0x1f_u8;
+            dst[dst_curr + 1u] |= src[src_curr + 1u] >> 6u8 & 0x1f_u8;
+            dst[dst_curr + 2u] |= src[src_curr + 1u] >> 1u8 & 0x1f_u8;
+            dst[dst_curr + 3u] |= src[src_curr + 1u] << 4u8 & 0x1f_u8;
+            dst[dst_curr + 3u] |= src[src_curr + 2u] >> 4u8 & 0x1f_u8;
+            dst[dst_curr + 4u] |= src[src_curr + 2u] << 1u8 & 0x1f_u8;
+            dst[dst_curr + 4u] |= src[src_curr + 3u] >> 7u8;
+            dst[dst_curr + 5u] |= src[src_curr + 3u] >> 2u8 & 0x1f_u8;
+            dst[dst_curr + 6u] |= src[src_curr + 3u] << 3u8 & 0x1f_u8;
+            dst[dst_curr + 6u] |= src[src_curr + 4u] >> 5u8;
             dst[dst_curr + 7u] |= src[src_curr + 4u] & 0x1f_u8;
         }
 

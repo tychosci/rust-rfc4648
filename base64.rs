@@ -363,20 +363,20 @@ fn b64encode(table: [u8], dst: [mut u8], src: [u8]) {
         dst[dst_curr + 3u] = 0u8;
 
         if remain == 1u {
-            dst[dst_curr + 0u] |= (src[src_curr + 0u]) >> 2u8;
-            dst[dst_curr + 1u] |= (src[src_curr + 0u] << 4u8) & 0x3f_u8;
+            dst[dst_curr + 0u] |= src[src_curr + 0u] >> 2u8;
+            dst[dst_curr + 1u] |= src[src_curr + 0u] << 4u8 & 0x3f_u8;
         } else if remain == 2u {
-            dst[dst_curr + 0u] |= (src[src_curr + 0u]) >> 2u8;
-            dst[dst_curr + 1u] |= (src[src_curr + 0u] << 4u8) & 0x3f_u8;
-            dst[dst_curr + 1u] |= (src[src_curr + 1u] >> 4u8);
-            dst[dst_curr + 2u] |= (src[src_curr + 1u] << 2u8) & 0x3f_u8;
+            dst[dst_curr + 0u] |= src[src_curr + 0u] >> 2u8;
+            dst[dst_curr + 1u] |= src[src_curr + 0u] << 4u8 & 0x3f_u8;
+            dst[dst_curr + 1u] |= src[src_curr + 1u] >> 4u8;
+            dst[dst_curr + 2u] |= src[src_curr + 1u] << 2u8 & 0x3f_u8;
         } else {
-            dst[dst_curr + 0u] |= (src[src_curr + 0u]) >> 2u8;
-            dst[dst_curr + 1u] |= (src[src_curr + 0u] << 4u8) & 0x3f_u8;
-            dst[dst_curr + 1u] |= (src[src_curr + 1u] >> 4u8);
-            dst[dst_curr + 2u] |= (src[src_curr + 1u] << 2u8) & 0x3f_u8;
-            dst[dst_curr + 2u] |= (src[src_curr + 2u] >> 6u8);
-            dst[dst_curr + 3u] |= (src[src_curr + 2u]) & 0x3f_u8;
+            dst[dst_curr + 0u] |= src[src_curr + 0u] >> 2u8;
+            dst[dst_curr + 1u] |= src[src_curr + 0u] << 4u8 & 0x3f_u8;
+            dst[dst_curr + 1u] |= src[src_curr + 1u] >> 4u8;
+            dst[dst_curr + 2u] |= src[src_curr + 1u] << 2u8 & 0x3f_u8;
+            dst[dst_curr + 2u] |= src[src_curr + 2u] >> 6u8;
+            dst[dst_curr + 3u] |= src[src_curr + 2u] & 0x3f_u8;
         }
 
         dst[dst_curr + 0u] = table[dst[dst_curr + 0u]];

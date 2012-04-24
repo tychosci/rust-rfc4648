@@ -140,7 +140,7 @@ fn url_unescape(s: str, mode: enc_mode) -> str {
     while i < src_length {
         let c = bs[i];
         if c == 37u8 {
-            ts[j] = (unhex(bs[i+1u])<<4u) | unhex(bs[i+2u]);
+            ts[j] = unhex(bs[i+1u]) << 4u | unhex(bs[i+2u]);
             j += 1u;
             i += 3u;
         } else if c == 43u8 {
