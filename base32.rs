@@ -454,47 +454,47 @@ fn b32decode(decode_map: [u8], dst: [mut u8], src: [u8]) -> uint {
         }
 
         alt buf_len {
-          2u {
-            dst[dst_curr + 0u] = buf[0u] << 3u8 | buf[1u] >> 2u8;
-          }
-          3u {
-            dst[dst_curr + 0u] = buf[0u] << 3u8 | buf[1u] >> 2u8;
-            dst[dst_curr + 1u] = (buf[1u] & 0x03_u8) << 6u8 | buf[2u] << 1u8;
-          }
-          4u {
-            dst[dst_curr + 0u] = buf[0u] << 3u8 | buf[1u] >> 2u8;
-            dst[dst_curr + 1u] = (buf[1u] & 0x03_u8) << 6u8 | buf[2u] << 1u8;
-            dst[dst_curr + 1u] |= buf[3u] >> 4u8;
-            dst[dst_curr + 2u] = (buf[3u] & 0x0f_u8) << 4u8;
-          }
-          5u | 6u {
-            dst[dst_curr + 0u] = buf[0u] << 3u8 | buf[1u] >> 2u8;
-            dst[dst_curr + 1u] = (buf[1u] & 0x03_u8) << 6u8 | buf[2u] << 1u8;
-            dst[dst_curr + 1u] |= buf[3u] >> 4u8;
-            dst[dst_curr + 2u] = (buf[3u] & 0x0f_u8) << 4u8;
-            dst[dst_curr + 2u] |= buf[4u] >> 1u8;
-            dst[dst_curr + 3u] = (buf[4u] & 0x01_u8) << 7u8 | buf[5u] << 2u8;
-          }
-          7u | 8u {
-            dst[dst_curr + 0u] = buf[0u] << 3u8 | buf[1u] >> 2u8;
-            dst[dst_curr + 1u] = (buf[1u] & 0x03_u8) << 6u8 | buf[2u] << 1u8;
-            dst[dst_curr + 1u] |= buf[3u] >> 4u8;
-            dst[dst_curr + 2u] = (buf[3u] & 0x0f_u8) << 4u8;
-            dst[dst_curr + 2u] |= buf[4u] >> 1u8;
-            dst[dst_curr + 3u] = (buf[4u] & 0x01_u8) << 7u8 | buf[5u] << 2u8;
-            dst[dst_curr + 3u] |= buf[6u] >> 3u8;
-            dst[dst_curr + 4u] = (buf[6u] & 0x07_u8) << 5u8 | buf[7u];
-          }
-          _ { fail "malformed base32 string"; }
+            2u {
+                dst[dst_curr + 0u] = buf[0u] << 3u8 | buf[1u] >> 2u8;
+            }
+            3u {
+                dst[dst_curr + 0u] = buf[0u] << 3u8 | buf[1u] >> 2u8;
+                dst[dst_curr + 1u] = (buf[1u] & 0x03_u8) << 6u8 | buf[2u] << 1u8;
+            }
+            4u {
+                dst[dst_curr + 0u] = buf[0u] << 3u8 | buf[1u] >> 2u8;
+                dst[dst_curr + 1u] = (buf[1u] & 0x03_u8) << 6u8 | buf[2u] << 1u8;
+                dst[dst_curr + 1u] |= buf[3u] >> 4u8;
+                dst[dst_curr + 2u] = (buf[3u] & 0x0f_u8) << 4u8;
+            }
+            5u | 6u {
+                dst[dst_curr + 0u] = buf[0u] << 3u8 | buf[1u] >> 2u8;
+                dst[dst_curr + 1u] = (buf[1u] & 0x03_u8) << 6u8 | buf[2u] << 1u8;
+                dst[dst_curr + 1u] |= buf[3u] >> 4u8;
+                dst[dst_curr + 2u] = (buf[3u] & 0x0f_u8) << 4u8;
+                dst[dst_curr + 2u] |= buf[4u] >> 1u8;
+                dst[dst_curr + 3u] = (buf[4u] & 0x01_u8) << 7u8 | buf[5u] << 2u8;
+            }
+            7u | 8u {
+                dst[dst_curr + 0u] = buf[0u] << 3u8 | buf[1u] >> 2u8;
+                dst[dst_curr + 1u] = (buf[1u] & 0x03_u8) << 6u8 | buf[2u] << 1u8;
+                dst[dst_curr + 1u] |= buf[3u] >> 4u8;
+                dst[dst_curr + 2u] = (buf[3u] & 0x0f_u8) << 4u8;
+                dst[dst_curr + 2u] |= buf[4u] >> 1u8;
+                dst[dst_curr + 3u] = (buf[4u] & 0x01_u8) << 7u8 | buf[5u] << 2u8;
+                dst[dst_curr + 3u] |= buf[6u] >> 3u8;
+                dst[dst_curr + 4u] = (buf[6u] & 0x07_u8) << 5u8 | buf[7u];
+            }
+            _ { fail "malformed base32 string"; }
         }
 
         alt buf_len {
-          2u      { dst_curr += 1u; }
-          3u | 4u { dst_curr += 2u; }
-          5u      { dst_curr += 3u; }
-          6u | 7u { dst_curr += 4u; }
-          8u      { dst_curr += 5u; }
-          _       { fail "malformed base32 string"; }
+            2u      { dst_curr += 1u; }
+            3u | 4u { dst_curr += 2u; }
+            5u      { dst_curr += 3u; }
+            6u | 7u { dst_curr += 4u; }
+            8u      { dst_curr += 5u; }
+            _       { fail "malformed base32 string"; }
         }
     }
 

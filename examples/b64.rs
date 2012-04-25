@@ -15,16 +15,16 @@ fn main(args: [str]) {
     }
 
     alt io::read_whole_file(args[1]) {
-      result::ok(data) {
-        let res = alt args[0] {
-          "encode" { base64::encode(data) }
-          "decode" { base64::decode(data) }
-          _ { ret; }
-        };
-        stdout.write(res);
-      }
-      result::err(msg) {
-        stderr.write_line(#fmt["Error: %s", msg]);
-      }
+        result::ok(data) {
+            let res = alt args[0] {
+                "encode" { base64::encode(data) }
+                "decode" { base64::decode(data) }
+                _ { ret; }
+            };
+            stdout.write(res);
+        }
+        result::err(msg) {
+            stderr.write_line(#fmt["Error: %s", msg]);
+        }
     }
 }
