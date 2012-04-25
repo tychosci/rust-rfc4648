@@ -21,18 +21,20 @@ pure fn ishex(c: u8) -> bool {
 
 #[inline(always)]
 pure fn unhex(c: u8) -> u8 {
-    if 48u8 <= c && c <= 57u8 { c - 48u8 }
-    else if 65u8 <= c && c <= 90u8  { c - 65u8 + 10u8 }
-    else if 97u8 <= c && c <= 122u8 { c - 97u8 + 10u8 }
-    else { fail "should be unreachable"; }
+    alt c {
+        48u8 to  57u8 { c - 48u8 }        // 0 .. 9
+        65u8 to  90u8 { c - 65u8 + 10u8 } // A .. Z
+        97u8 to 122u8 { c - 97u8 + 10u8 } // a .. z
+        _ { fail "should be unreachable"; }
+    }
 }
 
 #[inline(always)]
 pure fn should_escape(c: u8, mode: enc_mode) -> bool {
     alt c {
-        65u8 to 90u8  { ret false; } // A .. Z
+        48u8 to  57u8 { ret false; } // 0 .. 9
+        65u8 to  90u8 { ret false; } // A .. Z
         97u8 to 122u8 { ret false; } // a .. z
-        48u8 to 57u8  { ret false; } // 0 .. 9
         _ { }
     }
 
