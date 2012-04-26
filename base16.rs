@@ -11,11 +11,22 @@
 //
 
 #[doc = "
+Base16 Module
 
-    Base16 Module
+See <http://tools.ietf.org/html/rfc4648#section-8> for details.
 
-    See <http://tools.ietf.org/html/rfc4648#section-8> for details.
+# Example
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+use encoding;
+import encoding::base16;
+
+let src = str::bytes(\"base16\");
+let res = base16::encode(src);
+let res = str::from_bytes(res);
+
+io::println(#fmt[\"%s\", res]);
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 "];
 
 export mk, enc, encode, decode;

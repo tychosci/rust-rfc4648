@@ -45,11 +45,22 @@
 //
 
 #[doc = "
+Base64 module
 
-    Base64 module
+See <http://tools.ietf.org/html/rfc4648#section-4> for details.
 
-    See <http://tools.ietf.org/html/rfc4648#section-4> for details.
+# Example
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+use encoding;
+import encoding::base64;
+
+let src = str::bytes(\"base64\");
+let res = base64::encode(src);
+let res = str::from_bytes(res);
+
+io::println(#fmt[\"%s\", res]);
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 "];
 
 export mk, enc, encode, urlsafe_encode, decode, urlsafe_decode;

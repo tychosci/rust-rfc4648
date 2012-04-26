@@ -29,11 +29,22 @@
 //
 
 #[doc = "
+Base32 Module
 
-    Base32 Module
+See <http://tools.ietf.org/html/rfc4648#section-6> for details.
 
-    See <http://tools.ietf.org/html/rfc4648#section-6> for details.
+# Example
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+use encoding;
+import encoding::base32;
+
+let src = str::bytes(\"base32\");
+let res = base32::encode(src);
+let res = str::from_bytes(res);
+
+io::println(#fmt[\"%s\", res]);
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 "];
 
 export mk, enc, encode, hex_encode, decode, hex_decode;
