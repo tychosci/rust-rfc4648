@@ -13,10 +13,12 @@ fn query_unescape(s: str) -> str { url_unescape(s, query) }
 
 #[inline(always)]
 pure fn ishex(c: u8) -> bool {
-    if 48u8 <= c && c <= 57u8 { true }
-    else if 65u8 <= c && c <= 90u8  { true }
-    else if 97u8 <= c && c <= 122u8 { true }
-    else { false }
+    alt c {
+        48u8 to  57u8 { true } // 0 .. 9
+        65u8 to  90u8 { true } // A .. Z
+        97u8 to 122u8 { true } // a .. z
+        _ { false }
+    }
 }
 
 #[inline(always)]
