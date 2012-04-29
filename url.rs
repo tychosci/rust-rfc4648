@@ -2,8 +2,6 @@
 // url.rs - module for url-encoding
 //
 
-import vec::len;
-
 export query_escape, query_unescape;
 
 enum enc_mode { query, path, fragment, userinfo }
@@ -62,7 +60,7 @@ pure fn should_escape(c: u8, mode: enc_mode) -> bool {
 
 fn url_escape(s: str, mode: enc_mode) -> str {
     let bs = str::bytes(s);
-    let src_length = len(bs);
+    let src_length = bs.len();
     let mut space_count = 0u;
     let mut hex_count = 0u;
     let table =
@@ -112,7 +110,7 @@ fn url_escape(s: str, mode: enc_mode) -> str {
 
 fn url_unescape(s: str, mode: enc_mode) -> str {
     let bs = str::bytes(s);
-    let src_length = len(bs);
+    let src_length = bs.len();
     let mut n = 0u;
     let mut i = 0u;
     let mut hasplus = false;

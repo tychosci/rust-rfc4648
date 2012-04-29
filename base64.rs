@@ -65,7 +65,6 @@ io::println(#fmt[\"%s\", res]);
 
 export mk, enc, encode, urlsafe_encode, decode, urlsafe_decode;
 
-import vec::len;
 import comm::{port, chan, send, recv};
 
 const PAD: u8 = 61u8;
@@ -189,13 +188,13 @@ impl of enc for enc_t {
         b64decode(self.decode_map_u, dst, src)
     }
     fn encode_bytes(src: [u8]) -> [u8] {
-        let dst_length = encoded_len(len(src));
+        let dst_length = encoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
         self.encode(dst, src);
         vec::from_mut(dst)
     }
     fn encode_bytes_u(src: [u8]) -> [u8] {
-        let dst_length = encoded_len(len(src));
+        let dst_length = encoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
         self.encode_u(dst, src);
         vec::from_mut(dst)
@@ -209,13 +208,13 @@ impl of enc for enc_t {
         str::from_bytes(self.encode_bytes_u(src))
     }
     fn decode_bytes(src: [u8]) -> [u8] {
-        let dst_length = decoded_len(len(src));
+        let dst_length = decoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
         let end = self.decode(dst, src);
         vec::slice(vec::from_mut(dst), 0u, end)
     }
     fn decode_bytes_u(src: [u8]) -> [u8] {
-        let dst_length = decoded_len(len(src));
+        let dst_length = decoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
         let end = self.decode_u(dst, src);
         vec::slice(vec::from_mut(dst), 0u, end)
@@ -352,8 +351,8 @@ pure fn decoded_len(src_length: uint) -> uint {
 }
 
 fn b64encode(table: [u8], dst: [mut u8], src: [u8]) {
-    let src_length = len(src);
-    let dst_length = len(dst);
+    let src_length = src.len();
+    let dst_length = dst.len();
 
     if src_length == 0u {
         ret;
@@ -407,7 +406,7 @@ fn b64encode(table: [u8], dst: [mut u8], src: [u8]) {
 
 fn b64decode(decode_map: [u8], dst: [mut u8], src: [u8]) -> uint {
     let buf = vec::to_mut(vec::from_elem(4u, 0u8));
-    let mut src_length = len(src);
+    let mut src_length = src.len();
     let mut src_curr = 0u;
     let mut dst_curr = 0u;
     let mut buf_len = 4u;
@@ -471,11 +470,11 @@ mod tests {
         let src = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
         let exp = ["", "Zg==", "Zm8=", "Zm9v",
                    "Zm9vYg==", "Zm9vYmE=", "Zm9vYmFy"];
-        let src = vec::map(src) {|e| str::bytes(e) };
-        let exp = vec::map(exp) {|e| str::bytes(e) };
+        let src = src.map {|e| str::bytes(e) };
+        let exp = exp.map {|e| str::bytes(e) };
         let enc = mk();
 
-        uint::range(0u, len(src)) {|i|
+        uint::range(0u, src.len()) {|i|
             let res = enc.encode_bytes(src[i]);
             assert res == exp[i];
         }
@@ -487,7 +486,7 @@ mod tests {
                    "Zm9vYg==", "Zm9vYmE=", "Zm8/YmE/"];
         let enc = mk();
 
-        uint::range(0u, len(src)) {|i|
+        uint::range(0u, src.len()) {|i|
             let res = enc.encode_str(src[i]);
             assert res == exp[i];
         }
@@ -497,11 +496,11 @@ mod tests {
         let src = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"];
         let exp = ["", "Zg==", "Zm8=", "Zm8-",
                    "Zm9vYg==", "Zm9vYmE=", "Zm8_YmE_"];
-        let src = vec::map(src) {|e| str::bytes(e) };
-        let exp = vec::map(exp) {|e| str::bytes(e) };
+        let src = src.map {|e| str::bytes(e) };
+        let exp = exp.map {|e| str::bytes(e) };
         let enc = mk();
 
-        uint::range(0u, len(src)) {|i|
+        uint::range(0u, src.len()) {|i|
             let res = enc.encode_bytes_u(src[i]);
             assert res == exp[i];
         }
@@ -513,7 +512,7 @@ mod tests {
                    "Zm9vYg==", "Zm9vYmE=", "Zm8_YmE_"];
         let enc = mk();
 
-        uint::range(0u, len(src)) {|i|
+        uint::range(0u, src.len()) {|i|
             let res = enc.encode_str_u(src[i]);
             assert res == exp[i];
         }
@@ -523,11 +522,11 @@ mod tests {
         let src = ["", "Zg==", "Zm8=", "Zm8+",
                    "Zm9v\r\nYg==", "\tZm9vYmE=", "Zm8/YmE/"];
         let exp = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"];
-        let src = vec::map(src) {|e| str::bytes(e) };
-        let exp = vec::map(exp) {|e| str::bytes(e) };
+        let src = src.map {|e| str::bytes(e) };
+        let exp = exp.map {|e| str::bytes(e) };
         let enc = mk();
 
-        uint::range(0u, len(src)) {|i|
+        uint::range(0u, src.len()) {|i|
             let res = enc.decode_bytes(src[i]);
             assert res == exp[i];
         }
@@ -537,11 +536,11 @@ mod tests {
         let src = ["", "Zg==", "Zm8=", "Zm8-",
                    "Zm9v\r\nYg==", "\tZm9vYmE=", "Zm8_YmE_"];
         let exp = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"];
-        let src = vec::map(src) {|e| str::bytes(e) };
-        let exp = vec::map(exp) {|e| str::bytes(e) };
+        let src = src.map {|e| str::bytes(e) };
+        let exp = exp.map {|e| str::bytes(e) };
         let enc = mk();
 
-        uint::range(0u, len(src)) {|i|
+        uint::range(0u, src.len()) {|i|
             let res = enc.decode_bytes_u(src[i]);
             assert res == exp[i];
         }

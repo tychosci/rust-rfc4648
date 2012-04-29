@@ -31,8 +31,6 @@ io::println(#fmt[\"%s\", res]);
 
 export mk, enc, encode, decode;
 
-import vec::len;
-
 type enc_t = {table: [u8], decode_map: [u8]};
 
 iface enc {
@@ -72,13 +70,13 @@ impl of enc for enc_t {
         b16decode(self.decode_map, dst, src)
     }
     fn encode_bytes(src: [u8]) -> [u8] {
-        let dst_len = encoded_len(len(src));
+        let dst_len = encoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_len, 0u8));
         self.encode(dst, src);
         vec::from_mut(dst)
     }
     fn decode_bytes(src: [u8]) -> [u8] {
-        let dst_len = decoded_len(len(src));
+        let dst_len = decoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_len, 0u8));
         let end = self.decode(dst, src);
         vec::slice(vec::from_mut(dst), 0u, end)
@@ -154,14 +152,14 @@ pure fn encoded_len(src_len: uint) -> uint { src_len * 2u }
 pure fn decoded_len(src_len: uint) -> uint { src_len / 2u }
 
 fn b16encode(table: [u8], dst: [mut u8], src: [u8]) {
-    uint::range(0u, len(src)) {|j|
+    uint::range(0u, src.len()) {|j|
         dst[j + 1u * j] = table[src[j] >> 4u8];
         dst[j + 1u + 1u * j] = table[src[j] & 0x0f_u8];
     }
 }
 
 fn b16decode(decode_map: [u8], dst: [mut u8], src: [u8]) -> uint {
-    let mut src_length = len(src);
+    let mut src_length = src.len();
     let mut i = 0u;
     let mut j = 0u;
     let mut chr1 = 0u8;

@@ -49,8 +49,6 @@ io::println(#fmt[\"%s\", res]);
 
 export mk, enc, encode, hex_encode, decode, hex_decode;
 
-import vec::len;
-
 const PAD: u8 = 61u8;
 
 type enc_t = {
@@ -162,13 +160,13 @@ impl of enc for enc_t {
         b32decode(self.decode_map_h, dst, src)
     }
     fn encode_bytes(src: [u8]) -> [u8] {
-        let dst_length = encoded_len(len(src));
+        let dst_length = encoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
         self.encode(dst, src);
         vec::from_mut(dst)
     }
     fn encode_bytes_h(src: [u8]) -> [u8] {
-        let dst_length = encoded_len(len(src));
+        let dst_length = encoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
         self.encode_h(dst, src);
         vec::from_mut(dst)
@@ -182,13 +180,13 @@ impl of enc for enc_t {
         str::from_bytes(self.encode_bytes_h(src))
     }
     fn decode_bytes(src: [u8]) -> [u8] {
-        let dst_length = decoded_len(len(src));
+        let dst_length = decoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
         let end = self.decode(dst, src);
         vec::slice(vec::from_mut(dst), 0u, end)
     }
     fn decode_bytes_h(src: [u8]) -> [u8] {
-        let dst_length = decoded_len(len(src));
+        let dst_length = decoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
         let end = self.decode_h(dst, src);
         vec::slice(vec::from_mut(dst), 0u, end)
@@ -325,8 +323,8 @@ pure fn decoded_len(src_length: uint) -> uint {
 }
 
 fn b32encode(table: [u8], dst: [mut u8], src: [u8]) {
-    let src_length = len(src);
-    let dst_length = len(dst);
+    let src_length = src.len();
+    let dst_length = dst.len();
 
     if src_length == 0u {
         ret;
@@ -422,7 +420,7 @@ fn b32encode(table: [u8], dst: [mut u8], src: [u8]) {
 
 fn b32decode(decode_map: [u8], dst: [mut u8], src: [u8]) -> uint {
     let buf = vec::to_mut(vec::from_elem(8u, 0u8));
-    let mut src_length = len(src);
+    let mut src_length = src.len();
     let mut src_curr = 0u;
     let mut dst_curr = 0u;
     let mut buf_len = 8u;
@@ -516,28 +514,28 @@ fn b32decode(decode_map: [u8], dst: [mut u8], src: [u8]) -> uint {
 mod tests {
     #[test]
     fn test_encode_bytes() {
-        let src0 = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
-        let exp0 = ["", "MY======", "MZXQ====", "MZXW6===",
-                    "MZXW6YQ=", "MZXW6YTB", "MZXW6YTBOI======"];
-        let src = vec::map(src0)  {|e| str::bytes(e) };
-        let exp = vec::map(exp0) {|e| str::bytes(e) };
+        let src = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
+        let exp = ["", "MY======", "MZXQ====", "MZXW6===",
+                   "MZXW6YQ=", "MZXW6YTB", "MZXW6YTBOI======"];
+        let src = src.map {|e| str::bytes(e) };
+        let exp = exp.map {|e| str::bytes(e) };
         let enc = mk();
 
-        uint::range(0u, len(src)) {|i|
+        uint::range(0u, src.len()) {|i|
             let res = enc.encode_bytes(src[i]);
             assert exp[i] == res;
         }
     }
     #[test]
     fn test_encode_bytes_h() {
-        let src0 = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
-        let exp0 = ["", "CO======", "CPNG====", "CPNMU===",
-                    "CPNMUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"];
-        let src = vec::map(src0)  {|e| str::bytes(e) };
-        let exp = vec::map(exp0) {|e| str::bytes(e) };
+        let src = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
+        let exp = ["", "CO======", "CPNG====", "CPNMU===",
+                   "CPNMUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"];
+        let src = src.map {|e| str::bytes(e) };
+        let exp = exp.map {|e| str::bytes(e) };
         let enc = mk();
 
-        uint::range(0u, len(src)) {|i|
+        uint::range(0u, src.len()) {|i|
             let res = enc.encode_bytes_h(src[i]);
             assert exp[i] == res;
         }
@@ -549,7 +547,7 @@ mod tests {
                    "MZXW6YQ=", "MZXW6YTB", "MZXW6YTBOI======"];
         let enc = mk();
 
-        uint::range(0u, len(src)) {|i|
+        uint::range(0u, src.len()) {|i|
             let res = enc.encode_str(src[i]);
             assert exp[i] == res;
         }
@@ -561,7 +559,7 @@ mod tests {
                    "CPNMUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"];
         let enc = mk();
 
-        uint::range(0u, len(src)) {|i|
+        uint::range(0u, src.len()) {|i|
             let res = enc.encode_str_h(src[i]);
             assert exp[i] == res;
         }
@@ -571,11 +569,11 @@ mod tests {
         let src = ["", "MY======", "MZXQ====", "MZXW6===",
                    "\tMZXW\r\n6YQ=", "MZXW6YTB", "MZXW6YTBOI======"];
         let exp = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
-        let src = vec::map(src) {|e| str::bytes(e) };
-        let exp = vec::map(exp) {|e| str::bytes(e) };
+        let src = src.map {|e| str::bytes(e) };
+        let exp = exp.map {|e| str::bytes(e) };
         let enc = mk();
 
-        uint::range(0u, len(src)) {|i|
+        uint::range(0u, src.len()) {|i|
             let res = enc.decode_bytes(src[i]);
             assert exp[i] == res;
         }
@@ -585,11 +583,11 @@ mod tests {
         let src = ["", "CO======", "CPNG====", "CPNMU===",
                    "\tCPNM\r\nUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"];
         let exp = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
-        let src = vec::map(src) {|e| str::bytes(e) };
-        let exp = vec::map(exp) {|e| str::bytes(e) };
+        let src = src.map {|e| str::bytes(e) };
+        let exp = exp.map {|e| str::bytes(e) };
         let enc = mk();
 
-        uint::range(0u, len(src)) {|i|
+        uint::range(0u, src.len()) {|i|
             let res = enc.decode_bytes_h(src[i]);
             assert exp[i] == res;
         }
