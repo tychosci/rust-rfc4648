@@ -65,8 +65,6 @@ io::println(#fmt[\"%s\", res]);
 
 export mk, enc, encode, urlsafe_encode, decode, urlsafe_decode;
 
-import comm::{port, chan, send, recv};
-
 const PAD: u8 = 61u8;
 
 type enc_t = {
@@ -75,13 +73,6 @@ type enc_t = {
     decode_map: [u8],
     decode_map_u: [u8]
 };
-
-type enc_w = { c: chan<op_w> };
-type enc_r = { p: port<reply>, c: chan<op_r> };
-
-enum op_w  { close_w, flush_w, w([u8]) }
-enum op_r  { close_r, r(u8) }
-enum reply { closed, eof, ok([u8])  }
 
 // FIXME
 // `enc` iface on base16/32/64.rs should be polymorphic.
