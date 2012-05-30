@@ -223,19 +223,19 @@ fn mk() -> enc {
 
     let mut i = 0u8;
     let table = vec::to_mut(vec::from_elem(64u, 0u8));
-    u8::range(65u8, 91u8)  {|j| table[i] = j; i += 1u8; }
-    u8::range(97u8, 123u8) {|j| table[i] = j; i += 1u8; }
-    u8::range(48u8, 58u8)  {|j| table[i] = j; i += 1u8; }
+    for u8::range(65u8, 91u8)  {|j| table[i] = j; i += 1u8; }
+    for u8::range(97u8, 123u8) {|j| table[i] = j; i += 1u8; }
+    for u8::range(48u8, 58u8)  {|j| table[i] = j; i += 1u8; }
     table[i] = 43u8; table[i + 1u8] = 47u8;
 
-    let table_u = table;
+    let table_u = copy table;
     table_u[i] = 45u8; table_u[i + 1u8] = 95u8;
 
     let decode_map = vec::to_mut(vec::from_elem(256u, 0xff_u8));
     let decode_map_u = vec::to_mut(vec::from_elem(256u, 0xff_u8));
 
-    u8::range(0u8, 64u8) {|i| decode_map[table[i]] = i; }
-    u8::range(0u8, 64u8) {|i| decode_map_u[table_u[i]] = i; }
+    for u8::range(0u8, 64u8) {|i| decode_map[table[i]] = i; }
+    for u8::range(0u8, 64u8) {|i| decode_map_u[table_u[i]] = i; }
 
     {table: vec::from_mut(table),
      table_u: vec::from_mut(table_u),
@@ -353,7 +353,7 @@ fn b64encode(table: [u8], dst: [mut u8], src: [u8]) {
         fail "dst's length should be divisible by 4";
     }
 
-    for util::range(0u, (src_length + 2u) / 3u) {|i|
+    for uint::range(0u, (src_length + 2u) / 3u) {|i|
         let src_curr = 3u * i;
         let dst_curr = 4u * i;
         let remain = src_length - src_curr;
@@ -402,8 +402,6 @@ fn b64decode(decode_map: [u8], dst: [mut u8], src: [u8]) -> uint {
     let mut dst_curr = 0u;
     let mut buf_len = 4u;
     let mut end = false;
-    let mut chr = 0u8;
-    let mut i = 0u;
 
     while src_length > 0u && !end {
         buf[0] = 0xff_u8;
@@ -411,12 +409,12 @@ fn b64decode(decode_map: [u8], dst: [mut u8], src: [u8]) -> uint {
         buf[2] = 0xff_u8;
         buf[3] = 0xff_u8;
 
-        i = 0u;
+        let mut i = 0u;
         while i < 4u {
             if src_length == 0u {
                 fail "malformed base64 string";
             }
-            chr = src[src_curr];
+            let chr = src[src_curr];
             src_curr += 1u;
             src_length -= 1u;
             if char::is_whitespace(chr as char) {
@@ -465,7 +463,7 @@ mod tests {
         let exp = exp.map {|e| str::bytes(e) };
         let enc = mk();
 
-        uint::range(0u, src.len()) {|i|
+        for uint::range(0u, src.len()) {|i|
             let res = enc.encode_bytes(src[i]);
             assert res == exp[i];
         }
@@ -477,7 +475,7 @@ mod tests {
                    "Zm9vYg==", "Zm9vYmE=", "Zm8/YmE/"];
         let enc = mk();
 
-        uint::range(0u, src.len()) {|i|
+        for uint::range(0u, src.len()) {|i|
             let res = enc.encode_str(src[i]);
             assert res == exp[i];
         }
@@ -491,7 +489,7 @@ mod tests {
         let exp = exp.map {|e| str::bytes(e) };
         let enc = mk();
 
-        uint::range(0u, src.len()) {|i|
+        for uint::range(0u, src.len()) {|i|
             let res = enc.encode_bytes_u(src[i]);
             assert res == exp[i];
         }
@@ -503,7 +501,7 @@ mod tests {
                    "Zm9vYg==", "Zm9vYmE=", "Zm8_YmE_"];
         let enc = mk();
 
-        uint::range(0u, src.len()) {|i|
+        for uint::range(0u, src.len()) {|i|
             let res = enc.encode_str_u(src[i]);
             assert res == exp[i];
         }
@@ -517,7 +515,7 @@ mod tests {
         let exp = exp.map {|e| str::bytes(e) };
         let enc = mk();
 
-        uint::range(0u, src.len()) {|i|
+        for uint::range(0u, src.len()) {|i|
             let res = enc.decode_bytes(src[i]);
             assert res == exp[i];
         }
@@ -531,7 +529,7 @@ mod tests {
         let exp = exp.map {|e| str::bytes(e) };
         let enc = mk();
 
-        uint::range(0u, src.len()) {|i|
+        for uint::range(0u, src.len()) {|i|
             let res = enc.decode_bytes_u(src[i]);
             assert res == exp[i];
         }

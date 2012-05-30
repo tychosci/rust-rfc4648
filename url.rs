@@ -67,7 +67,7 @@ fn url_escape(s: str, mode: enc_mode) -> str {
         [48u8, 49u8, 50u8, 51u8, 52u8, 53u8, 54u8, 55u8,
          56u8, 57u8, 65u8, 66u8, 67u8, 68u8, 69u8, 70u8];
 
-    uint::range(0u, src_length) {|i|
+    for uint::range(0u, src_length) {|i|
         let c = bs[i];
         if should_escape(bs[i], mode) {
             if c == 32u8 && mode == query {
@@ -86,10 +86,9 @@ fn url_escape(s: str, mode: enc_mode) -> str {
     let ts = vec::to_mut(vec::from_elem(src_length + 2u * hex_count, 0u8));
     let mut i = 0u;
     let mut j = 0u;
-    let mut c = 0u8;
 
     while i < src_length {
-        c = bs[i];
+        let c = bs[i];
         if c == 32u8 && mode == query {
             ts[j] = '+' as u8;
             j += 1u;
