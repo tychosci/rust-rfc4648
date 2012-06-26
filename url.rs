@@ -80,7 +80,7 @@ fn url_escape(s: str, mode: enc_mode) -> str {
 
     // Nothing to do if there's no space and no escapable chars in `s`
     if space_count == 0u && hex_count == 0u {
-        ret s;
+        ret copy s;
     }
 
     let ts = vec::to_mut(vec::from_elem(src_length + 2u * hex_count, 0u8));
@@ -131,7 +131,7 @@ fn url_unescape(s: str, mode: enc_mode) -> str {
     }
 
     if n == 0u && !hasplus {
-        ret s;
+        ret copy s;
     }
 
     let ts = vec::to_mut(vec::from_elem(src_length - 2u * n, 0u8));

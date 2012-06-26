@@ -4,8 +4,7 @@ import io::writer_util;
 import encoding::base64;
 
 fn main(args: [str]) {
-    let mut args = args;
-    let binary = vec::shift(args);
+    let binary = copy args[0];
     let stdout = io::stdout();
     let stderr = io::stderr();
 
@@ -14,9 +13,9 @@ fn main(args: [str]) {
         ret;
     }
 
-    alt io::read_whole_file(args[1]) {
+    alt io::read_whole_file(args[2]) {
         result::ok(data) {
-            let res = alt args[0] {
+            let res = alt args[1] {
                 "encode" { base64::encode(data) }
                 "decode" { base64::decode(data) }
                 _ { ret; }
