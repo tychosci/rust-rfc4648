@@ -37,10 +37,10 @@ See <http://tools.ietf.org/html/rfc4648#section-6> for details.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 use encoding;
-import encoding::base32;
+import encoding::extensions;
 
-let src = str::bytes(\"base32\");
-let res = base32::encode(src);
+let src = \"base32\";
+let res = src.encode(encoding::base32);
 let res = str::from_bytes(res);
 
 io::println(#fmt[\"%s\", res]);
@@ -52,17 +52,17 @@ export mk, enc, encode, hex_encode, decode, hex_decode;
 const PAD: u8 = 61u8;
 
 type enc_t = {
-    table: [u8],
-    table_h: [u8],
-    decode_map: [u8],
-    decode_map_h: [u8]
+    table: ~[u8],
+    table_h: ~[u8],
+    decode_map: ~[u8],
+    decode_map_h: ~[u8]
 };
 
 iface enc {
-    fn encode(dst: [mut u8], src: [u8]);
-    fn encode_h(dst: [mut u8], src: [u8]);
-    fn decode(dst: [mut u8], src: [u8]) -> uint;
-    fn decode_h(dst: [mut u8], src: [u8]) -> uint;
+    fn encode(dst: &[mut u8], src: &[u8]);
+    fn encode_h(dst: &[mut u8], src: &[u8]);
+    fn decode(dst: &[mut u8], src: &[u8]) -> uint;
+    fn decode_h(dst: &[mut u8], src: &[u8]) -> uint;
     #[doc = "
     Encode input bytes to base32-encoded bytes.
 
@@ -74,7 +74,7 @@ iface enc {
 
     base32-encoded bytes
     "]
-    fn encode_bytes(src: [u8]) -> [u8];
+    fn encode_bytes(src: &[u8]) -> ~[u8];
     #[doc = "
     Encode input bytes to base32-encoded bytes.
 
@@ -89,7 +89,7 @@ iface enc {
 
     base32-encoded bytes
     "]
-    fn encode_bytes_h(src: [u8]) -> [u8];
+    fn encode_bytes_h(src: &[u8]) -> ~[u8];
     #[doc = "
     Encode given string to base32-encoded string
 
@@ -128,7 +128,7 @@ iface enc {
 
     decoded bytes
     "]
-    fn decode_bytes(src: [u8]) -> [u8];
+    fn decode_bytes(src: &[u8]) -> ~[u8];
     #[doc = "
     Decode base32-encoded bytes to its original bytes.
 
@@ -143,29 +143,29 @@ iface enc {
 
     decoded bytes
     "]
-    fn decode_bytes_h(src: [u8]) -> [u8];
+    fn decode_bytes_h(src: &[u8]) -> ~[u8];
 }
 
 impl of enc for enc_t {
-    fn encode(dst: [mut u8], src: [u8]) {
+    fn encode(dst: &[mut u8], src: &[u8]) {
         b32encode(self.table, dst, src);
     }
-    fn encode_h(dst: [mut u8], src: [u8]) {
+    fn encode_h(dst: &[mut u8], src: &[u8]) {
         b32encode(self.table_h, dst, src);
     }
-    fn decode(dst: [mut u8], src: [u8]) -> uint {
+    fn decode(dst: &[mut u8], src: &[u8]) -> uint {
         b32decode(self.decode_map, dst, src)
     }
-    fn decode_h(dst: [mut u8], src: [u8]) -> uint {
+    fn decode_h(dst: &[mut u8], src: &[u8]) -> uint {
         b32decode(self.decode_map_h, dst, src)
     }
-    fn encode_bytes(src: [u8]) -> [u8] {
+    fn encode_bytes(src: &[u8]) -> ~[u8] {
         let dst_length = encoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
         self.encode(dst, src);
         vec::from_mut(dst)
     }
-    fn encode_bytes_h(src: [u8]) -> [u8] {
+    fn encode_bytes_h(src: &[u8]) -> ~[u8] {
         let dst_length = encoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
         self.encode_h(dst, src);
@@ -179,13 +179,13 @@ impl of enc for enc_t {
         let src = str::bytes(src);
         str::from_bytes(self.encode_bytes_h(src))
     }
-    fn decode_bytes(src: [u8]) -> [u8] {
+    fn decode_bytes(src: &[u8]) -> ~[u8] {
         let dst_length = decoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
         let end = self.decode(dst, src);
         vec::slice(vec::from_mut(dst), 0u, end)
     }
-    fn decode_bytes_h(src: [u8]) -> [u8] {
+    fn decode_bytes_h(src: &[u8]) -> ~[u8] {
         let dst_length = decoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
         let end = self.decode_h(dst, src);
@@ -204,19 +204,19 @@ fn mk() -> enc {
 
     let mut i = 0u8;
     let table = vec::to_mut(vec::from_elem(32u, 0u8));
-    for u8::range(65u8, 91u8) {|j| table[i] = j; i += 1u8; }
-    for u8::range(50u8, 56u8) {|j| table[i] = j; i += 1u8; }
+    for u8::range(65u8, 91u8) |j| { table[i] = j; i += 1u8; }
+    for u8::range(50u8, 56u8) |j| { table[i] = j; i += 1u8; }
 
     let mut i = 0u8;
     let table_h = vec::to_mut(vec::from_elem(32u, 0u8));
-    for u8::range(48u8, 58u8) {|j| table_h[i] = j; i += 1u8; }
-    for u8::range(65u8, 87u8) {|j| table_h[i] = j; i += 1u8; }
+    for u8::range(48u8, 58u8) |j| { table_h[i] = j; i += 1u8; }
+    for u8::range(65u8, 87u8) |j| { table_h[i] = j; i += 1u8; }
 
     let decode_map = vec::to_mut(vec::from_elem(256u, 0xff_u8));
     let decode_map_h = vec::to_mut(vec::from_elem(256u, 0xff_u8));
 
-    for u8::range(0u8, 32u8) {|i| decode_map[table[i]] = i; }
-    for u8::range(0u8, 32u8) {|i| decode_map_h[table_h[i]] = i; }
+    for u8::range(0u8, 32u8) |i| { decode_map[table[i]] = i; }
+    for u8::range(0u8, 32u8) |i| { decode_map_h[table_h[i]] = i; }
 
     {table: vec::from_mut(table),
      table_h: vec::from_mut(table_h),
@@ -224,7 +224,7 @@ fn mk() -> enc {
      decode_map_h: vec::from_mut(decode_map_h)} as enc
 }
 
-fn encode(src: [u8]) -> [u8] {
+fn encode(src: &[u8]) -> ~[u8] {
     #[doc = "
     Shortcut for enc#encode_bytes
 
@@ -246,7 +246,7 @@ fn encode(src: [u8]) -> [u8] {
     enc.encode_bytes(src)
 }
 
-fn hex_encode(src: [u8]) -> [u8] {
+fn hex_encode(src: &[u8]) -> ~[u8] {
     #[doc = "
     Shortcut for enc#encode_bytes_h
 
@@ -268,7 +268,7 @@ fn hex_encode(src: [u8]) -> [u8] {
     enc.encode_bytes_h(src)
 }
 
-fn decode(src: [u8]) -> [u8] {
+fn decode(src: &[u8]) -> ~[u8] {
     #[doc = "
     Shortcut for enc#decode_bytes
 
@@ -290,7 +290,7 @@ fn decode(src: [u8]) -> [u8] {
     enc.decode_bytes(src)
 }
 
-fn hex_decode(src: [u8]) -> [u8] {
+fn hex_decode(src: &[u8]) -> ~[u8] {
     #[doc = "
     Shortcut for enc#decode_bytes_h
 
@@ -322,7 +322,7 @@ pure fn decoded_len(src_length: uint) -> uint {
     src_length / 8u * 5u
 }
 
-fn b32encode(table: [u8], dst: [mut u8], src: [u8]) {
+fn b32encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     let src_length = src.len();
     let dst_length = dst.len();
 
@@ -334,7 +334,7 @@ fn b32encode(table: [u8], dst: [mut u8], src: [u8]) {
         fail "dst's length should be divisible by 8";
     }
 
-    for uint::range(0u, (src_length + 4u) / 5u) {|i|
+    for uint::range(0u, (src_length + 4u) / 5u) |i| {
         let src_curr = 5u * i;
         let dst_curr = 8u * i;
         let remain = src_length - src_curr;
@@ -418,7 +418,7 @@ fn b32encode(table: [u8], dst: [mut u8], src: [u8]) {
     }
 }
 
-fn b32decode(decode_map: [u8], dst: [mut u8], src: [u8]) -> uint {
+fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
     let buf = vec::to_mut(vec::from_elem(8u, 0u8));
     let mut src_length = src.len();
     let mut src_curr = 0u;
@@ -444,7 +444,7 @@ fn b32decode(decode_map: [u8], dst: [mut u8], src: [u8]) -> uint {
                 cont;
             }
             if chr == PAD && i >= 2u && src_length < 8u {
-                for uint::range(0u, (8u - i - 1u)) {|j|
+                for uint::range(0u, (8u - i - 1u)) |j| {
                     if src_length > j && src[src_curr + j] != PAD {
                         fail "malformed base32 string";
                     }
@@ -512,52 +512,52 @@ fn b32decode(decode_map: [u8], dst: [mut u8], src: [u8]) -> uint {
 mod tests {
     #[test]
     fn test_encode_bytes() {
-        let src = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
+        let src = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
         let exp = ["", "MY======", "MZXQ====", "MZXW6===",
-                   "MZXW6YQ=", "MZXW6YTB", "MZXW6YTBOI======"];
-        let src = src.map {|e| str::bytes(e) };
-        let exp = exp.map {|e| str::bytes(e) };
+                   "MZXW6YQ=", "MZXW6YTB", "MZXW6YTBOI======"]/_;
+        let src = src.map(|e| str::bytes(e));
+        let exp = exp.map(|e| str::bytes(e));
         let enc = mk();
 
-        for uint::range(0u, src.len()) {|i|
+        for uint::range(0u, src.len()) |i| {
             let res = enc.encode_bytes(src[i]);
             assert exp[i] == res;
         }
     }
     #[test]
     fn test_encode_bytes_h() {
-        let src = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
+        let src = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
         let exp = ["", "CO======", "CPNG====", "CPNMU===",
-                   "CPNMUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"];
-        let src = src.map {|e| str::bytes(e) };
-        let exp = exp.map {|e| str::bytes(e) };
+                   "CPNMUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"]/_;
+        let src = src.map(|e| str::bytes(e));
+        let exp = exp.map(|e| str::bytes(e));
         let enc = mk();
 
-        for uint::range(0u, src.len()) {|i|
+        for uint::range(0u, src.len()) |i| {
             let res = enc.encode_bytes_h(src[i]);
             assert exp[i] == res;
         }
     }
     #[test]
     fn test_encode_str() {
-        let src = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
+        let src = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
         let exp = ["", "MY======", "MZXQ====", "MZXW6===",
-                   "MZXW6YQ=", "MZXW6YTB", "MZXW6YTBOI======"];
+                   "MZXW6YQ=", "MZXW6YTB", "MZXW6YTBOI======"]/_;
         let enc = mk();
 
-        for uint::range(0u, src.len()) {|i|
+        for uint::range(0u, src.len()) |i| {
             let res = enc.encode_str(src[i]);
             assert exp[i] == res;
         }
     }
     #[test]
     fn test_encode_str_h() {
-        let src = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
+        let src = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
         let exp = ["", "CO======", "CPNG====", "CPNMU===",
-                   "CPNMUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"];
+                   "CPNMUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"]/_;
         let enc = mk();
 
-        for uint::range(0u, src.len()) {|i|
+        for uint::range(0u, src.len()) |i| {
             let res = enc.encode_str_h(src[i]);
             assert exp[i] == res;
         }
@@ -565,13 +565,13 @@ mod tests {
     #[test]
     fn test_decode_bytes() {
         let src = ["", "MY======", "MZXQ====", "MZXW6===",
-                   "\tMZXW\r\n6YQ=", "MZXW6YTB", "MZXW6YTBOI======"];
-        let exp = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
-        let src = src.map {|e| str::bytes(e) };
-        let exp = exp.map {|e| str::bytes(e) };
+                   "\tMZXW\r\n6YQ=", "MZXW6YTB", "MZXW6YTBOI======"]/_;
+        let exp = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
+        let src = src.map(|e| str::bytes(e));
+        let exp = exp.map(|e| str::bytes(e));
         let enc = mk();
 
-        for uint::range(0u, src.len()) {|i|
+        for uint::range(0u, src.len()) |i| {
             let res = enc.decode_bytes(src[i]);
             assert exp[i] == res;
         }
@@ -579,13 +579,13 @@ mod tests {
     #[test]
     fn test_decode_bytes_h() {
         let src = ["", "CO======", "CPNG====", "CPNMU===",
-                   "\tCPNM\r\nUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"];
-        let exp = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
-        let src = src.map {|e| str::bytes(e) };
-        let exp = exp.map {|e| str::bytes(e) };
+                   "\tCPNM\r\nUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"]/_;
+        let exp = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
+        let src = src.map(|e| str::bytes(e));
+        let exp = exp.map(|e| str::bytes(e));
         let enc = mk();
 
-        for uint::range(0u, src.len()) {|i|
+        for uint::range(0u, src.len()) |i| {
             let res = enc.decode_bytes_h(src[i]);
             assert exp[i] == res;
         }
