@@ -1,80 +1,79 @@
-//
-// base16.rs - base16 module
-//
-// The Base 16 Alphabet
-//
-// Value Encoding  Value Encoding  Value Encoding  Value Encoding
-//     0 0             4 4             8 8            12 C
-//     1 1             5 5             9 9            13 D
-//     2 2             6 6            10 A            14 E
-//     3 3             7 7            11 B            15 F
-//
+/*!
+ * Base16 Module
+ *
+ * See <http://tools.ietf.org/html/rfc4648#section-8> for details.
+ *
+ * # Example
+ *
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * use encoding;
+ * import encoding::extensions;
+ *
+ * let src = \"base16\";
+ * let res = src.encode(encoding::base16);
+ * let res = str::from_bytes(res);
+ *
+ * io::println(#fmt[\"%s\", res]);
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ */
 
-#[doc = "
-Base16 Module
+export base16, encode, decode;
 
-See <http://tools.ietf.org/html/rfc4648#section-8> for details.
+class base16 {
+    let table: ~[u8];
+    let decode_map: ~[u8];
 
-# Example
+    new() {
+        let table = str::bytes("0123456789ABCDEF");
+        let decode_map = vec::to_mut(vec::from_elem(256u, 0xff_u8));
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-use encoding;
-import encoding::extensions;
+        for u8::range(0u8, 16u8) |i| {
+            decode_map[table[i]] = i;
+        }
+        for u8::range(10u8, 16u8) |i| {
+            decode_map[table[i] + 32u8] = i;
+        }
 
-let src = \"base16\";
-let res = src.encode(encoding::base16);
-let res = str::from_bytes(res);
+        self.table = table;
+        self.decode_map = vec::from_mut(decode_map);
+    }
 
-io::println(#fmt[\"%s\", res]);
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-"];
-
-export mk, enc, encode, decode;
-
-type enc_t = {table: ~[u8], decode_map: ~[u8]};
-
-iface enc {
-    fn encode(dst: &[mut u8], src: &[u8]);
-    fn decode(dst: &[mut u8], src: &[u8]) -> uint;
-    #[doc = "
-    Encode input bytes to hex-encoded bytes.
-
-    # Arguments
-
-    * src - bytes for encoding
-
-    # Return
-
-    hex-encoded bytes
-    "]
-    fn encode_bytes(src: &[u8]) -> ~[u8];
-    #[doc = "
-    Decode hex-encoded bytes to its original bytes.
-
-    # Arguments
-
-    * src - hex-encoded bytes
-
-    # Return
-
-    decoded bytes
-    "]
-    fn decode_bytes(src: &[u8]) -> ~[u8];
-}
-
-impl of enc for enc_t {
     fn encode(dst: &[mut u8], src: &[u8]) {
         b16encode(self.table, dst, src);
     }
     fn decode(dst: &[mut u8], src: &[u8]) -> uint {
         b16decode(self.decode_map, dst, src)
     }
+
+    /**
+     * Encode input bytes to hex-encoded bytes.
+     *
+     * # Arguments
+     *
+     * * src - bytes for encoding
+     *
+     * # Return
+     *
+     * hex-encoded bytes
+     */
     fn encode_bytes(src: &[u8]) -> ~[u8] {
         let dst_len = encoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_len, 0u8));
         self.encode(dst, src);
         vec::from_mut(dst)
     }
+
+    /**
+     * Decode hex-encoded bytes to its original bytes.
+     *
+     * # Arguments
+     *
+     * * src - hex-encoded bytes
+     *
+     * # Return
+     *
+     * decoded bytes
+     */
     fn decode_bytes(src: &[u8]) -> ~[u8] {
         let dst_len = decoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_len, 0u8));
@@ -83,67 +82,46 @@ impl of enc for enc_t {
     }
 }
 
-fn mk() -> enc {
-    #[doc = "
-    Make instance of interface `enc`
-
-    # Return
-
-    instance of interface `enc`
-    "];
-
-    let table = str::bytes("0123456789ABCDEF");
-    let decode_map = vec::to_mut(vec::from_elem(256u, 0xff_u8));
-
-    for u8::range(0u8, 16u8)  |i| { decode_map[table[i]] = i; }
-    for u8::range(10u8, 16u8) |i| { decode_map[table[i] + 32u8] = i; }
-
-    {table: table,
-     decode_map: vec::from_mut(decode_map)} as enc
-}
-
+/**
+ * Shortcut for enc#encode_bytes
+ *
+ * Table of hex alphabet and decode map are allocated
+ * every time when this function is called, so it's
+ * recommended to use `mk` and then `encode_bytes` instead
+ * if it's necessary to use this function many times.
+ *
+ * # Arguments
+ *
+ * * src - bytes for encoding
+ *
+ * # Return
+ *
+ * hex-encoded bytes
+ */
 fn encode(src: &[u8]) -> ~[u8] {
-    #[doc = "
-    Shortcut for enc#encode_bytes
-
-    Table of hex alphabet and decode map are allocated
-    every time when this function is called, so it's
-    recommended to use `mk` and then `encode_bytes` instead
-    if it's necessary to use this function many times.
-
-    # Arguments
-
-    * src - bytes for encoding
-
-    # Return
-
-    hex-encoded bytes
-    "];
-
-    let enc = mk();
-    enc.encode_bytes(src)
+    let base16 = base16();
+    base16.encode_bytes(src)
 }
 
+/**
+ * Shortcut for enc#decode_bytes
+ *
+ * Table of hex alphabet and decode map are allocated
+ * every time when this function is called, so it's
+ * recommended to use `mk` and then `decode_bytes` instead
+ * if it's necessary to use this function many times.
+ *
+ * # Arguments
+ *
+ * * src - hex-encoded bytes
+ *
+ * # Return
+ *
+ * decoded bytes
+ */
 fn decode(src: &[u8]) -> ~[u8] {
-    #[doc = "
-    Shortcut for enc#decode_bytes
-
-    Table of hex alphabet and decode map are allocated
-    every time when this function is called, so it's
-    recommended to use `mk` and then `decode_bytes` instead
-    if it's necessary to use this function many times.
-
-    # Arguments
-
-    * src - hex-encoded bytes
-
-    # Return
-
-    decoded bytes
-    "];
-
-    let enc = mk();
-    enc.decode_bytes(src)
+    let base16 = base16();
+    base16.decode_bytes(src)
 }
 
 #[inline(always)]

@@ -1,171 +1,54 @@
-//
-// base64.rs - base64 module
-//
-// The Base64 Alphabet
-//
-// Value Encoding  Value Encoding  Value Encoding  Value Encoding
-//     0 A            17 R            34 i            51 z
-//     1 B            18 S            35 j            52 0
-//     2 C            19 T            36 k            53 1
-//     3 D            20 U            37 l            54 2
-//     4 E            21 V            38 m            55 3
-//     5 F            22 W            39 n            56 4
-//     6 G            23 X            40 o            57 5
-//     7 H            24 Y            41 p            58 6
-//     8 I            25 Z            42 q            59 7
-//     9 J            26 a            43 r            60 8
-//    10 K            27 b            44 s            61 9
-//    11 L            28 c            45 t            62 +
-//    12 M            29 d            46 u            63 /
-//    13 N            30 e            47 v
-//    14 O            31 f            48 w         (pad) =
-//    15 P            32 g            49 x
-//    16 Q            33 h            50 y
-//
-// The "URL and Filename safe" Base 64 Alphabet
-//
-// Value Encoding  Value Encoding  Value Encoding  Value Encoding
-//     0 A            17 R            34 i            51 z
-//     1 B            18 S            35 j            52 0
-//     2 C            19 T            36 k            53 1
-//     3 D            20 U            37 l            54 2
-//     4 E            21 V            38 m            55 3
-//     5 F            22 W            39 n            56 4
-//     6 G            23 X            40 o            57 5
-//     7 H            24 Y            41 p            58 6
-//     8 I            25 Z            42 q            59 7
-//     9 J            26 a            43 r            60 8
-//    10 K            27 b            44 s            61 9
-//    11 L            28 c            45 t            62 - (minus)
-//    12 M            29 d            46 u            63 _ (underline)
-//    13 N            30 e            47 v
-//    14 O            31 f            48 w
-//    15 P            32 g            49 x
-//    16 Q            33 h            50 y         (pad) =
-//
+/*!
+ * Base64 module
+ *
+ * See <http://tools.ietf.org/html/rfc4648#section-4> for details.
+ *
+ * # Example
+ *
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * use encoding;
+ * import encoding::extensions;
+ *
+ * let src = \"base64\";
+ * let res = src.encode(encoding::base64);
+ * let res = str::from_bytes(res);
+ *
+ * io::println(#fmt[\"%s\", res]);
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ */
 
-#[doc = "
-Base64 module
-
-See <http://tools.ietf.org/html/rfc4648#section-4> for details.
-
-# Example
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-use encoding;
-import encoding::extensions;
-
-let src = \"base64\";
-let res = src.encode(encoding::base64);
-let res = str::from_bytes(res);
-
-io::println(#fmt[\"%s\", res]);
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-"];
-
-export mk, enc, encode, urlsafe_encode, decode, urlsafe_decode;
+export base64, encode, urlsafe_encode, decode, urlsafe_decode;
 
 const PAD: u8 = 61u8;
 
-type enc_t = {
-    table: ~[u8],
-    table_u: ~[u8],
-    decode_map: ~[u8],
-    decode_map_u: ~[u8]
-};
+class base64 {
+    let table: ~[u8];
+    let table_u: ~[u8];
+    let decode_map: ~[u8];
+    let decode_map_u: ~[u8];
 
-// FIXME
-// `enc` iface on base16/32/64.rs should be polymorphic.
-// Probably traits and non-scalar constants make it possible.
-iface enc {
-    fn encode(dst: &[mut u8], src: &[u8]);
-    fn encode_u(dst: &[mut u8], src: &[u8]);
-    fn decode(dst: &[mut u8], src: &[u8]) -> uint;
-    fn decode_u(dst: &[mut u8], src: &[u8]) -> uint;
-    #[doc = "
-    Encode input bytes to base64-encoded bytes.
+    new() {
+        let table =
+            str::bytes("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
+        let table_u =
+            str::bytes("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_");
 
-    # Arguments
+        let decode_map = vec::to_mut(vec::from_elem(256u, 0xff_u8));
+        let decode_map_u = vec::to_mut(vec::from_elem(256u, 0xff_u8));
 
-    * src - bytes for encoding
+        for u8::range(0u8, 64u8) |i| {
+            decode_map[table[i]] = i;
+        }
+        for u8::range(0u8, 64u8) |i| {
+            decode_map_u[table_u[i]] = i;
+        }
 
-    # Return
+        self.table = table;
+        self.table_u = table_u;
+        self.decode_map = vec::from_mut(decode_map);
+        self.decode_map_u = vec::from_mut(decode_map_u);
+    }
 
-    base64-encoded bytes
-    "]
-    fn encode_bytes(src: &[u8]) -> ~[u8];
-    #[doc = "
-    Encode input bytes to base64-encoded bytes.
-
-    Note that this method is for url and filename safe base64 encoding.
-    See <http://tools.ietf.org/html/rfc4648#section-5> for details.
-
-    # Arguments
-
-    * src - bytes for encoding
-
-    # Return
-
-    base64-encoded bytes
-    "]
-    fn encode_bytes_u(src: &[u8]) -> ~[u8];
-    #[doc = "
-    Encode given string to base64-encoded string
-
-    # Arguments
-
-    * src - string for encoding
-
-    # Return
-
-    base64-encoded string
-    "]
-    fn encode_str(src: str) -> str;
-    #[doc = "
-    Encode given string to base64-encoded string
-
-    Note that this method is for url and filename safe base64 encoding.
-    See <http://tools.ietf.org/html/rfc4648#section-5> for details.
-
-    # Arguments
-
-    * src - string for encoding
-
-    # Return
-
-    base64-encoded string
-    "]
-    fn encode_str_u(src: str) -> str;
-    #[doc = "
-    Decode base64-encoded bytes to its original bytes.
-
-    # Arguments
-
-    * src - base64-encoded bytes
-
-    # Return
-
-    decoded bytes
-    "]
-    fn decode_bytes(src: &[u8]) -> ~[u8];
-    #[doc = "
-    Decode base64-encoded bytes to its original bytes.
-
-    Note that this method is for url and filename safe base64 encoding.
-    See <http://tools.ietf.org/html/rfc4648#section-5> for details.
-
-    # Arguments
-
-    * src - base64-encoded bytes
-
-    # Return
-
-    decoded bytes
-    "]
-    fn decode_bytes_u(src: &[u8]) -> ~[u8];
-}
-
-impl of enc for enc_t {
     fn encode(dst: &[mut u8], src: &[u8]) {
         b64encode(self.table, dst, src);
     }
@@ -178,32 +61,78 @@ impl of enc for enc_t {
     fn decode_u(dst: &[mut u8], src: &[u8]) -> uint {
         b64decode(self.decode_map_u, dst, src)
     }
+
+    /**
+     * Encode input bytes to base64-encoded bytes.
+     *
+     * # Arguments
+     *
+     * * src - bytes for encoding
+     *
+     * # Return
+     *
+     * base64-encoded bytes
+     */
     fn encode_bytes(src: &[u8]) -> ~[u8] {
         let dst_length = encoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
         self.encode(dst, src);
         vec::from_mut(dst)
     }
+
+    /**
+     * Encode input bytes to base64-encoded bytes.
+     *
+     * Note that this method is for url and filename safe base64 encoding.
+     * See <http://tools.ietf.org/html/rfc4648#section-5> for details.
+     *
+     * # Arguments
+     *
+     * * src - bytes for encoding
+     *
+     * # Return
+     *
+     * base64-encoded bytes
+     */
     fn encode_bytes_u(src: &[u8]) -> ~[u8] {
         let dst_length = encoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
         self.encode_u(dst, src);
         vec::from_mut(dst)
     }
-    fn encode_str(src: str) -> str {
-        let src = str::bytes(src);
-        str::from_bytes(self.encode_bytes(src))
-    }
-    fn encode_str_u(src: str) -> str {
-        let src = str::bytes(src);
-        str::from_bytes(self.encode_bytes_u(src))
-    }
+
+    /**
+     * Decode base64-encoded bytes to its original bytes.
+     *
+     * # Arguments
+     *
+     * * src - base64-encoded bytes
+     *
+     * # Return
+     *
+     * decoded bytes
+     */
     fn decode_bytes(src: &[u8]) -> ~[u8] {
         let dst_length = decoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
         let end = self.decode(dst, src);
         vec::slice(vec::from_mut(dst), 0u, end)
     }
+
+    /**
+     * Decode base64-encoded bytes to its original bytes.
+     *
+     * Note that this method is for url and filename safe base64 encoding.
+     * See <http://tools.ietf.org/html/rfc4648#section-5> for details.
+     *
+     * # Arguments
+     *
+     * * src - base64-encoded bytes
+     *
+     * # Return
+     *
+     * decoded bytes
+     */
     fn decode_bytes_u(src: &[u8]) -> ~[u8] {
         let dst_length = decoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
@@ -212,123 +141,88 @@ impl of enc for enc_t {
     }
 }
 
-fn mk() -> enc {
-    #[doc = "
-    Make instance of interface `enc`
-
-    # Return
-
-    instance of interface `enc`
-    "];
-
-    let mut i = 0u8;
-    let table = vec::to_mut(vec::from_elem(64u, 0u8));
-    for u8::range(65u8, 91u8)  |j| { table[i] = j; i += 1u8; }
-    for u8::range(97u8, 123u8) |j| { table[i] = j; i += 1u8; }
-    for u8::range(48u8, 58u8)  |j| { table[i] = j; i += 1u8; }
-    table[i] = 43u8; table[i + 1u8] = 47u8;
-
-    let table_u = copy table;
-    table_u[i] = 45u8; table_u[i + 1u8] = 95u8;
-
-    let decode_map = vec::to_mut(vec::from_elem(256u, 0xff_u8));
-    let decode_map_u = vec::to_mut(vec::from_elem(256u, 0xff_u8));
-
-    for u8::range(0u8, 64u8) |i| { decode_map[table[i]] = i; }
-    for u8::range(0u8, 64u8) |i| { decode_map_u[table_u[i]] = i; }
-
-    {table: vec::from_mut(table),
-     table_u: vec::from_mut(table_u),
-     decode_map: vec::from_mut(decode_map),
-     decode_map_u: vec::from_mut(decode_map_u)} as enc
-}
-
+/**
+ * Shortcut for enc#encode_bytes
+ *
+ * Table of base64 alphabet and decode map are allocated
+ * every time when this function is called, so it's
+ * recommended to use `mk` and then `encode_bytes` instead
+ * if it's necessary to use this function many times.
+ *
+ * # Arguments
+ *
+ * * src - bytes for encoding
+ *
+ * # Return
+ *
+ * base64-encoded bytes
+ */
 fn encode(src: &[u8]) -> ~[u8] {
-    #[doc = "
-    Shortcut for enc#encode_bytes
-
-    Table of base64 alphabet and decode map are allocated
-    every time when this function is called, so it's
-    recommended to use `mk` and then `encode_bytes` instead
-    if it's necessary to use this function many times.
-
-    # Arguments
-
-    * src - bytes for encoding
-
-    # Return
-
-    base64-encoded bytes
-    "];
-
-    let enc = mk();
-    enc.encode_bytes(src)
+    let base64 = base64();
+    base64.encode_bytes(src)
 }
 
+/**
+ * Shortcut for enc#encode_bytes_u
+ *
+ * Table of base64 alphabet and decode map are allocated
+ * every time when this function is called, so it's
+ * recommended to use `mk` and then `encode_bytes_u` instead
+ * if it's necessary to use this function many times.
+ *
+ * # Arguments
+ *
+ * * src - bytes for encoding
+ *
+ * # Return
+ *
+ * base64-encoded bytes (url and filename safe)
+ */
 fn urlsafe_encode(src: &[u8]) -> ~[u8] {
-    #[doc = "
-    Shortcut for enc#encode_bytes_u
-
-    Table of base64 alphabet and decode map are allocated
-    every time when this function is called, so it's
-    recommended to use `mk` and then `encode_bytes_u` instead
-    if it's necessary to use this function many times.
-
-    # Arguments
-
-    * src - bytes for encoding
-
-    # Return
-
-    base64-encoded bytes (url and filename safe)
-    "];
-
-    let enc = mk();
-    enc.encode_bytes_u(src)
+    let base64 = base64();
+    base64.encode_bytes_u(src)
 }
 
+/**
+ * Shortcut for enc#decode_bytes
+ *
+ * Table of base64 alphabet and decode map are allocated
+ * every time when this function is called, so it's
+ * recommended to use `mk` and then `decode_bytes` instead
+ * if it's necessary to use this function many times.
+ *
+ * # Arguments
+ *
+ * * src - base64-encoded bytes
+ *
+ * # Return
+ *
+ * decoded bytes
+ */
 fn decode(src: &[u8]) -> ~[u8] {
-    #[doc = "
-    Shortcut for enc#decode_bytes
-
-    Table of base64 alphabet and decode map are allocated
-    every time when this function is called, so it's
-    recommended to use `mk` and then `decode_bytes` instead
-    if it's necessary to use this function many times.
-
-    # Arguments
-
-    * src - base64-encoded bytes
-
-    # Return
-
-    decoded bytes
-    "];
-
-    let enc = mk();
-    enc.decode_bytes(src)
+    let base64 = base64();
+    base64.decode_bytes(src)
 }
 
+/**
+ * Shortcut for enc#decode_bytes_u
+ *
+ * Table of base64 alphabet and decode map are allocated
+ * every time when this function is called, so it's
+ * recommended to use `mk` and then `decode_bytes_u` instead
+ * if it's necessary to use this function many times.
+ *
+ * # Arguments
+ *
+ * * src - base64-encoded bytes
+ *
+ * # Return
+ *
+ * decoded bytes
+ */
 fn urlsafe_decode(src: &[u8]) -> ~[u8] {
-    #[doc = "
-    Shortcut for enc#decode_bytes_u
-
-    Table of base64 alphabet and decode map are allocated
-    every time when this function is called, so it's
-    recommended to use `mk` and then `decode_bytes_u` instead
-    if it's necessary to use this function many times.
-
-    # Arguments
-
-    * src - base64-encoded bytes
-
-    # Return
-
-    decoded bytes
-    "];
-
-    let enc = mk();
-    enc.decode_bytes_u(src)
+    let base64 = base64();
+    base64.decode_bytes_u(src)
 }
 
 #[inline(always)]
@@ -461,48 +355,23 @@ mod tests {
                    "Zm9vYg==", "Zm9vYmE=", "Zm9vYmFy"]/_;
         let src = src.map(|e| str::bytes(e));
         let exp = exp.map(|e| str::bytes(e));
-        let enc = mk();
+        let base64 = base64();
 
         for uint::range(0u, src.len()) |i| {
-            let res = enc.encode_bytes(src[i]);
+            let res = base64.encode_bytes(src[i]);
             assert res == exp[i];
         }
     }
-    #[test]
-    fn test_encode_str() {
-        let src = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"]/_;
-        let exp = ["", "Zg==", "Zm8=", "Zm8+",
-                   "Zm9vYg==", "Zm9vYmE=", "Zm8/YmE/"]/_;
-        let enc = mk();
-
-        for uint::range(0u, src.len()) |i| {
-            let res = enc.encode_str(src[i]);
-            assert res == exp[i];
-        }
-    }
-    #[test]
     fn test_encode_bytes_u() {
         let src = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"]/_;
         let exp = ["", "Zg==", "Zm8=", "Zm8-",
                    "Zm9vYg==", "Zm9vYmE=", "Zm8_YmE_"]/_;
         let src = src.map(|e| str::bytes(e));
         let exp = exp.map(|e| str::bytes(e));
-        let enc = mk();
+        let base64 = base64();
 
         for uint::range(0u, src.len()) |i| {
-            let res = enc.encode_bytes_u(src[i]);
-            assert res == exp[i];
-        }
-    }
-    #[test]
-    fn test_encode_str_u() {
-        let src = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"]/_;
-        let exp = ["", "Zg==", "Zm8=", "Zm8-",
-                   "Zm9vYg==", "Zm9vYmE=", "Zm8_YmE_"]/_;
-        let enc = mk();
-
-        for uint::range(0u, src.len()) |i| {
-            let res = enc.encode_str_u(src[i]);
+            let res = base64.encode_bytes_u(src[i]);
             assert res == exp[i];
         }
     }
@@ -513,10 +382,10 @@ mod tests {
         let exp = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"]/_;
         let src = src.map(|e| str::bytes(e));
         let exp = exp.map(|e| str::bytes(e));
-        let enc = mk();
+        let base64 = base64();
 
         for uint::range(0u, src.len()) |i| {
-            let res = enc.decode_bytes(src[i]);
+            let res = base64.decode_bytes(src[i]);
             assert res == exp[i];
         }
     }
@@ -527,10 +396,10 @@ mod tests {
         let exp = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"]/_;
         let src = src.map(|e| str::bytes(e));
         let exp = exp.map(|e| str::bytes(e));
-        let enc = mk();
+        let base64 = base64();
 
         for uint::range(0u, src.len()) |i| {
-            let res = enc.decode_bytes_u(src[i]);
+            let res = base64.decode_bytes_u(src[i]);
             assert res == exp[i];
         }
     }
