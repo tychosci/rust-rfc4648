@@ -167,16 +167,16 @@ fn b16decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
 mod tests {
     #[test]
     fn test_encode() {
-        let src = str::bytes("foo");
-        let exp = str::bytes("666F6F");
-        let res = encode(src);
-        assert res == exp;
+        let source = str::bytes("foo");
+        let expect = str::bytes("666F6F");
+        let actual = encode(source);
+        assert expect == actual;
     }
     #[test]
     fn test_decode() {
-        let src = str::bytes("\t66 6f\r\n 6f");
-        let exp = str::bytes("foo");
-        let res = decode(src);
-        assert res == exp;
+        let source = str::bytes("\t66 6f\r\n 6f");
+        let expect = str::bytes("foo");
+        let actual = decode(source);
+        assert expect == actual;
     }
 }

@@ -350,57 +350,54 @@ fn b64decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
 mod tests {
     #[test]
     fn test_encode_bytes() {
-        let src = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
-        let exp = ["", "Zg==", "Zm8=", "Zm9v",
-                   "Zm9vYg==", "Zm9vYmE=", "Zm9vYmFy"]/_;
-        let src = src.map(|e| str::bytes(e));
-        let exp = exp.map(|e| str::bytes(e));
         let base64 = base64();
 
-        for uint::range(0u, src.len()) |i| {
-            let res = base64.encode_bytes(src[i]);
-            assert res == exp[i];
-        }
+        let source = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
+        let expect = ["", "Zg==", "Zm8=", "Zm9v", "Zm9vYg==", "Zm9vYmE=", "Zm9vYmFy"]/_;
+        let source = source.map(|e| str::bytes(e));
+        let expect = expect.map(|e| str::bytes(e));
+
+        let actual = source.map(|e| base64.encode_bytes(e));
+
+        assert expect == actual;
     }
+    #[test]
     fn test_encode_bytes_u() {
-        let src = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"]/_;
-        let exp = ["", "Zg==", "Zm8=", "Zm8-",
-                   "Zm9vYg==", "Zm9vYmE=", "Zm8_YmE_"]/_;
-        let src = src.map(|e| str::bytes(e));
-        let exp = exp.map(|e| str::bytes(e));
         let base64 = base64();
 
-        for uint::range(0u, src.len()) |i| {
-            let res = base64.encode_bytes_u(src[i]);
-            assert res == exp[i];
-        }
+        let source = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"]/_;
+        let expect = ["", "Zg==", "Zm8=", "Zm8-", "Zm9vYg==", "Zm9vYmE=", "Zm8_YmE_"]/_;
+        let source = source.map(|e| str::bytes(e));
+        let expect = expect.map(|e| str::bytes(e));
+
+        let actual = source.map(|e| base64.encode_bytes_u(e));
+
+        assert expect == actual;
     }
     #[test]
     fn test_decode_bytes() {
-        let src = ["", "Zg==", "Zm8=", "Zm8+",
-                   "Zm9v\r\nYg==", "\tZm9vYmE=", "Zm8/YmE/"]/_;
-        let exp = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"]/_;
-        let src = src.map(|e| str::bytes(e));
-        let exp = exp.map(|e| str::bytes(e));
         let base64 = base64();
 
-        for uint::range(0u, src.len()) |i| {
-            let res = base64.decode_bytes(src[i]);
-            assert res == exp[i];
-        }
+        let source = ["", "Zg==", "Zm8=", "Zm8+", "Zm9v\r\nYg==", "\tZm9vYmE=", "Zm8/YmE/"]/_;
+        let expect = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"]/_;
+        let source = source.map(|e| str::bytes(e));
+        let expect = expect.map(|e| str::bytes(e));
+
+        let actual = source.map(|e| base64.decode_bytes(e));
+
+        assert expect == actual;
     }
     #[test]
     fn test_decode_bytes_u() {
-        let src = ["", "Zg==", "Zm8=", "Zm8-",
-                   "Zm9v\r\nYg==", "\tZm9vYmE=", "Zm8_YmE_"]/_;
-        let exp = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"]/_;
-        let src = src.map(|e| str::bytes(e));
-        let exp = exp.map(|e| str::bytes(e));
         let base64 = base64();
 
-        for uint::range(0u, src.len()) |i| {
-            let res = base64.decode_bytes_u(src[i]);
-            assert res == exp[i];
-        }
+        let source = ["", "Zg==", "Zm8=", "Zm8-", "Zm9v\r\nYg==", "\tZm9vYmE=", "Zm8_YmE_"]/_;
+        let expect = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"]/_;
+        let source = source.map(|e| str::bytes(e));
+        let expect = expect.map(|e| str::bytes(e));
+
+        let actual = source.map(|e| base64.decode_bytes_u(e));
+
+        assert expect == actual;
     }
 }

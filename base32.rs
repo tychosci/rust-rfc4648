@@ -425,58 +425,59 @@ fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
 mod tests {
     #[test]
     fn test_encode_bytes() {
-        let src = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
-        let exp = ["", "MY======", "MZXQ====", "MZXW6===",
-                   "MZXW6YQ=", "MZXW6YTB", "MZXW6YTBOI======"]/_;
-        let src = src.map(|e| str::bytes(e));
-        let exp = exp.map(|e| str::bytes(e));
         let base32 = base32();
 
-        for uint::range(0u, src.len()) |i| {
-            let res = base32.encode_bytes(src[i]);
-            assert exp[i] == res;
-        }
+        let source = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
+        let expect = ["", "MY======", "MZXQ====", "MZXW6===", "MZXW6YQ=",
+                      "MZXW6YTB", "MZXW6YTBOI======"]/_;
+        let source = source.map(|e| str::bytes(e));
+        let expect = expect.map(|e| str::bytes(e));
+
+        let actual = source.map(|e| base32.encode_bytes(e));
+
+        assert expect == actual;
     }
     #[test]
     fn test_encode_bytes_h() {
-        let src = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
-        let exp = ["", "CO======", "CPNG====", "CPNMU===",
-                   "CPNMUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"]/_;
-        let src = src.map(|e| str::bytes(e));
-        let exp = exp.map(|e| str::bytes(e));
         let base32 = base32();
 
-        for uint::range(0u, src.len()) |i| {
-            let res = base32.encode_bytes_h(src[i]);
-            assert exp[i] == res;
-        }
+        let source = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
+        let expect = ["", "CO======", "CPNG====", "CPNMU===",
+                      "CPNMUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"]/_;
+        let source = source.map(|e| str::bytes(e));
+        let expect = expect.map(|e| str::bytes(e));
+
+        let actual = source.map(|e| base32.encode_bytes_h(e));
+
+        assert expect == actual;
     }
     #[test]
     fn test_decode_bytes() {
-        let src = ["", "MY======", "MZXQ====", "MZXW6===",
-                   "\tMZXW\r\n6YQ=", "MZXW6YTB", "MZXW6YTBOI======"]/_;
-        let exp = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
-        let src = src.map(|e| str::bytes(e));
-        let exp = exp.map(|e| str::bytes(e));
         let base32 = base32();
 
-        for uint::range(0u, src.len()) |i| {
-            let res = base32.decode_bytes(src[i]);
-            assert exp[i] == res;
-        }
+        let source = ["", "MY======", "MZXQ====", "MZXW6===",
+                      "\tMZXW\r\n6YQ=", "MZXW6YTB", "MZXW6YTBOI======"]/_;
+        let expect = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
+        let source = source.map(|e| str::bytes(e));
+        let expect = expect.map(|e| str::bytes(e));
+
+        let actual = source.map(|e| base32.decode_bytes(e));
+
+        assert expect == actual;
     }
     #[test]
     fn test_decode_bytes_h() {
-        let src = ["", "CO======", "CPNG====", "CPNMU===",
-                   "\tCPNM\r\nUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"]/_;
-        let exp = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
-        let src = src.map(|e| str::bytes(e));
-        let exp = exp.map(|e| str::bytes(e));
         let base32 = base32();
 
-        for uint::range(0u, src.len()) |i| {
-            let res = base32.decode_bytes_h(src[i]);
-            assert exp[i] == res;
-        }
+        let source = ["", "CO======", "CPNG====", "CPNMU===",
+                      "\tCPNM\r\nUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"]/_;
+        let expect = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
+
+        let source = source.map(|e| str::bytes(e));
+        let expect = expect.map(|e| str::bytes(e));
+
+        let actual = source.map(|e| base32.decode_bytes_h(e));
+
+        assert expect == actual;
     }
 }
