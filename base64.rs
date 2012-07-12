@@ -418,7 +418,7 @@ fn b64decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
             src_curr += 1u;
             src_length -= 1u;
             if char::is_whitespace(chr as char) {
-                cont;
+                again;
             }
             if chr == PAD && i >= 2u && src_length < 4u {
                 if src_length > 0u && src[src_curr] != PAD {

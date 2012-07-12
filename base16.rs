@@ -167,7 +167,7 @@ fn b16decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
         if char::is_whitespace(src[i] as char) {
             src_length -= 1u;
             i += 1u;
-            cont;
+            again;
         }
 
         let chr1 = decode_map[src[i]];
