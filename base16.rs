@@ -27,11 +27,11 @@ class base16 {
         let table = str::bytes("0123456789ABCDEF");
         let decode_map = vec::to_mut(vec::from_elem(256u, 0xff_u8));
 
-        for u8::range(0u8, 16u8) |i| {
+        for u8::range(0, 16) |i| {
             decode_map[table[i]] = i;
         }
-        for u8::range(10u8, 16u8) |i| {
-            decode_map[table[i] + 32u8] = i;
+        for u8::range(10, 16) |i| {
+            decode_map[table[i]+32] = i;
         }
 
         self.table = table;
@@ -115,14 +115,14 @@ fn decode(src: &[u8]) -> ~[u8] {
 }
 
 #[inline(always)]
-pure fn encoded_len(src_len: uint) -> uint { src_len * 2u }
+pure fn encoded_len(src_len: uint) -> uint { src_len * 2 }
 #[inline(always)]
-pure fn decoded_len(src_len: uint) -> uint { src_len / 2u }
+pure fn decoded_len(src_len: uint) -> uint { src_len / 2 }
 
 fn b16encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
-    for uint::range(0u, src.len()) |j| {
-        dst[j + 1u * j] = table[src[j] >> 4u8];
-        dst[j + 1u + 1u * j] = table[src[j] & 0x0f_u8];
+    for uint::range(0, src.len()) |j| {
+        dst[j+1*j]     = table[src[j]>>4];
+        dst[j+1*j + 1] = table[src[j] & 0x0f];
     }
 }
 
@@ -131,23 +131,23 @@ fn b16decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
     let mut i = 0u;
     let mut j = 0u;
 
-    while src_length > 0u {
+    while src_length > 0 {
         if char::is_whitespace(src[i] as char) {
-            src_length -= 1u;
-            i += 1u;
+            src_length -= 1;
+            i += 1;
             again;
         }
 
         let chr1 = decode_map[src[i]];
-        let chr2 = decode_map[src[i + 1u]];
+        let chr2 = decode_map[src[i+1]];
         if chr1 == 0xff_u8 || chr2 == 0xff_u8 {
             fail "malformed base16 string";
         }
-        dst[j] = chr1 << 4u8 | chr2;
+        dst[j] = chr1<<4 | chr2;
 
-        src_length -= 2u;
-        i += 2u;
-        j += 1u;
+        src_length -= 2;
+        i += 2;
+        j += 1;
     }
 
     j

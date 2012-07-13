@@ -188,102 +188,102 @@ fn hex_decode(src: &[u8]) -> ~[u8] {
 
 #[inline(always)]
 pure fn encoded_len(src_length: uint) -> uint {
-    (src_length + 4u) / 5u * 8u
+    (src_length + 4) / 5 * 8
 }
 
 #[inline(always)]
 pure fn decoded_len(src_length: uint) -> uint {
-    src_length / 8u * 5u
+    src_length / 8 * 5
 }
 
 fn b32encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     let src_length = src.len();
     let dst_length = dst.len();
 
-    if src_length == 0u {
+    if src_length == 0 {
         ret;
     }
 
-    if dst_length % 8u != 0u {
+    if dst_length % 8 != 0 {
         fail "dst's length should be divisible by 8";
     }
 
-    for uint::range(0u, (src_length + 4u) / 5u) |i| {
-        let src_curr = 5u * i;
-        let dst_curr = 8u * i;
+    for uint::range(0, (src_length + 4) / 5) |i| {
+        let src_curr = 5 * i;
+        let dst_curr = 8 * i;
         let remain = src_length - src_curr;
 
-        dst[dst_curr + 0u] = 0u8;
-        dst[dst_curr + 1u] = 0u8;
-        dst[dst_curr + 2u] = 0u8;
-        dst[dst_curr + 3u] = 0u8;
-        dst[dst_curr + 4u] = 0u8;
-        dst[dst_curr + 5u] = 0u8;
-        dst[dst_curr + 6u] = 0u8;
-        dst[dst_curr + 7u] = 0u8;
+        dst[dst_curr+0] = 0;
+        dst[dst_curr+1] = 0;
+        dst[dst_curr+2] = 0;
+        dst[dst_curr+3] = 0;
+        dst[dst_curr+4] = 0;
+        dst[dst_curr+5] = 0;
+        dst[dst_curr+6] = 0;
+        dst[dst_curr+7] = 0;
 
-        if remain == 1u {
-            dst[dst_curr + 0u] |= src[src_curr + 0u] >> 3u8;
-            dst[dst_curr + 1u] |= src[src_curr + 0u] << 2u8 & 0x1f_u8;
-        } else if remain == 2u {
-            dst[dst_curr + 0u] |= src[src_curr + 0u] >> 3u8;
-            dst[dst_curr + 1u] |= src[src_curr + 0u] << 2u8 & 0x1f_u8;
-            dst[dst_curr + 1u] |= src[src_curr + 1u] >> 6u8 & 0x1f_u8;
-            dst[dst_curr + 2u] |= src[src_curr + 1u] >> 1u8 & 0x1f_u8;
-            dst[dst_curr + 3u] |= src[src_curr + 1u] << 4u8 & 0x1f_u8;
-        } else if remain == 3u {
-            dst[dst_curr + 0u] |= src[src_curr + 0u] >> 3u8;
-            dst[dst_curr + 1u] |= src[src_curr + 0u] << 2u8 & 0x1f_u8;
-            dst[dst_curr + 1u] |= src[src_curr + 1u] >> 6u8 & 0x1f_u8;
-            dst[dst_curr + 2u] |= src[src_curr + 1u] >> 1u8 & 0x1f_u8;
-            dst[dst_curr + 3u] |= src[src_curr + 1u] << 4u8 & 0x1f_u8;
-            dst[dst_curr + 3u] |= src[src_curr + 2u] >> 4u8 & 0x1f_u8;
-            dst[dst_curr + 4u] |= src[src_curr + 2u] << 1u8 & 0x1f_u8;
-        } else if remain == 4u {
-            dst[dst_curr + 0u] |= src[src_curr + 0u] >> 3u8;
-            dst[dst_curr + 1u] |= src[src_curr + 0u] << 2u8 & 0x1f_u8;
-            dst[dst_curr + 1u] |= src[src_curr + 1u] >> 6u8 & 0x1f_u8;
-            dst[dst_curr + 2u] |= src[src_curr + 1u] >> 1u8 & 0x1f_u8;
-            dst[dst_curr + 3u] |= src[src_curr + 1u] << 4u8 & 0x1f_u8;
-            dst[dst_curr + 3u] |= src[src_curr + 2u] >> 4u8 & 0x1f_u8;
-            dst[dst_curr + 4u] |= src[src_curr + 2u] << 1u8 & 0x1f_u8;
-            dst[dst_curr + 4u] |= src[src_curr + 3u] >> 7u8;
-            dst[dst_curr + 5u] |= src[src_curr + 3u] >> 2u8 & 0x1f_u8;
-            dst[dst_curr + 6u] |= src[src_curr + 3u] << 3u8 & 0x1f_u8;
+        if remain == 1 {
+            dst[dst_curr+0] |= src[src_curr+0]>>3;
+            dst[dst_curr+1] |= src[src_curr+0]<<2 & 0x1f;
+        } else if remain == 2 {
+            dst[dst_curr+0] |= src[src_curr+0]>>3;
+            dst[dst_curr+1] |= src[src_curr+0]<<2 & 0x1f;
+            dst[dst_curr+1] |= src[src_curr+1]>>6 & 0x1f;
+            dst[dst_curr+2] |= src[src_curr+1]>>1 & 0x1f;
+            dst[dst_curr+3] |= src[src_curr+1]<<4 & 0x1f;
+        } else if remain == 3 {
+            dst[dst_curr+0] |= src[src_curr+0]>>3;
+            dst[dst_curr+1] |= src[src_curr+0]<<2 & 0x1f;
+            dst[dst_curr+1] |= src[src_curr+1]>>6 & 0x1f;
+            dst[dst_curr+2] |= src[src_curr+1]>>1 & 0x1f;
+            dst[dst_curr+3] |= src[src_curr+1]<<4 & 0x1f;
+            dst[dst_curr+3] |= src[src_curr+2]>>4 & 0x1f;
+            dst[dst_curr+4] |= src[src_curr+2]<<1 & 0x1f;
+        } else if remain == 4 {
+            dst[dst_curr+0] |= src[src_curr+0]>>3;
+            dst[dst_curr+1] |= src[src_curr+0]<<2 & 0x1f;
+            dst[dst_curr+1] |= src[src_curr+1]>>6 & 0x1f;
+            dst[dst_curr+2] |= src[src_curr+1]>>1 & 0x1f;
+            dst[dst_curr+3] |= src[src_curr+1]<<4 & 0x1f;
+            dst[dst_curr+3] |= src[src_curr+2]>>4 & 0x1f;
+            dst[dst_curr+4] |= src[src_curr+2]<<1 & 0x1f;
+            dst[dst_curr+4] |= src[src_curr+3]>>7;
+            dst[dst_curr+5] |= src[src_curr+3]>>2 & 0x1f;
+            dst[dst_curr+6] |= src[src_curr+3]<<3 & 0x1f;
         } else {
-            dst[dst_curr + 0u] |= src[src_curr + 0u] >> 3u8;
-            dst[dst_curr + 1u] |= src[src_curr + 0u] << 2u8 & 0x1f_u8;
-            dst[dst_curr + 1u] |= src[src_curr + 1u] >> 6u8 & 0x1f_u8;
-            dst[dst_curr + 2u] |= src[src_curr + 1u] >> 1u8 & 0x1f_u8;
-            dst[dst_curr + 3u] |= src[src_curr + 1u] << 4u8 & 0x1f_u8;
-            dst[dst_curr + 3u] |= src[src_curr + 2u] >> 4u8 & 0x1f_u8;
-            dst[dst_curr + 4u] |= src[src_curr + 2u] << 1u8 & 0x1f_u8;
-            dst[dst_curr + 4u] |= src[src_curr + 3u] >> 7u8;
-            dst[dst_curr + 5u] |= src[src_curr + 3u] >> 2u8 & 0x1f_u8;
-            dst[dst_curr + 6u] |= src[src_curr + 3u] << 3u8 & 0x1f_u8;
-            dst[dst_curr + 6u] |= src[src_curr + 4u] >> 5u8;
-            dst[dst_curr + 7u] |= src[src_curr + 4u] & 0x1f_u8;
+            dst[dst_curr+0] |= src[src_curr+0]>>3;
+            dst[dst_curr+1] |= src[src_curr+0]<<2 & 0x1f;
+            dst[dst_curr+1] |= src[src_curr+1]>>6 & 0x1f;
+            dst[dst_curr+2] |= src[src_curr+1]>>1 & 0x1f;
+            dst[dst_curr+3] |= src[src_curr+1]<<4 & 0x1f;
+            dst[dst_curr+3] |= src[src_curr+2]>>4 & 0x1f;
+            dst[dst_curr+4] |= src[src_curr+2]<<1 & 0x1f;
+            dst[dst_curr+4] |= src[src_curr+3]>>7;
+            dst[dst_curr+5] |= src[src_curr+3]>>2 & 0x1f;
+            dst[dst_curr+6] |= src[src_curr+3]<<3 & 0x1f;
+            dst[dst_curr+6] |= src[src_curr+4]>>5;
+            dst[dst_curr+7] |= src[src_curr+4]    & 0x1f;
         }
 
-        dst[dst_curr + 0u] = table[dst[dst_curr + 0u]];
-        dst[dst_curr + 1u] = table[dst[dst_curr + 1u]];
-        dst[dst_curr + 2u] = table[dst[dst_curr + 2u]];
-        dst[dst_curr + 3u] = table[dst[dst_curr + 3u]];
-        dst[dst_curr + 4u] = table[dst[dst_curr + 4u]];
-        dst[dst_curr + 5u] = table[dst[dst_curr + 5u]];
-        dst[dst_curr + 6u] = table[dst[dst_curr + 6u]];
-        dst[dst_curr + 7u] = table[dst[dst_curr + 7u]];
+        dst[dst_curr+0] = table[dst[dst_curr+0]];
+        dst[dst_curr+1] = table[dst[dst_curr+1]];
+        dst[dst_curr+2] = table[dst[dst_curr+2]];
+        dst[dst_curr+3] = table[dst[dst_curr+3]];
+        dst[dst_curr+4] = table[dst[dst_curr+4]];
+        dst[dst_curr+5] = table[dst[dst_curr+5]];
+        dst[dst_curr+6] = table[dst[dst_curr+6]];
+        dst[dst_curr+7] = table[dst[dst_curr+7]];
 
-        if remain < 5u {
-            dst[dst_curr + 7u] = PAD;
-            if remain < 4u {
-                dst[dst_curr + 6u] = PAD;
-                dst[dst_curr + 5u] = PAD;
-                if remain < 3u {
-                    dst[dst_curr + 4u] = PAD;
-                    if remain < 2u {
-                        dst[dst_curr + 3u] = PAD;
-                        dst[dst_curr + 2u] = PAD;
+        if remain < 5 {
+            dst[dst_curr+7] = PAD;
+            if remain < 4 {
+                dst[dst_curr+6] = PAD;
+                dst[dst_curr+5] = PAD;
+                if remain < 3 {
+                    dst[dst_curr+4] = PAD;
+                    if remain < 2 {
+                        dst[dst_curr+3] = PAD;
+                        dst[dst_curr+2] = PAD;
                     }
                 }
             }
@@ -300,25 +300,25 @@ fn b32decode(table: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
     let mut buf_len = 8u;
     let mut end = false;
 
-    while src_length > 0u && !end {
-        buf[0] = 0xff_u8; buf[1] = 0xff_u8;
-        buf[2] = 0xff_u8; buf[3] = 0xff_u8;
-        buf[4] = 0xff_u8; buf[5] = 0xff_u8;
-        buf[6] = 0xff_u8; buf[7] = 0xff_u8;
+    while src_length > 0 && !end {
+        buf[0] = 0xff; buf[1] = 0xff;
+        buf[2] = 0xff; buf[3] = 0xff;
+        buf[4] = 0xff; buf[5] = 0xff;
+        buf[6] = 0xff; buf[7] = 0xff;
 
         let mut i = 0u;
-        while i < 8u {
-            if src_length == 0u {
+        while i < 8 {
+            if src_length == 0 {
                 fail "malformed base32 string";
             }
             let chr = src[src_curr];
-            src_curr += 1u;
-            src_length -= 1u;
+            src_curr += 1;
+            src_length -= 1;
             if char::is_whitespace(chr as char) {
                 again;
             }
-            if chr == PAD && i >= 2u && src_length < 8u {
-                for uint::range(0u, (8u - i - 1u)) |j| {
+            if chr == PAD && i >= 2 && src_length < 8 {
+                for uint::range(0, (8-i-1)) |j| {
                     if src_length > j && src[src_curr + j] != PAD {
                         fail "malformed base32 string";
                     }
@@ -331,51 +331,51 @@ fn b32decode(table: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
                 some(n) { buf[i] = n as u8; }
                 none { fail "malformed base32 string"; }
             }
-            i += 1u;
+            i += 1;
         }
 
         alt buf_len {
-            2u {
-                dst[dst_curr + 0u] = buf[0u] << 3u8 | buf[1u] >> 2u8;
+            2 {
+                dst[dst_curr+0]  = buf[0]<<3 | buf[1]>>2;
             }
-            3u {
-                dst[dst_curr + 0u] = buf[0u] << 3u8 | buf[1u] >> 2u8;
-                dst[dst_curr + 1u] = (buf[1u] & 0x03_u8) << 6u8 | buf[2u] << 1u8;
+            3 {
+                dst[dst_curr+0]  = buf[0]<<3 | buf[1]>>2;
+                dst[dst_curr+1]  = buf[1]<<6 | buf[2]<<1;
             }
-            4u {
-                dst[dst_curr + 0u] = buf[0u] << 3u8 | buf[1u] >> 2u8;
-                dst[dst_curr + 1u] = (buf[1u] & 0x03_u8) << 6u8 | buf[2u] << 1u8;
-                dst[dst_curr + 1u] |= buf[3u] >> 4u8;
-                dst[dst_curr + 2u] = (buf[3u] & 0x0f_u8) << 4u8;
+            4 {
+                dst[dst_curr+0]  = buf[0]<<3 | buf[1]>>2;
+                dst[dst_curr+1]  = buf[1]<<6 | buf[2]<<1;
+                dst[dst_curr+1] |= buf[3]>>4;
+                dst[dst_curr+2]  = buf[3]<<4;
             }
-            5u | 6u {
-                dst[dst_curr + 0u] = buf[0u] << 3u8 | buf[1u] >> 2u8;
-                dst[dst_curr + 1u] = (buf[1u] & 0x03_u8) << 6u8 | buf[2u] << 1u8;
-                dst[dst_curr + 1u] |= buf[3u] >> 4u8;
-                dst[dst_curr + 2u] = (buf[3u] & 0x0f_u8) << 4u8;
-                dst[dst_curr + 2u] |= buf[4u] >> 1u8;
-                dst[dst_curr + 3u] = (buf[4u] & 0x01_u8) << 7u8 | buf[5u] << 2u8;
+            5 | 6 {
+                dst[dst_curr+0]  = buf[0]<<3 | buf[1]>>2;
+                dst[dst_curr+1]  = buf[1]<<6 | buf[2]<<1;
+                dst[dst_curr+1] |= buf[3]>>4;
+                dst[dst_curr+2]  = buf[3]<<4;
+                dst[dst_curr+2] |= buf[4]>>1;
+                dst[dst_curr+3]  = buf[4]<<7 | buf[5]<<2;
             }
-            7u | 8u {
-                dst[dst_curr + 0u] = buf[0u] << 3u8 | buf[1u] >> 2u8;
-                dst[dst_curr + 1u] = (buf[1u] & 0x03_u8) << 6u8 | buf[2u] << 1u8;
-                dst[dst_curr + 1u] |= buf[3u] >> 4u8;
-                dst[dst_curr + 2u] = (buf[3u] & 0x0f_u8) << 4u8;
-                dst[dst_curr + 2u] |= buf[4u] >> 1u8;
-                dst[dst_curr + 3u] = (buf[4u] & 0x01_u8) << 7u8 | buf[5u] << 2u8;
-                dst[dst_curr + 3u] |= buf[6u] >> 3u8;
-                dst[dst_curr + 4u] = (buf[6u] & 0x07_u8) << 5u8 | buf[7u];
+            7 | 8 {
+                dst[dst_curr+0]  = buf[0]<<3 | buf[1]>>2;
+                dst[dst_curr+1]  = buf[1]<<6 | buf[2]<<1;
+                dst[dst_curr+1] |= buf[3]>>4;
+                dst[dst_curr+2]  = buf[3]<<4;
+                dst[dst_curr+2] |= buf[4]>>1;
+                dst[dst_curr+3]  = buf[4]<<7 | buf[5]<<2;
+                dst[dst_curr+3] |= buf[6]>>3;
+                dst[dst_curr+4]  = buf[6]<<5 | buf[7];
             }
             _ { fail "malformed base32 string"; }
         }
 
         alt buf_len {
-            2u      { dst_curr += 1u; }
-            3u | 4u { dst_curr += 2u; }
-            5u      { dst_curr += 3u; }
-            6u | 7u { dst_curr += 4u; }
-            8u      { dst_curr += 5u; }
-            _       { fail "malformed base32 string"; }
+            2     { dst_curr += 1; }
+            3 | 4 { dst_curr += 2; }
+            5     { dst_curr += 3; }
+            6 | 7 { dst_curr += 4; }
+            8     { dst_curr += 5; }
+            _     { fail "malformed base32 string"; }
         }
     }
 

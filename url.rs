@@ -67,19 +67,19 @@ fn url_escape(s: str, mode: enc_mode) -> str {
         [48u8, 49u8, 50u8, 51u8, 52u8, 53u8, 54u8, 55u8,
          56u8, 57u8, 65u8, 66u8, 67u8, 68u8, 69u8, 70u8]/_;
 
-    for uint::range(0u, src_length) |i| {
+    for uint::range(0, src_length) |i| {
         let c = bs[i];
         if should_escape(bs[i], mode) {
             if c == 32u8 && mode == query {
-                space_count += 1u;
+                space_count += 1;
             } else {
-                hex_count += 1u;
+                hex_count += 1;
             }
         }
     }
 
     // Nothing to do if there's no space and no escapable chars in `s`
-    if space_count == 0u && hex_count == 0u {
+    if space_count == 0 && hex_count == 0 {
         ret copy s;
     }
 
@@ -94,14 +94,14 @@ fn url_escape(s: str, mode: enc_mode) -> str {
             j += 1u;
         } else if should_escape(c, mode) {
             ts[j] = '%' as u8;
-            ts[j+1u] = table[c >> 4u8];
-            ts[j+2u] = table[c & 0x0f_u8];
-            j += 3u;
+            ts[j+1] = table[c>>4];
+            ts[j+2] = table[c & 0x0f];
+            j += 3;
         } else {
             ts[j] = c;
-            j += 1u;
+            j += 1;
         }
-        i += 1u;
+        i += 1;
     }
 
     str::from_bytes(vec::from_mut(ts))
@@ -117,42 +117,42 @@ fn url_unescape(s: str, mode: enc_mode) -> str {
     while i < src_length {
         let c = bs[i];
         if c == 37u8 {
-            n += 1u;
-            if i+2u >= src_length || !ishex(bs[i+1u]) || !ishex(bs[i+2u]) {
+            n += 1;
+            if i+2 >= src_length || !ishex(bs[i+1]) || !ishex(bs[i+2]) {
                 fail #fmt["Invalid URL escape: '%s'", s];
             }
-            i += 3u;
+            i += 3;
         } else if c == 43u8 {
             hasplus = mode == query;
-            i += 1u;
+            i += 1;
         } else {
-            i += 1u;
+            i += 1;
         }
     }
 
-    if n == 0u && !hasplus {
+    if n == 0 && !hasplus {
         ret copy s;
     }
 
-    let ts = vec::to_mut(vec::from_elem(src_length - 2u * n, 0u8));
-    let mut i = 0u;
-    let mut j = 0u;
+    let ts = vec::to_mut(vec::from_elem(src_length - 2 * n, 0u8));
+    let mut i = 0;
+    let mut j = 0;
 
     while i < src_length {
         let c = bs[i];
         if c == 37u8 {
-            ts[j] = unhex(bs[i+1u]) << 4u | unhex(bs[i+2u]);
-            j += 1u;
-            i += 3u;
+            ts[j] = unhex(bs[i+1])<<4 | unhex(bs[i+2]);
+            j += 1;
+            i += 3;
         } else if c == 43u8 {
             if mode == query { ts[j] = 32u8; }
             else { ts[j] = 43u8; }
-            j += 1u;
-            i += 1u;
+            j += 1;
+            i += 1;
         } else {
             ts[j] = c;
-            j += 1u;
-            i += 1u;
+            j += 1;
+            i += 1;
         }
     }
 

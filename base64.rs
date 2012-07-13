@@ -190,62 +190,62 @@ fn urlsafe_decode(src: &[u8]) -> ~[u8] {
 
 #[inline(always)]
 pure fn encoded_len(src_length: uint) -> uint {
-    (src_length + 2u) / 3u * 4u
+    (src_length + 2) / 3 * 4
 }
 
 #[inline(always)]
 pure fn decoded_len(src_length: uint) -> uint {
-    src_length / 4u * 3u
+    src_length / 4 * 3
 }
 
 fn b64encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     let src_length = src.len();
     let dst_length = dst.len();
 
-    if src_length == 0u {
+    if src_length == 0 {
         ret;
     }
 
-    if dst_length % 4u != 0u {
+    if dst_length % 4 != 0 {
         fail "dst's length should be divisible by 4";
     }
 
-    for uint::range(0u, (src_length + 2u) / 3u) |i| {
-        let src_curr = 3u * i;
-        let dst_curr = 4u * i;
+    for uint::range(0, (src_length + 2) / 3) |i| {
+        let src_curr = 3 * i;
+        let dst_curr = 4 * i;
         let remain = src_length - src_curr;
 
-        dst[dst_curr + 0u] = 0u8;
-        dst[dst_curr + 1u] = 0u8;
-        dst[dst_curr + 2u] = 0u8;
-        dst[dst_curr + 3u] = 0u8;
+        dst[dst_curr+0] = 0;
+        dst[dst_curr+1] = 0;
+        dst[dst_curr+2] = 0;
+        dst[dst_curr+3] = 0;
 
-        if remain == 1u {
-            dst[dst_curr + 0u] |= src[src_curr + 0u] >> 2u8;
-            dst[dst_curr + 1u] |= src[src_curr + 0u] << 4u8 & 0x3f_u8;
-        } else if remain == 2u {
-            dst[dst_curr + 0u] |= src[src_curr + 0u] >> 2u8;
-            dst[dst_curr + 1u] |= src[src_curr + 0u] << 4u8 & 0x3f_u8;
-            dst[dst_curr + 1u] |= src[src_curr + 1u] >> 4u8;
-            dst[dst_curr + 2u] |= src[src_curr + 1u] << 2u8 & 0x3f_u8;
+        if remain == 1 {
+            dst[dst_curr+0] |= src[src_curr+0]>>2;
+            dst[dst_curr+1] |= src[src_curr+0]<<4 & 0x3f;
+        } else if remain == 2 {
+            dst[dst_curr+0] |= src[src_curr+0]>>2;
+            dst[dst_curr+1] |= src[src_curr+0]<<4 & 0x3f;
+            dst[dst_curr+1] |= src[src_curr+1]>>4;
+            dst[dst_curr+2] |= src[src_curr+1]<<2 & 0x3f;
         } else {
-            dst[dst_curr + 0u] |= src[src_curr + 0u] >> 2u8;
-            dst[dst_curr + 1u] |= src[src_curr + 0u] << 4u8 & 0x3f_u8;
-            dst[dst_curr + 1u] |= src[src_curr + 1u] >> 4u8;
-            dst[dst_curr + 2u] |= src[src_curr + 1u] << 2u8 & 0x3f_u8;
-            dst[dst_curr + 2u] |= src[src_curr + 2u] >> 6u8;
-            dst[dst_curr + 3u] |= src[src_curr + 2u] & 0x3f_u8;
+            dst[dst_curr+0] |= src[src_curr+0]>>2;
+            dst[dst_curr+1] |= src[src_curr+0]<<4 & 0x3f;
+            dst[dst_curr+1] |= src[src_curr+1]>>4;
+            dst[dst_curr+2] |= src[src_curr+1]<<2 & 0x3f;
+            dst[dst_curr+2] |= src[src_curr+2]>>6;
+            dst[dst_curr+3] |= src[src_curr+2]    & 0x3f;
         }
 
-        dst[dst_curr + 0u] = table[dst[dst_curr + 0u]];
-        dst[dst_curr + 1u] = table[dst[dst_curr + 1u]];
-        dst[dst_curr + 2u] = table[dst[dst_curr + 2u]];
-        dst[dst_curr + 3u] = table[dst[dst_curr + 3u]];
+        dst[dst_curr+0] = table[dst[dst_curr+0]];
+        dst[dst_curr+1] = table[dst[dst_curr+1]];
+        dst[dst_curr+2] = table[dst[dst_curr+2]];
+        dst[dst_curr+3] = table[dst[dst_curr+3]];
 
-        if remain < 3u {
-            dst[dst_curr + 3u] = PAD;
-            if remain < 2u {
-                dst[dst_curr + 2u] = PAD;
+        if remain < 3 {
+            dst[dst_curr+3] = PAD;
+            if remain < 2 {
+                dst[dst_curr+2] = PAD;
             }
             break;
         }
@@ -260,25 +260,25 @@ fn b64decode(table: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
     let mut buf_len = 4u;
     let mut end = false;
 
-    while src_length > 0u && !end {
-        buf[0] = 0xff_u8;
-        buf[1] = 0xff_u8;
-        buf[2] = 0xff_u8;
-        buf[3] = 0xff_u8;
+    while src_length > 0 && !end {
+        buf[0] = 0xff;
+        buf[1] = 0xff;
+        buf[2] = 0xff;
+        buf[3] = 0xff;
 
         let mut i = 0u;
-        while i < 4u {
-            if src_length == 0u {
+        while i < 4 {
+            if src_length == 0 {
                 fail "malformed base64 string";
             }
             let chr = src[src_curr];
-            src_curr += 1u;
-            src_length -= 1u;
+            src_curr += 1;
+            src_length -= 1;
             if char::is_whitespace(chr as char) {
                 again;
             }
-            if chr == PAD && i >= 2u && src_length < 4u {
-                if src_length > 0u && src[src_curr] != PAD {
+            if chr == PAD && i >= 2 && src_length < 4 {
+                if src_length > 0 && src[src_curr] != PAD {
                     fail "malformed base64 string";
                 }
                 buf_len = i;
@@ -289,21 +289,21 @@ fn b64decode(table: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
                 some(n) { buf[i] = n as u8; }
                 none { fail "malformed base64 string"; }
             }
-            i += 1u;
+            i += 1;
         }
 
-        if buf_len == 2u {
-            dst[dst_curr + 0u] = buf[0] << 2u8 | buf[1] >> 4u8;
-        } else if buf_len == 3u {
-            dst[dst_curr + 0u] = buf[0] << 2u8 | buf[1] >> 4u8;
-            dst[dst_curr + 1u] = (buf[1] & 0x0f_u8) << 4u8 | buf[2] >> 2u8;
+        if buf_len == 2 {
+            dst[dst_curr+0] = buf[0]<<2 | buf[1]>>4;
+        } else if buf_len == 3 {
+            dst[dst_curr+0] = buf[0]<<2 | buf[1]>>4;
+            dst[dst_curr+1] = buf[1]<<4 | buf[2]>>2;
         } else {
-            dst[dst_curr + 0u] = buf[0] << 2u8 | buf[1] >> 4u8;
-            dst[dst_curr + 1u] = (buf[1] & 0x0f_u8) << 4u8 | buf[2] >> 2u8;
-            dst[dst_curr + 2u] = (buf[2] & 0x03_u8) << 6u8 | buf[3];
+            dst[dst_curr+0] = buf[0]<<2 | buf[1]>>4;
+            dst[dst_curr+1] = buf[1]<<4 | buf[2]>>2;
+            dst[dst_curr+2] = buf[2]<<6 | buf[3];
         }
 
-        dst_curr += buf_len - 1u;
+        dst_curr += buf_len - 1;
     }
 
     dst_curr
