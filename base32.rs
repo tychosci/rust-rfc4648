@@ -293,7 +293,7 @@ fn b32encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
 }
 
 fn b32decode(table: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
-    let buf = vec::to_mut(vec::from_elem(8u, 0u8));
+    let buf = [mut 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8]/_;
     let mut src_length = src.len();
     let mut src_curr = 0u;
     let mut dst_curr = 0u;
