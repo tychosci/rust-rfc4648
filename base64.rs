@@ -24,29 +24,12 @@ const PAD: u8 = 61u8;
 class base64 {
     let table: ~[u8];
     let table_u: ~[u8];
-    let decode_map: ~[u8];
-    let decode_map_u: ~[u8];
 
     new() {
-        let table =
+        self.table =
             str::bytes("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
-        let table_u =
+        self.table_u =
             str::bytes("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_");
-
-        let decode_map = vec::to_mut(vec::from_elem(256u, 0xff_u8));
-        let decode_map_u = vec::to_mut(vec::from_elem(256u, 0xff_u8));
-
-        for u8::range(0u8, 64u8) |i| {
-            decode_map[table[i]] = i;
-        }
-        for u8::range(0u8, 64u8) |i| {
-            decode_map_u[table_u[i]] = i;
-        }
-
-        self.table = table;
-        self.table_u = table_u;
-        self.decode_map = vec::from_mut(decode_map);
-        self.decode_map_u = vec::from_mut(decode_map_u);
     }
 
     fn encode(dst: &[mut u8], src: &[u8]) {
@@ -56,10 +39,10 @@ class base64 {
         b64encode(self.table_u, dst, src);
     }
     fn decode(dst: &[mut u8], src: &[u8]) -> uint {
-        b64decode(self.decode_map, dst, src)
+        b64decode(self.table, dst, src)
     }
     fn decode_u(dst: &[mut u8], src: &[u8]) -> uint {
-        b64decode(self.decode_map_u, dst, src)
+        b64decode(self.table_u, dst, src)
     }
 
     /**
@@ -289,7 +272,7 @@ fn b64encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     }
 }
 
-fn b64decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
+fn b64decode(table: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
     let buf = vec::to_mut(vec::from_elem(4u, 0u8));
     let mut src_length = src.len();
     let mut src_curr = 0u;
@@ -322,9 +305,9 @@ fn b64decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
                 end = true;
                 break;
             }
-            buf[i] = decode_map[chr];
-            if buf[i] == 0xff_u8 {
-                fail "malformed base64 string";
+            alt table.position_elem(chr) {
+                some(n) { buf[i] = n as u8; }
+                none { fail "malformed base64 string"; }
             }
             i += 1u;
         }

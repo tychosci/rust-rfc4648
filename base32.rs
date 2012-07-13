@@ -24,29 +24,10 @@ const PAD: u8 = 61u8;
 class base32 {
     let table: ~[u8];
     let table_h: ~[u8];
-    let decode_map: ~[u8];
-    let decode_map_h: ~[u8];
 
     new() {
-        let table =
-            str::bytes("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567");
-        let table_h =
-            str::bytes("0123456789ABCDEFGHIJKLMNOPQRSTUV");
-
-        let decode_map = vec::to_mut(vec::from_elem(256u, 0xff_u8));
-        let decode_map_h = vec::to_mut(vec::from_elem(256u, 0xff_u8));
-
-        for u8::range(0u8, 32u8) |i| {
-            decode_map[table[i]] = i;
-        }
-        for u8::range(0u8, 32u8) |i| {
-            decode_map_h[table_h[i]] = i;
-        }
-
-        self.table = table;
-        self.table_h = table_h;
-        self.decode_map = vec::from_mut(decode_map);
-        self.decode_map_h = vec::from_mut(decode_map_h);
+        self.table = str::bytes("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567");
+        self.table_h = str::bytes("0123456789ABCDEFGHIJKLMNOPQRSTUV");
     }
 
     fn encode(dst: &[mut u8], src: &[u8]) {
@@ -56,10 +37,10 @@ class base32 {
         b32encode(self.table_h, dst, src);
     }
     fn decode(dst: &[mut u8], src: &[u8]) -> uint {
-        b32decode(self.decode_map, dst, src)
+        b32decode(self.table, dst, src)
     }
     fn decode_h(dst: &[mut u8], src: &[u8]) -> uint {
-        b32decode(self.decode_map_h, dst, src)
+        b32decode(self.table_h, dst, src)
     }
 
     /**
@@ -331,7 +312,7 @@ fn b32encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     }
 }
 
-fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
+fn b32decode(table: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
     let buf = vec::to_mut(vec::from_elem(8u, 0u8));
     let mut src_length = src.len();
     let mut src_curr = 0u;
@@ -366,9 +347,9 @@ fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
                 end = true;
                 break;
             }
-            buf[i] = decode_map[chr];
-            if buf[i] == 0xff_u8 {
-                fail "malformed base32 string";
+            alt table.position_elem(chr) {
+                some(n) { buf[i] = n as u8; }
+                none { fail "malformed base32 string"; }
             }
             i += 1u;
         }
