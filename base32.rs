@@ -123,12 +123,7 @@ class base32 {
 }
 
 /**
- * Shortcut for enc#encode_bytes
- *
- * Table of base32 alphabet and decode map are allocated
- * every time when this function is called, so it's
- * recommended to use `mk` and then `encode_bytes` instead
- * if it's necessary to use this function many times.
+ * Shortcut for base32#encode_bytes
  *
  * # Arguments
  *
@@ -144,12 +139,7 @@ fn encode(src: &[u8]) -> ~[u8] {
 }
 
 /**
- * Shortcut for enc#encode_bytes_h
- *
- * Table of base32 alphabet and decode map are allocated
- * every time when this function is called, so it's
- * recommended to use `mk` and then `encode_bytes_h` instead
- * if it's necessary to use this function many times.
+ * Shortcut for base32#encode_bytes_h
  *
  * # Arguments
  *
@@ -165,12 +155,7 @@ fn hex_encode(src: &[u8]) -> ~[u8] {
 }
 
 /**
- * Shortcut for enc#decode_bytes
- *
- * Table of base32 alphabet and decode map are allocated
- * every time when this function is called, so it's
- * recommended to use `mk` and then `decode_bytes` instead
- * if it's necessary to use this function many times.
+ * Shortcut for base32#decode_bytes
  *
  * # Arguments
  *
@@ -186,12 +171,7 @@ fn decode(src: &[u8]) -> ~[u8] {
 }
 
 /**
- * Shortcut for enc#decode_bytes_h
- *
- * Table of base32 alphabet and decode map are allocated
- * every time when this function is called, so it's
- * recommended to use `mk` and then `decode_bytes_h` instead
- * if it's necessary to use this function many times.
+ * Shortcut for base32#decode_bytes_h
  *
  * # Arguments
  *

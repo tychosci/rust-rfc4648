@@ -127,11 +127,6 @@ class base64 {
 /**
  * Shortcut for base64#encode_bytes
  *
- * Table of base64 alphabet and decode map are allocated
- * every time when this function is called, so it's
- * recommended to use `base64()` and then `encode_bytes` instead
- * if it's necessary to use this function many times.
- *
  * # Arguments
  *
  * * src - bytes for encoding
@@ -147,11 +142,6 @@ fn encode(src: &[u8]) -> ~[u8] {
 
 /**
  * Shortcut for base64#encode_bytes_u
- *
- * Table of base64 alphabet and decode map are allocated
- * every time when this function is called, so it's
- * recommended to use `base64()` and then `encode_bytes_u` instead
- * if it's necessary to use this function many times.
  *
  * # Arguments
  *
@@ -169,11 +159,6 @@ fn urlsafe_encode(src: &[u8]) -> ~[u8] {
 /**
  * Shortcut for base64#decode_bytes
  *
- * Table of base64 alphabet and decode map are allocated
- * every time when this function is called, so it's
- * recommended to use `base64()` and then `decode_bytes` instead
- * if it's necessary to use this function many times.
- *
  * # Arguments
  *
  * * src - base64-encoded bytes
@@ -189,11 +174,6 @@ fn decode(src: &[u8]) -> ~[u8] {
 
 /**
  * Shortcut for base64#decode_bytes_u
- *
- * Table of base64 alphabet and decode map are allocated
- * every time when this function is called, so it's
- * recommended to use `base64()` and then `decode_bytes_u` instead
- * if it's necessary to use this function many times.
  *
  * # Arguments
  *
