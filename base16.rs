@@ -9,11 +9,11 @@
  * use encoding;
  * import encoding::extensions;
  *
- * let src = \"base16\";
+ * let src = "base16";
  * let res = src.encode(encoding::base16);
  * let res = str::from_bytes(res);
  *
- * io::println(#fmt[\"%s\", res]);
+ * io::println(#fmt["%s", res]);
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 

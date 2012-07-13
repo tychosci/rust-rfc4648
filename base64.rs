@@ -9,11 +9,11 @@
  * use encoding;
  * import encoding::extensions;
  *
- * let src = \"base64\";
+ * let src = "base64";
  * let res = src.encode(encoding::base64);
  * let res = str::from_bytes(res);
  *
- * io::println(#fmt[\"%s\", res]);
+ * io::println(#fmt["%s", res]);
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
@@ -142,11 +142,11 @@ class base64 {
 }
 
 /**
- * Shortcut for enc#encode_bytes
+ * Shortcut for base64#encode_bytes
  *
  * Table of base64 alphabet and decode map are allocated
  * every time when this function is called, so it's
- * recommended to use `mk` and then `encode_bytes` instead
+ * recommended to use `base64()` and then `encode_bytes` instead
  * if it's necessary to use this function many times.
  *
  * # Arguments
@@ -163,11 +163,11 @@ fn encode(src: &[u8]) -> ~[u8] {
 }
 
 /**
- * Shortcut for enc#encode_bytes_u
+ * Shortcut for base64#encode_bytes_u
  *
  * Table of base64 alphabet and decode map are allocated
  * every time when this function is called, so it's
- * recommended to use `mk` and then `encode_bytes_u` instead
+ * recommended to use `base64()` and then `encode_bytes_u` instead
  * if it's necessary to use this function many times.
  *
  * # Arguments
@@ -184,11 +184,11 @@ fn urlsafe_encode(src: &[u8]) -> ~[u8] {
 }
 
 /**
- * Shortcut for enc#decode_bytes
+ * Shortcut for base64#decode_bytes
  *
  * Table of base64 alphabet and decode map are allocated
  * every time when this function is called, so it's
- * recommended to use `mk` and then `decode_bytes` instead
+ * recommended to use `base64()` and then `decode_bytes` instead
  * if it's necessary to use this function many times.
  *
  * # Arguments
@@ -205,11 +205,11 @@ fn decode(src: &[u8]) -> ~[u8] {
 }
 
 /**
- * Shortcut for enc#decode_bytes_u
+ * Shortcut for base64#decode_bytes_u
  *
  * Table of base64 alphabet and decode map are allocated
  * every time when this function is called, so it's
- * recommended to use `mk` and then `decode_bytes_u` instead
+ * recommended to use `base64()` and then `decode_bytes_u` instead
  * if it's necessary to use this function many times.
  *
  * # Arguments
