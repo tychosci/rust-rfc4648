@@ -1,5 +1,5 @@
 export encoding;
-export extensions;
+export codec;
 
 enum encoding {
     base16,
@@ -9,7 +9,12 @@ enum encoding {
     base64urlsafe,
 }
 
-impl extensions/& for &[u8] {
+trait codec {
+    fn encode(e: encoding) -> ~[u8];
+    fn decode(e: encoding) -> ~[u8];
+}
+
+impl of codec for &[u8] {
     fn encode(e: encoding) -> ~[u8] {
         alt e {
             base16 { base16::encode(self) }
@@ -30,7 +35,7 @@ impl extensions/& for &[u8] {
     }
 }
 
-impl extensions for str {
+impl extensions of codec for ~str {
     fn encode(e: encoding) -> ~[u8] {
         let bytes = str::bytes(self);
         bytes.encode(e)

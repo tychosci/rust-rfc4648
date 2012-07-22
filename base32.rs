@@ -26,8 +26,8 @@ class base32 {
     let table_h: ~[u8];
 
     new() {
-        self.table = str::bytes("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567");
-        self.table_h = str::bytes("0123456789ABCDEFGHIJKLMNOPQRSTUV");
+        self.table = str::bytes(~"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567");
+        self.table_h = str::bytes(~"0123456789ABCDEFGHIJKLMNOPQRSTUV");
     }
 
     fn encode(dst: &[mut u8], src: &[u8]) {
@@ -205,7 +205,7 @@ fn b32encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     }
 
     if dst_length % 8 != 0 {
-        fail "dst's length should be divisible by 8";
+        fail ~"dst's length should be divisible by 8";
     }
 
     for uint::range(0, (src_length + 4) / 5) |i| {
@@ -309,7 +309,7 @@ fn b32decode(table: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
         let mut i = 0u;
         while i < 8 {
             if src_length == 0 {
-                fail "malformed base32 string";
+                fail ~"malformed base32 string";
             }
             let chr = src[src_curr];
             src_curr += 1;
@@ -320,7 +320,7 @@ fn b32decode(table: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
             if chr == PAD && i >= 2 && src_length < 8 {
                 for uint::range(0, (8-i-1)) |j| {
                     if src_length > j && src[src_curr + j] != PAD {
-                        fail "malformed base32 string";
+                        fail ~"malformed base32 string";
                     }
                 }
                 buf_len = i;
@@ -329,7 +329,7 @@ fn b32decode(table: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
             }
             alt table.position_elem(chr) {
                 some(n) { buf[i] = n as u8; }
-                none { fail "malformed base32 string"; }
+                none { fail ~"malformed base32 string"; }
             }
             i += 1;
         }
@@ -366,7 +366,7 @@ fn b32decode(table: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
                 dst[dst_curr+3] |= buf[6]>>3;
                 dst[dst_curr+4]  = buf[6]<<5 | buf[7];
             }
-            _ { fail "malformed base32 string"; }
+            _ { fail ~"malformed base32 string"; }
         }
 
         alt buf_len {
@@ -375,7 +375,7 @@ fn b32decode(table: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
             5     { dst_curr += 3; }
             6 | 7 { dst_curr += 4; }
             8     { dst_curr += 5; }
-            _     { fail "malformed base32 string"; }
+            _     { fail ~"malformed base32 string"; }
         }
     }
 

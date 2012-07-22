@@ -27,9 +27,9 @@ class base64 {
 
     new() {
         self.table =
-            str::bytes("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
+            str::bytes(~"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
         self.table_u =
-            str::bytes("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_");
+            str::bytes(~"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_");
     }
 
     fn encode(dst: &[mut u8], src: &[u8]) {
@@ -207,7 +207,7 @@ fn b64encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     }
 
     if dst_length % 4 != 0 {
-        fail "dst's length should be divisible by 4";
+        fail ~"dst's length should be divisible by 4";
     }
 
     for uint::range(0, (src_length + 2) / 3) |i| {
@@ -269,7 +269,7 @@ fn b64decode(table: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
         let mut i = 0u;
         while i < 4 {
             if src_length == 0 {
-                fail "malformed base64 string";
+                fail ~"malformed base64 string";
             }
             let chr = src[src_curr];
             src_curr += 1;
@@ -279,7 +279,7 @@ fn b64decode(table: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
             }
             if chr == PAD && i >= 2 && src_length < 4 {
                 if src_length > 0 && src[src_curr] != PAD {
-                    fail "malformed base64 string";
+                    fail ~"malformed base64 string";
                 }
                 buf_len = i;
                 end = true;
@@ -287,7 +287,7 @@ fn b64decode(table: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
             }
             alt table.position_elem(chr) {
                 some(n) { buf[i] = n as u8; }
-                none { fail "malformed base64 string"; }
+                none { fail ~"malformed base64 string"; }
             }
             i += 1;
         }
