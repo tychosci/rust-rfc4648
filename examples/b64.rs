@@ -8,9 +8,9 @@ fn main(args: ~[~str]) {
     let stdout = io::stdout();
     let stderr = io::stderr();
 
-    if vec::len(args) < 2u {
+    if args.len() < 2u {
         stderr.write_line(#fmt["Usage: %s <mode> <filename>", binary]);
-        ret;
+        return;
     }
 
     alt io::read_whole_file(args[2]) {
@@ -18,7 +18,7 @@ fn main(args: ~[~str]) {
             let res = alt args[1] {
                 ~"encode" { data.encode(encoding::base64) }
                 ~"decode" { data.decode(encoding::base64) }
-                _ { ret; }
+                _ { return; }
             };
             stdout.write(res);
         }

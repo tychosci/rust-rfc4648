@@ -7,7 +7,7 @@
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  * use encoding;
- * import encoding::extensions;
+ * import encoding::codec;
  *
  * let src = "base64";
  * let res = src.encode(encoding::base64);
@@ -21,28 +21,62 @@ export base64, encode, urlsafe_encode, decode, urlsafe_decode;
 
 const PAD: u8 = 61u8;
 
-class base64 {
-    let table: ~[u8];
-    let table_u: ~[u8];
+struct Base64 {
+    table_std: ~[u8];
+    table_url: ~[u8];
+    decode_map_std: ~[u8];
+    decode_map_url: ~[u8];
+}
 
-    new() {
-        self.table =
-            str::bytes(~"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
-        self.table_u =
-            str::bytes(~"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_");
+fn base64() -> @Base64 {
+    let table_std = str::bytes(~"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
+    let table_url = str::bytes(~"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_");
+
+    let decode_map_std = vec::to_mut(vec::from_elem(256, 0xFF_u8));
+    let decode_map_url = vec::to_mut(vec::from_elem(256, 0xFF_u8));
+
+    for u8::range(0, 64) |i| {
+        decode_map_std[table_std[i]] = i;
+        decode_map_url[table_url[i]] = i;
     }
 
+    @Base64 {
+        table_std: table_std,
+        table_url: table_url,
+        decode_map_std: vec::from_mut(decode_map_std),
+        decode_map_url: vec::from_mut(decode_map_url)
+    }
+}
+
+#[inline(always)]
+pure fn encoded_len(src_length: uint) -> uint {
+    (src_length + 2) / 3 * 4
+}
+
+#[inline(always)]
+pure fn decoded_len(src_length: uint) -> uint {
+    src_length / 4 * 3
+}
+
+impl Base64 {
     fn encode(dst: &[mut u8], src: &[u8]) {
-        b64encode(self.table, dst, src);
+        b64encode(self.table_std, dst, src);
     }
     fn encode_u(dst: &[mut u8], src: &[u8]) {
-        b64encode(self.table_u, dst, src);
+        b64encode(self.table_url, dst, src);
     }
     fn decode(dst: &[mut u8], src: &[u8]) -> uint {
-        b64decode(self.table, dst, src)
+        b64decode(self.decode_map_std, dst, src)
     }
     fn decode_u(dst: &[mut u8], src: &[u8]) -> uint {
-        b64decode(self.table_u, dst, src)
+        b64decode(self.decode_map_url, dst, src)
+    }
+
+    fn encoded_len(src_length: uint) -> uint {
+        encoded_len(src_length)
+    }
+    fn decoded_len(src_length: uint) -> uint {
+        decoded_len(src_length)
     }
 
     /**
@@ -57,7 +91,7 @@ class base64 {
      * base64-encoded bytes
      */
     fn encode_bytes(src: &[u8]) -> ~[u8] {
-        let dst_length = encoded_len(src.len());
+        let dst_length = self.encoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
         self.encode(dst, src);
         vec::from_mut(dst)
@@ -78,7 +112,7 @@ class base64 {
      * base64-encoded bytes
      */
     fn encode_bytes_u(src: &[u8]) -> ~[u8] {
-        let dst_length = encoded_len(src.len());
+        let dst_length = self.encoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
         self.encode_u(dst, src);
         vec::from_mut(dst)
@@ -96,7 +130,7 @@ class base64 {
      * decoded bytes
      */
     fn decode_bytes(src: &[u8]) -> ~[u8] {
-        let dst_length = decoded_len(src.len());
+        let dst_length = self.decoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
         let end = self.decode(dst, src);
         vec::slice(vec::from_mut(dst), 0u, end)
@@ -117,7 +151,7 @@ class base64 {
      * decoded bytes
      */
     fn decode_bytes_u(src: &[u8]) -> ~[u8] {
-        let dst_length = decoded_len(src.len());
+        let dst_length = self.decoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
         let end = self.decode_u(dst, src);
         vec::slice(vec::from_mut(dst), 0u, end)
@@ -188,22 +222,12 @@ fn urlsafe_decode(src: &[u8]) -> ~[u8] {
     base64.decode_bytes_u(src)
 }
 
-#[inline(always)]
-pure fn encoded_len(src_length: uint) -> uint {
-    (src_length + 2) / 3 * 4
-}
-
-#[inline(always)]
-pure fn decoded_len(src_length: uint) -> uint {
-    src_length / 4 * 3
-}
-
 fn b64encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     let src_length = src.len();
     let dst_length = dst.len();
 
     if src_length == 0 {
-        ret;
+        return;
     }
 
     if dst_length % 4 != 0 {
@@ -252,7 +276,7 @@ fn b64encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     }
 }
 
-fn b64decode(table: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
+fn b64decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
     let buf = [mut 0u8, 0u8, 0u8, 0u8]/_;
     let mut src_length = src.len();
     let mut src_curr = 0u;
@@ -285,9 +309,9 @@ fn b64decode(table: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
                 end = true;
                 break;
             }
-            alt table.position_elem(chr) {
-                some(n) { buf[i] = n as u8; }
-                none { fail ~"malformed base64 string"; }
+            buf[i] = decode_map[chr];
+            if buf[i] == 0xff {
+                fail ~"malformed base64 string";
             }
             i += 1;
         }

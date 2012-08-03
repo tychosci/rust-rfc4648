@@ -7,7 +7,7 @@
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  * use encoding;
- * import encoding::extensions;
+ * import encoding::codec;
  *
  * let src = "base32";
  * let res = src.encode(encoding::base32);
@@ -21,26 +21,62 @@ export base32, encode, hex_encode, decode, hex_decode;
 
 const PAD: u8 = 61u8;
 
-class base32 {
-    let table: ~[u8];
-    let table_h: ~[u8];
+struct Base32 {
+    table_std: ~[u8];
+    table_hex: ~[u8];
+    decode_map_std: ~[u8];
+    decode_map_hex: ~[u8];
+}
 
-    new() {
-        self.table = str::bytes(~"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567");
-        self.table_h = str::bytes(~"0123456789ABCDEFGHIJKLMNOPQRSTUV");
+fn base32() -> @Base32 {
+    let table_std = str::bytes(~"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567");
+    let table_hex = str::bytes(~"0123456789ABCDEFGHIJKLMNOPQRSTUV");
+
+    let decode_map_std = vec::to_mut(vec::from_elem(256, 0xff_u8));
+    let decode_map_hex = vec::to_mut(vec::from_elem(256, 0xff_u8));
+
+    for u8::range(0, 32) |i| {
+        decode_map_std[table_std[i]] = i;
+        decode_map_hex[table_hex[i]] = i;
     }
 
+    @Base32 {
+        table_std: table_std,
+        table_hex: table_hex,
+        decode_map_std: vec::from_mut(decode_map_std),
+        decode_map_hex: vec::from_mut(decode_map_hex)
+    }
+}
+
+#[inline(always)]
+pure fn encoded_len(src_length: uint) -> uint {
+    (src_length + 4) / 5 * 8
+}
+
+#[inline(always)]
+pure fn decoded_len(src_length: uint) -> uint {
+    src_length / 8 * 5
+}
+
+impl Base32 {
     fn encode(dst: &[mut u8], src: &[u8]) {
-        b32encode(self.table, dst, src);
+        b32encode(self.table_std, dst, src);
     }
     fn encode_h(dst: &[mut u8], src: &[u8]) {
-        b32encode(self.table_h, dst, src);
+        b32encode(self.table_hex, dst, src);
     }
     fn decode(dst: &[mut u8], src: &[u8]) -> uint {
-        b32decode(self.table, dst, src)
+        b32decode(self.decode_map_std, dst, src)
     }
     fn decode_h(dst: &[mut u8], src: &[u8]) -> uint {
-        b32decode(self.table_h, dst, src)
+        b32decode(self.decode_map_hex, dst, src)
+    }
+
+    fn encoded_len(src_length: uint) -> uint {
+        encoded_len(src_length)
+    }
+    fn decoded_len(src_length: uint) -> uint {
+        decoded_len(src_length)
     }
 
     /**
@@ -55,7 +91,7 @@ class base32 {
      * base32-encoded bytes
      */
     fn encode_bytes(src: &[u8]) -> ~[u8] {
-        let dst_length = encoded_len(src.len());
+        let dst_length = self.encoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
         self.encode(dst, src);
         vec::from_mut(dst)
@@ -76,7 +112,7 @@ class base32 {
      * base32-encoded bytes
      */
     fn encode_bytes_h(src: &[u8]) -> ~[u8] {
-        let dst_length = encoded_len(src.len());
+        let dst_length = self.encoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
         self.encode_h(dst, src);
         vec::from_mut(dst)
@@ -94,7 +130,7 @@ class base32 {
      * decoded bytes
      */
     fn decode_bytes(src: &[u8]) -> ~[u8] {
-        let dst_length = decoded_len(src.len());
+        let dst_length = self.decoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
         let end = self.decode(dst, src);
         vec::slice(vec::from_mut(dst), 0u, end)
@@ -115,7 +151,7 @@ class base32 {
      * decoded bytes
      */
     fn decode_bytes_h(src: &[u8]) -> ~[u8] {
-        let dst_length = decoded_len(src.len());
+        let dst_length = self.decoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
         let end = self.decode_h(dst, src);
         vec::slice(vec::from_mut(dst), 0u, end)
@@ -186,22 +222,12 @@ fn hex_decode(src: &[u8]) -> ~[u8] {
     base32.decode_bytes_h(src)
 }
 
-#[inline(always)]
-pure fn encoded_len(src_length: uint) -> uint {
-    (src_length + 4) / 5 * 8
-}
-
-#[inline(always)]
-pure fn decoded_len(src_length: uint) -> uint {
-    src_length / 8 * 5
-}
-
 fn b32encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     let src_length = src.len();
     let dst_length = dst.len();
 
     if src_length == 0 {
-        ret;
+        return;
     }
 
     if dst_length % 8 != 0 {
@@ -292,7 +318,7 @@ fn b32encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     }
 }
 
-fn b32decode(table: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
+fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
     let buf = [mut 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8]/_;
     let mut src_length = src.len();
     let mut src_curr = 0u;
@@ -327,28 +353,28 @@ fn b32decode(table: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
                 end = true;
                 break;
             }
-            alt table.position_elem(chr) {
-                some(n) { buf[i] = n as u8; }
-                none { fail ~"malformed base32 string"; }
+            buf[i] = decode_map[chr];
+            if buf[i] == 0xff {
+                fail ~"malformed base32 string";
             }
             i += 1;
         }
 
         alt buf_len {
-            2 {
+            2 => {
                 dst[dst_curr+0]  = buf[0]<<3 | buf[1]>>2;
             }
-            3 {
+            3 => {
                 dst[dst_curr+0]  = buf[0]<<3 | buf[1]>>2;
                 dst[dst_curr+1]  = buf[1]<<6 | buf[2]<<1;
             }
-            4 {
+            4 => {
                 dst[dst_curr+0]  = buf[0]<<3 | buf[1]>>2;
                 dst[dst_curr+1]  = buf[1]<<6 | buf[2]<<1;
                 dst[dst_curr+1] |= buf[3]>>4;
                 dst[dst_curr+2]  = buf[3]<<4;
             }
-            5 | 6 {
+            5 | 6 => {
                 dst[dst_curr+0]  = buf[0]<<3 | buf[1]>>2;
                 dst[dst_curr+1]  = buf[1]<<6 | buf[2]<<1;
                 dst[dst_curr+1] |= buf[3]>>4;
@@ -356,7 +382,7 @@ fn b32decode(table: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
                 dst[dst_curr+2] |= buf[4]>>1;
                 dst[dst_curr+3]  = buf[4]<<7 | buf[5]<<2;
             }
-            7 | 8 {
+            7 | 8 => {
                 dst[dst_curr+0]  = buf[0]<<3 | buf[1]>>2;
                 dst[dst_curr+1]  = buf[1]<<6 | buf[2]<<1;
                 dst[dst_curr+1] |= buf[3]>>4;
@@ -366,16 +392,16 @@ fn b32decode(table: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
                 dst[dst_curr+3] |= buf[6]>>3;
                 dst[dst_curr+4]  = buf[6]<<5 | buf[7];
             }
-            _ { fail ~"malformed base32 string"; }
+            _ => { fail ~"malformed base32 string"; }
         }
 
         alt buf_len {
-            2     { dst_curr += 1; }
-            3 | 4 { dst_curr += 2; }
-            5     { dst_curr += 3; }
-            6 | 7 { dst_curr += 4; }
-            8     { dst_curr += 5; }
-            _     { fail ~"malformed base32 string"; }
+            2     => { dst_curr += 1; }
+            3 | 4 => { dst_curr += 2; }
+            5     => { dst_curr += 3; }
+            6 | 7 => { dst_curr += 4; }
+            8     => { dst_curr += 5; }
+            _     => { fail ~"malformed base32 string"; }
         }
     }
 
