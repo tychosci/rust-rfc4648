@@ -58,25 +58,15 @@ pure fn decoded_len(src_length: uint) -> uint {
     src_length / 8 * 5
 }
 
-impl Base32 {
+impl Base32 : encode {
     fn encode(dst: &[mut u8], src: &[u8]) {
         b32encode(self.table_std, dst, src);
     }
     fn encode_h(dst: &[mut u8], src: &[u8]) {
         b32encode(self.table_hex, dst, src);
     }
-    fn decode(dst: &[mut u8], src: &[u8]) -> uint {
-        b32decode(self.decode_map_std, dst, src)
-    }
-    fn decode_h(dst: &[mut u8], src: &[u8]) -> uint {
-        b32decode(self.decode_map_hex, dst, src)
-    }
-
     fn encoded_len(src_length: uint) -> uint {
         encoded_len(src_length)
-    }
-    fn decoded_len(src_length: uint) -> uint {
-        decoded_len(src_length)
     }
 
     /**
@@ -116,6 +106,18 @@ impl Base32 {
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
         self.encode_h(dst, src);
         vec::from_mut(dst)
+    }
+}
+
+impl Base32 : decode {
+    fn decode(dst: &[mut u8], src: &[u8]) -> uint {
+        b32decode(self.decode_map_std, dst, src)
+    }
+    fn decode_h(dst: &[mut u8], src: &[u8]) -> uint {
+        b32decode(self.decode_map_hex, dst, src)
+    }
+    fn decoded_len(src_length: uint) -> uint {
+        decoded_len(src_length)
     }
 
     /**
@@ -360,48 +362,43 @@ fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
             i += 1;
         }
 
-        alt buf_len {
-            2 => {
-                dst[dst_curr+0]  = buf[0]<<3 | buf[1]>>2;
-            }
-            3 => {
-                dst[dst_curr+0]  = buf[0]<<3 | buf[1]>>2;
-                dst[dst_curr+1]  = buf[1]<<6 | buf[2]<<1;
-            }
-            4 => {
-                dst[dst_curr+0]  = buf[0]<<3 | buf[1]>>2;
-                dst[dst_curr+1]  = buf[1]<<6 | buf[2]<<1;
-                dst[dst_curr+1] |= buf[3]>>4;
-                dst[dst_curr+2]  = buf[3]<<4;
-            }
-            5 | 6 => {
-                dst[dst_curr+0]  = buf[0]<<3 | buf[1]>>2;
-                dst[dst_curr+1]  = buf[1]<<6 | buf[2]<<1;
-                dst[dst_curr+1] |= buf[3]>>4;
-                dst[dst_curr+2]  = buf[3]<<4;
-                dst[dst_curr+2] |= buf[4]>>1;
-                dst[dst_curr+3]  = buf[4]<<7 | buf[5]<<2;
-            }
-            7 | 8 => {
-                dst[dst_curr+0]  = buf[0]<<3 | buf[1]>>2;
-                dst[dst_curr+1]  = buf[1]<<6 | buf[2]<<1;
-                dst[dst_curr+1] |= buf[3]>>4;
-                dst[dst_curr+2]  = buf[3]<<4;
-                dst[dst_curr+2] |= buf[4]>>1;
-                dst[dst_curr+3]  = buf[4]<<7 | buf[5]<<2;
-                dst[dst_curr+3] |= buf[6]>>3;
-                dst[dst_curr+4]  = buf[6]<<5 | buf[7];
-            }
-            _ => { fail ~"malformed base32 string"; }
+        match buf_len {
+            2     => { dst[dst_curr+0]  = buf[0]<<3 | buf[1]>>2
+                     }
+            3     => { dst[dst_curr+0]  = buf[0]<<3 | buf[1]>>2
+                     ; dst[dst_curr+1]  = buf[1]<<6 | buf[2]<<1
+                     }
+            4     => { dst[dst_curr+0]  = buf[0]<<3 | buf[1]>>2
+                     ; dst[dst_curr+1]  = buf[1]<<6 | buf[2]<<1
+                     ; dst[dst_curr+1] |= buf[3]>>4
+                     ; dst[dst_curr+2]  = buf[3]<<4
+                     }
+            5 | 6 => { dst[dst_curr+0]  = buf[0]<<3 | buf[1]>>2
+                     ; dst[dst_curr+1]  = buf[1]<<6 | buf[2]<<1
+                     ; dst[dst_curr+1] |= buf[3]>>4
+                     ; dst[dst_curr+2]  = buf[3]<<4
+                     ; dst[dst_curr+2] |= buf[4]>>1
+                     ; dst[dst_curr+3]  = buf[4]<<7 | buf[5]<<2
+                     }
+            7 | 8 => { dst[dst_curr+0]  = buf[0]<<3 | buf[1]>>2
+                     ; dst[dst_curr+1]  = buf[1]<<6 | buf[2]<<1
+                     ; dst[dst_curr+1] |= buf[3]>>4
+                     ; dst[dst_curr+2]  = buf[3]<<4
+                     ; dst[dst_curr+2] |= buf[4]>>1
+                     ; dst[dst_curr+3]  = buf[4]<<7 | buf[5]<<2
+                     ; dst[dst_curr+3] |= buf[6]>>3
+                     ; dst[dst_curr+4]  = buf[6]<<5 | buf[7]
+                     }
+            _     => fail ~"malformed base32 string"
         }
 
-        alt buf_len {
-            2     => { dst_curr += 1; }
-            3 | 4 => { dst_curr += 2; }
-            5     => { dst_curr += 3; }
-            6 | 7 => { dst_curr += 4; }
-            8     => { dst_curr += 5; }
-            _     => { fail ~"malformed base32 string"; }
+        match buf_len {
+            2     => dst_curr += 1
+          , 3 | 4 => dst_curr += 2
+          , 5     => dst_curr += 3
+          , 6 | 7 => dst_curr += 4
+          , 8     => dst_curr += 5
+          , _     => fail ~"malformed base32 string"
         }
     }
 

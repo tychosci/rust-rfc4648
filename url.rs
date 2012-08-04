@@ -11,50 +11,48 @@ fn query_unescape(s: ~str) -> ~str { url_unescape(s, query) }
 
 #[inline(always)]
 pure fn ishex(c: u8) -> bool {
-    alt c {
-        48u8 to  57u8 => { true } // 0 .. 9
-        65u8 to  90u8 => { true } // A .. Z
-        97u8 to 122u8 => { true } // a .. z
-        _             => { false }
+    match c {
+        48u8 to  57u8 => true  // 0 .. 9
+      , 65u8 to  90u8 => true  // A .. Z
+      , 97u8 to 122u8 => true  // a .. z
+      , _             => false
     }
 }
 
 #[inline(always)]
 pure fn unhex(c: u8) -> u8 {
-    alt c {
-        48u8 to  57u8 => { c - 48u8 }        // 0 .. 9
-        65u8 to  90u8 => { c - 65u8 + 10u8 } // A .. Z
-        97u8 to 122u8 => { c - 97u8 + 10u8 } // a .. z
-        _             => { fail ~"should be unreachable"; }
+    match c {
+        48u8 to  57u8 => c - 48u8          // 0 .. 9
+      , 65u8 to  90u8 => c - 65u8 + 10u8   // A .. Z
+      , 97u8 to 122u8 => c - 97u8 + 10u8   // a .. z
+      , _             => fail ~"should be unreachable"
     }
 }
 
 #[inline(always)]
 pure fn should_escape(c: u8, mode: enc_mode) -> bool {
-    alt c {
+    match c {
         48u8 to  57u8 => { return false; } // 0 .. 9
         65u8 to  90u8 => { return false; } // A .. Z
         97u8 to 122u8 => { return false; } // a .. z
         _             => { }
     }
 
-    alt c {
+    match c {
         45u8  | 95u8 | 46u8 | 33u8 | // '-', '_', '.', '!'
         126u8 | 42u8 | 39u8 | 40u8 | // '~', '*', '\'', '('
-        41u8 => { false }            // ')'
+        41u8 => false                // ')'
 
-        36u8 | 38u8 | 43u8 | 44u8 |  // '$', '&', '+', ','
+      , 36u8 | 38u8 | 43u8 | 44u8 |  // '$', '&', '+', ','
         47u8 | 58u8 | 59u8 | 61u8 |  // '/', ':', ';', '='
-        63u8 | 64u8 => {             // '?', '@'
-            alt mode {
-                query    => { true }
-                fragment => { false }
-                path     => { (c == 63u8) }
-                userinfo => { (c == 47u8 || c == 58u8 || c == 64u8) }
-            }
+        63u8 | 64u8 => match mode {  // '?', '@'
+            query    => true
+          , fragment => false
+          , path     => (c == 63u8)
+          , userinfo => (c == 47u8 || c == 58u8 || c == 64u8)
         }
 
-        _ => { true }
+        _ => true
     }
 }
 
@@ -119,7 +117,7 @@ fn url_unescape(s: ~str, mode: enc_mode) -> ~str {
         if c == 37u8 {
             n += 1;
             if i+2 >= src_length || !ishex(bs[i+1]) || !ishex(bs[i+2]) {
-                fail #fmt["Invalid URL escape: '%s'", s];
+                fail fmt!{"Invalid URL escape: '%s'", s};
             }
             i += 3;
         } else if c == 43u8 {

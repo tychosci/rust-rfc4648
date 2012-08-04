@@ -46,19 +46,12 @@ pure fn encoded_len(src_length: uint) -> uint { src_length * 2 }
 #[inline(always)]
 pure fn decoded_len(src_length: uint) -> uint { src_length / 2 }
 
-impl Base16 {
+impl Base16 : encode {
     fn encode(dst: &[mut u8], src: &[u8]) {
         b16encode(self.table, dst, src);
     }
-    fn decode(dst: &[mut u8], src: &[u8]) -> uint {
-        b16decode(self.decode_map, dst, src)
-    }
-
     fn encoded_len(src_length: uint) -> uint {
         encoded_len(src_length)
-    }
-    fn decoded_len(src_length: uint) -> uint {
-        decoded_len(src_length)
     }
 
     /**
@@ -77,6 +70,15 @@ impl Base16 {
         let dst = vec::to_mut(vec::from_elem(dst_len, 0u8));
         self.encode(dst, src);
         vec::from_mut(dst)
+    }
+}
+
+impl Base16 : decode {
+    fn decode(dst: &[mut u8], src: &[u8]) -> uint {
+        b16decode(self.decode_map, dst, src)
+    }
+    fn decoded_len(src_length: uint) -> uint {
+        decoded_len(src_length)
     }
 
     /**

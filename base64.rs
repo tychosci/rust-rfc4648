@@ -58,25 +58,15 @@ pure fn decoded_len(src_length: uint) -> uint {
     src_length / 4 * 3
 }
 
-impl Base64 {
+impl Base64 : encode {
     fn encode(dst: &[mut u8], src: &[u8]) {
         b64encode(self.table_std, dst, src);
     }
     fn encode_u(dst: &[mut u8], src: &[u8]) {
         b64encode(self.table_url, dst, src);
     }
-    fn decode(dst: &[mut u8], src: &[u8]) -> uint {
-        b64decode(self.decode_map_std, dst, src)
-    }
-    fn decode_u(dst: &[mut u8], src: &[u8]) -> uint {
-        b64decode(self.decode_map_url, dst, src)
-    }
-
     fn encoded_len(src_length: uint) -> uint {
         encoded_len(src_length)
-    }
-    fn decoded_len(src_length: uint) -> uint {
-        decoded_len(src_length)
     }
 
     /**
@@ -116,6 +106,18 @@ impl Base64 {
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
         self.encode_u(dst, src);
         vec::from_mut(dst)
+    }
+}
+
+impl Base64 : decode {
+    fn decode(dst: &[mut u8], src: &[u8]) -> uint {
+        b64decode(self.decode_map_std, dst, src)
+    }
+    fn decode_u(dst: &[mut u8], src: &[u8]) -> uint {
+        b64decode(self.decode_map_url, dst, src)
+    }
+    fn decoded_len(src_length: uint) -> uint {
+        decoded_len(src_length)
     }
 
     /**
