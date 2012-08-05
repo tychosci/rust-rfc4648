@@ -176,18 +176,18 @@ mod tests {
     }
     #[test]
     fn test_query_escape() {
-        assert query_escape("a") == "a";
-        assert query_escape("a z") == "a+z";
-        assert query_escape("å") == "%C3%A5";
-        assert query_escape("?") == "%3F";
-        assert query_escape("あ") == "%E3%81%82";
+        assert query_escape(~"a") == ~"a";
+        assert query_escape(~"a z") == ~"a+z";
+        assert query_escape(~"å") == ~"%C3%A5";
+        assert query_escape(~"?") == ~"%3F";
+        assert query_escape(~"あ") == ~"%E3%81%82";
     }
     #[test]
     fn test_query_unescape() {
-        assert query_unescape("a") == "a";
-        assert query_unescape("a+z") == "a z";
-        assert query_unescape("%3f") == "?";
-        assert query_unescape("%C3%A5") == "å";
-        assert query_unescape("%E3%81%82") == "あ";
+        assert query_unescape(~"a") == ~"a";
+        assert query_unescape(~"a+z") == ~"a z";
+        assert query_unescape(~"%3f") == ~"?";
+        assert query_unescape(~"%C3%A5") == ~"å";
+        assert query_unescape(~"%E3%81%82") == ~"あ";
     }
 }

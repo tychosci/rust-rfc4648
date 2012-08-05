@@ -411,9 +411,9 @@ mod tests {
     fn test_encode_bytes() {
         let base32 = base32();
 
-        let source = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
-        let expect = ["", "MY======", "MZXQ====", "MZXW6===", "MZXW6YQ=",
-                      "MZXW6YTB", "MZXW6YTBOI======"]/_;
+        let source = [~"", ~"f", ~"fo", ~"foo", ~"foob", ~"fooba", ~"foobar"]/_;
+        let expect = [~"", ~"MY======", ~"MZXQ====", ~"MZXW6===", ~"MZXW6YQ=",
+                      ~"MZXW6YTB", ~"MZXW6YTBOI======"]/_;
         let source = source.map(|e| str::bytes(e));
         let expect = expect.map(|e| str::bytes(e));
 
@@ -425,9 +425,9 @@ mod tests {
     fn test_encode_bytes_h() {
         let base32 = base32();
 
-        let source = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
-        let expect = ["", "CO======", "CPNG====", "CPNMU===",
-                      "CPNMUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"]/_;
+        let source = [~"", ~"f", ~"fo", ~"foo", ~"foob", ~"fooba", ~"foobar"]/_;
+        let expect = [~"", ~"CO======", ~"CPNG====", ~"CPNMU===",
+                      ~"CPNMUOG=", ~"CPNMUOJ1", ~"CPNMUOJ1E8======"]/_;
         let source = source.map(|e| str::bytes(e));
         let expect = expect.map(|e| str::bytes(e));
 
@@ -439,9 +439,9 @@ mod tests {
     fn test_decode_bytes() {
         let base32 = base32();
 
-        let source = ["", "MY======", "MZXQ====", "MZXW6===",
-                      "\tMZXW\r\n6YQ=", "MZXW6YTB", "MZXW6YTBOI======"]/_;
-        let expect = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
+        let source = [~"", ~"MY======", ~"MZXQ====", ~"MZXW6===",
+                      ~"\tMZXW\r\n6YQ=", ~"MZXW6YTB", ~"MZXW6YTBOI======"]/_;
+        let expect = [~"", ~"f", ~"fo", ~"foo", ~"foob", ~"fooba", ~"foobar"]/_;
         let source = source.map(|e| str::bytes(e));
         let expect = expect.map(|e| str::bytes(e));
 
@@ -453,9 +453,9 @@ mod tests {
     fn test_decode_bytes_h() {
         let base32 = base32();
 
-        let source = ["", "CO======", "CPNG====", "CPNMU===",
-                      "\tCPNM\r\nUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"]/_;
-        let expect = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
+        let source = [~"", ~"CO======", ~"CPNG====", ~"CPNMU===",
+                      ~"\tCPNM\r\nUOG=", ~"CPNMUOJ1", ~"CPNMUOJ1E8======"]/_;
+        let expect = [~"", ~"f", ~"fo", ~"foo", ~"foob", ~"fooba", ~"foobar"]/_;
 
         let source = source.map(|e| str::bytes(e));
         let expect = expect.map(|e| str::bytes(e));
