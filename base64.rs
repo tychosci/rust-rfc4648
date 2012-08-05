@@ -224,6 +224,17 @@ fn urlsafe_decode(src: &[u8]) -> ~[u8] {
     base64.decode_bytes_u(src)
 }
 
+macro_rules! ctrl {
+    {
+        $name:ident =>
+        $(case $($v:expr),+ : $blk:expr)+
+        default : $default:expr
+    } => {
+        $(if $($v < $name)&&+ { $blk })+
+        $(if $($v == $name)||+ { $blk } else)+ { $default }
+    }
+}
+
 fn b64encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     let src_length = src.len();
     let dst_length = dst.len();
@@ -241,27 +252,17 @@ fn b64encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
         let dst_curr = 4 * i;
         let remain = src_length - src_curr;
 
-        dst[dst_curr+0] = 0;
-        dst[dst_curr+1] = 0;
-        dst[dst_curr+2] = 0;
-        dst[dst_curr+3] = 0;
+        dst[dst_curr+0] = 0; dst[dst_curr+1] = 0;
+        dst[dst_curr+2] = 0; dst[dst_curr+3] = 0;
 
-        if remain == 1 {
-            dst[dst_curr+0] |= src[src_curr+0]>>2;
-            dst[dst_curr+1] |= src[src_curr+0]<<4 & 0x3f;
-        } else if remain == 2 {
-            dst[dst_curr+0] |= src[src_curr+0]>>2;
-            dst[dst_curr+1] |= src[src_curr+0]<<4 & 0x3f;
-            dst[dst_curr+1] |= src[src_curr+1]>>4;
-            dst[dst_curr+2] |= src[src_curr+1]<<2 & 0x3f;
-        } else {
-            dst[dst_curr+0] |= src[src_curr+0]>>2;
-            dst[dst_curr+1] |= src[src_curr+0]<<4 & 0x3f;
-            dst[dst_curr+1] |= src[src_curr+1]>>4;
-            dst[dst_curr+2] |= src[src_curr+1]<<2 & 0x3f;
-            dst[dst_curr+2] |= src[src_curr+2]>>6;
-            dst[dst_curr+3] |= src[src_curr+2]    & 0x3f;
-        }
+        ctrl! { remain =>
+        case 01: { dst[dst_curr+0] |= src[src_curr+0]>>2
+                 ; dst[dst_curr+1] |= src[src_curr+0]<<4 & 0x3f }
+        case 02: { dst[dst_curr+1] |= src[src_curr+1]>>4
+                 ; dst[dst_curr+2] |= src[src_curr+1]<<2 & 0x3f }
+        default: { dst[dst_curr+2] |= src[src_curr+2]>>6
+                 ; dst[dst_curr+3] |= src[src_curr+2]    & 0x3f }
+        };
 
         dst[dst_curr+0] = table[dst[dst_curr+0]];
         dst[dst_curr+1] = table[dst[dst_curr+1]];
@@ -287,10 +288,8 @@ fn b64decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
     let mut end = false;
 
     while src_length > 0 && !end {
-        buf[0] = 0xff;
-        buf[1] = 0xff;
-        buf[2] = 0xff;
-        buf[3] = 0xff;
+        buf[0] = 0xff; buf[1] = 0xff;
+        buf[2] = 0xff; buf[3] = 0xff;
 
         let mut i = 0u;
         while i < 4 {
@@ -318,16 +317,11 @@ fn b64decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
             i += 1;
         }
 
-        if buf_len == 2 {
-            dst[dst_curr+0] = buf[0]<<2 | buf[1]>>4;
-        } else if buf_len == 3 {
-            dst[dst_curr+0] = buf[0]<<2 | buf[1]>>4;
-            dst[dst_curr+1] = buf[1]<<4 | buf[2]>>2;
-        } else {
-            dst[dst_curr+0] = buf[0]<<2 | buf[1]>>4;
-            dst[dst_curr+1] = buf[1]<<4 | buf[2]>>2;
-            dst[dst_curr+2] = buf[2]<<6 | buf[3];
-        }
+        ctrl! { buf_len =>
+        case 02: { dst[dst_curr+0] = buf[0]<<2 | buf[1]>>4 }
+        case 03: { dst[dst_curr+1] = buf[1]<<4 | buf[2]>>2 }
+        default: { dst[dst_curr+2] = buf[2]<<6 | buf[3] }
+        };
 
         dst_curr += buf_len - 1;
     }

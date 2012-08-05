@@ -224,6 +224,17 @@ fn hex_decode(src: &[u8]) -> ~[u8] {
     base32.decode_bytes_h(src)
 }
 
+macro_rules! ctrl {
+    {
+        $name:ident =>
+        $(case $($v:expr),+ : $blk:expr)+
+        default : $default:expr
+    } => {
+        $(if $($v < $name)&&+ { $blk })+
+        $(if $($v == $name)||+ { $blk } else)+ { $default }
+    }
+}
+
 fn b32encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     let src_length = src.len();
     let dst_length = dst.len();
@@ -241,57 +252,25 @@ fn b32encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
         let dst_curr = 8 * i;
         let remain = src_length - src_curr;
 
-        dst[dst_curr+0] = 0;
-        dst[dst_curr+1] = 0;
-        dst[dst_curr+2] = 0;
-        dst[dst_curr+3] = 0;
-        dst[dst_curr+4] = 0;
-        dst[dst_curr+5] = 0;
-        dst[dst_curr+6] = 0;
-        dst[dst_curr+7] = 0;
+        dst[dst_curr+0] = 0; dst[dst_curr+1] = 0;
+        dst[dst_curr+2] = 0; dst[dst_curr+3] = 0;
+        dst[dst_curr+4] = 0; dst[dst_curr+5] = 0;
+        dst[dst_curr+6] = 0; dst[dst_curr+7] = 0;
 
-        if remain == 1 {
-            dst[dst_curr+0] |= src[src_curr+0]>>3;
-            dst[dst_curr+1] |= src[src_curr+0]<<2 & 0x1f;
-        } else if remain == 2 {
-            dst[dst_curr+0] |= src[src_curr+0]>>3;
-            dst[dst_curr+1] |= src[src_curr+0]<<2 & 0x1f;
-            dst[dst_curr+1] |= src[src_curr+1]>>6 & 0x1f;
-            dst[dst_curr+2] |= src[src_curr+1]>>1 & 0x1f;
-            dst[dst_curr+3] |= src[src_curr+1]<<4 & 0x1f;
-        } else if remain == 3 {
-            dst[dst_curr+0] |= src[src_curr+0]>>3;
-            dst[dst_curr+1] |= src[src_curr+0]<<2 & 0x1f;
-            dst[dst_curr+1] |= src[src_curr+1]>>6 & 0x1f;
-            dst[dst_curr+2] |= src[src_curr+1]>>1 & 0x1f;
-            dst[dst_curr+3] |= src[src_curr+1]<<4 & 0x1f;
-            dst[dst_curr+3] |= src[src_curr+2]>>4 & 0x1f;
-            dst[dst_curr+4] |= src[src_curr+2]<<1 & 0x1f;
-        } else if remain == 4 {
-            dst[dst_curr+0] |= src[src_curr+0]>>3;
-            dst[dst_curr+1] |= src[src_curr+0]<<2 & 0x1f;
-            dst[dst_curr+1] |= src[src_curr+1]>>6 & 0x1f;
-            dst[dst_curr+2] |= src[src_curr+1]>>1 & 0x1f;
-            dst[dst_curr+3] |= src[src_curr+1]<<4 & 0x1f;
-            dst[dst_curr+3] |= src[src_curr+2]>>4 & 0x1f;
-            dst[dst_curr+4] |= src[src_curr+2]<<1 & 0x1f;
-            dst[dst_curr+4] |= src[src_curr+3]>>7;
-            dst[dst_curr+5] |= src[src_curr+3]>>2 & 0x1f;
-            dst[dst_curr+6] |= src[src_curr+3]<<3 & 0x1f;
-        } else {
-            dst[dst_curr+0] |= src[src_curr+0]>>3;
-            dst[dst_curr+1] |= src[src_curr+0]<<2 & 0x1f;
-            dst[dst_curr+1] |= src[src_curr+1]>>6 & 0x1f;
-            dst[dst_curr+2] |= src[src_curr+1]>>1 & 0x1f;
-            dst[dst_curr+3] |= src[src_curr+1]<<4 & 0x1f;
-            dst[dst_curr+3] |= src[src_curr+2]>>4 & 0x1f;
-            dst[dst_curr+4] |= src[src_curr+2]<<1 & 0x1f;
-            dst[dst_curr+4] |= src[src_curr+3]>>7;
-            dst[dst_curr+5] |= src[src_curr+3]>>2 & 0x1f;
-            dst[dst_curr+6] |= src[src_curr+3]<<3 & 0x1f;
-            dst[dst_curr+6] |= src[src_curr+4]>>5;
-            dst[dst_curr+7] |= src[src_curr+4]    & 0x1f;
-        }
+        ctrl! { remain =>
+        case 01: { dst[dst_curr+0] |= src[src_curr+0]>>3
+                 ; dst[dst_curr+1] |= src[src_curr+0]<<2 & 0x1f }
+        case 02: { dst[dst_curr+1] |= src[src_curr+1]>>6 & 0x1f
+                 ; dst[dst_curr+2] |= src[src_curr+1]>>1 & 0x1f
+                 ; dst[dst_curr+3] |= src[src_curr+1]<<4 & 0x1f }
+        case 03: { dst[dst_curr+3] |= src[src_curr+2]>>4 & 0x1f
+                 ; dst[dst_curr+4] |= src[src_curr+2]<<1 & 0x1f }
+        case 04: { dst[dst_curr+4] |= src[src_curr+3]>>7
+                 ; dst[dst_curr+5] |= src[src_curr+3]>>2 & 0x1f
+                 ; dst[dst_curr+6] |= src[src_curr+3]<<3 & 0x1f }
+        default: { dst[dst_curr+6] |= src[src_curr+4]>>5
+                 ; dst[dst_curr+7] |= src[src_curr+4]    & 0x1f }
+        };
 
         dst[dst_curr+0] = table[dst[dst_curr+0]];
         dst[dst_curr+1] = table[dst[dst_curr+1]];
@@ -362,35 +341,17 @@ fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
             i += 1;
         }
 
-        match buf_len {
-            2     => { dst[dst_curr+0]  = buf[0]<<3 | buf[1]>>2
-                     }
-            3     => { dst[dst_curr+0]  = buf[0]<<3 | buf[1]>>2
-                     ; dst[dst_curr+1]  = buf[1]<<6 | buf[2]<<1
-                     }
-            4     => { dst[dst_curr+0]  = buf[0]<<3 | buf[1]>>2
-                     ; dst[dst_curr+1]  = buf[1]<<6 | buf[2]<<1
-                     ; dst[dst_curr+1] |= buf[3]>>4
-                     ; dst[dst_curr+2]  = buf[3]<<4
-                     }
-            5 | 6 => { dst[dst_curr+0]  = buf[0]<<3 | buf[1]>>2
-                     ; dst[dst_curr+1]  = buf[1]<<6 | buf[2]<<1
-                     ; dst[dst_curr+1] |= buf[3]>>4
-                     ; dst[dst_curr+2]  = buf[3]<<4
-                     ; dst[dst_curr+2] |= buf[4]>>1
-                     ; dst[dst_curr+3]  = buf[4]<<7 | buf[5]<<2
-                     }
-            7 | 8 => { dst[dst_curr+0]  = buf[0]<<3 | buf[1]>>2
-                     ; dst[dst_curr+1]  = buf[1]<<6 | buf[2]<<1
-                     ; dst[dst_curr+1] |= buf[3]>>4
-                     ; dst[dst_curr+2]  = buf[3]<<4
-                     ; dst[dst_curr+2] |= buf[4]>>1
-                     ; dst[dst_curr+3]  = buf[4]<<7 | buf[5]<<2
-                     ; dst[dst_curr+3] |= buf[6]>>3
-                     ; dst[dst_curr+4]  = buf[6]<<5 | buf[7]
-                     }
-            _     => fail ~"malformed base32 string"
-        }
+        ctrl! { buf_len =>
+        case 2:    { dst[dst_curr+0]  = buf[0]<<3 | buf[1]>>2 }
+        case 3:    { dst[dst_curr+1]  = buf[1]<<6 | buf[2]<<1 }
+        case 4:    { dst[dst_curr+1] |= buf[3]>>4
+                   ; dst[dst_curr+2]  = buf[3]<<4 }
+        case 5, 6: { dst[dst_curr+2] |= buf[4]>>1
+                   ; dst[dst_curr+3]  = buf[4]<<7 | buf[5]<<2 }
+        case 7, 8: { dst[dst_curr+3] |= buf[6]>>3
+                   ; dst[dst_curr+4]  = buf[6]<<5 | buf[7] }
+        default:   { fail ~"malformed base32 string" }
+        };
 
         match buf_len {
             2     => dst_curr += 1
