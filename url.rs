@@ -158,7 +158,7 @@ fn url_unescape(s: ~str, mode: enc_mode) -> ~str {
 }
 
 #[cfg(test)]
-mod tests {
+module tests {
     #[test]
     fn test_should_escape() {
         assert should_escape('A' as u8, path) == false;

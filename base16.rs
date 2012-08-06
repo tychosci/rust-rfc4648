@@ -167,7 +167,7 @@ fn b16decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
 }
 
 #[cfg(test)]
-mod tests {
+module tests {
     #[test]
     fn test_encode() {
         let source = str::bytes(~"foo");

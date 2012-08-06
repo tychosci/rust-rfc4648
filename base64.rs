@@ -330,7 +330,7 @@ fn b64decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
 }
 
 #[cfg(test)]
-mod tests {
+module tests {
     #[test]
     fn test_encode_bytes() {
         let base64 = base64();
