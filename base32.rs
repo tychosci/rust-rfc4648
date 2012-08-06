@@ -224,11 +224,11 @@ fn hex_decode(src: &[u8]) -> ~[u8] {
     base32.decode_bytes_h(src)
 }
 
-macro_rules! ctrl {
+macro_rules! switch {
     {
         $name:ident =>
-        $(case $($v:expr),+ : $blk:expr)+
         default : $default:expr
+        $(case $($v:expr),+ : $blk:expr)+
     } => {
         $(if $($v < $name)&&+ { $blk })+
         $(if $($v == $name)||+ { $blk } else)+ { $default }
@@ -257,19 +257,19 @@ fn b32encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
         dst[dst_curr+4] = 0; dst[dst_curr+5] = 0;
         dst[dst_curr+6] = 0; dst[dst_curr+7] = 0;
 
-        ctrl! { remain =>
-        case 01: { dst[dst_curr+0] |= src[src_curr+0]>>3
-                 ; dst[dst_curr+1] |= src[src_curr+0]<<2 & 0x1f }
-        case 02: { dst[dst_curr+1] |= src[src_curr+1]>>6 & 0x1f
-                 ; dst[dst_curr+2] |= src[src_curr+1]>>1 & 0x1f
-                 ; dst[dst_curr+3] |= src[src_curr+1]<<4 & 0x1f }
-        case 03: { dst[dst_curr+3] |= src[src_curr+2]>>4 & 0x1f
-                 ; dst[dst_curr+4] |= src[src_curr+2]<<1 & 0x1f }
-        case 04: { dst[dst_curr+4] |= src[src_curr+3]>>7
+        switch! { remain =>
+        default: { dst[dst_curr+7] |= src[src_curr+4]    & 0x1f
+                 ; dst[dst_curr+6] |= src[src_curr+4]>>5 }
+        case 04: { dst[dst_curr+6] |= src[src_curr+3]<<3 & 0x1f
                  ; dst[dst_curr+5] |= src[src_curr+3]>>2 & 0x1f
-                 ; dst[dst_curr+6] |= src[src_curr+3]<<3 & 0x1f }
-        default: { dst[dst_curr+6] |= src[src_curr+4]>>5
-                 ; dst[dst_curr+7] |= src[src_curr+4]    & 0x1f }
+                 ; dst[dst_curr+4] |= src[src_curr+3]>>7 }
+        case 03: { dst[dst_curr+4] |= src[src_curr+2]<<1 & 0x1f
+                 ; dst[dst_curr+3] |= src[src_curr+2]>>4 & 0x1f }
+        case 02: { dst[dst_curr+3] |= src[src_curr+1]<<4 & 0x1f
+                 ; dst[dst_curr+2] |= src[src_curr+1]>>1 & 0x1f
+                 ; dst[dst_curr+1] |= src[src_curr+1]>>6 & 0x1f }
+        case 01: { dst[dst_curr+1] |= src[src_curr+0]<<2 & 0x1f
+                 ; dst[dst_curr+0] |= src[src_curr+0]>>3 }
         };
 
         dst[dst_curr+0] = table[dst[dst_curr+0]];
@@ -341,16 +341,16 @@ fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
             i += 1;
         }
 
-        ctrl! { buf_len =>
-        case 2:    { dst[dst_curr+0]  = buf[0]<<3 | buf[1]>>2 }
-        case 3:    { dst[dst_curr+1]  = buf[1]<<6 | buf[2]<<1 }
-        case 4:    { dst[dst_curr+1] |= buf[3]>>4
-                   ; dst[dst_curr+2]  = buf[3]<<4 }
-        case 5, 6: { dst[dst_curr+2] |= buf[4]>>1
-                   ; dst[dst_curr+3]  = buf[4]<<7 | buf[5]<<2 }
-        case 7, 8: { dst[dst_curr+3] |= buf[6]>>3
-                   ; dst[dst_curr+4]  = buf[6]<<5 | buf[7] }
+        switch! { buf_len =>
         default:   { fail ~"malformed base32 string" }
+        case 7, 8: { dst[dst_curr+4] |= buf[6]<<5 | buf[7]
+                   ; dst[dst_curr+3] |= buf[6]>>3 }
+        case 5, 6: { dst[dst_curr+3] |= buf[4]<<7 | buf[5]<<2
+                   ; dst[dst_curr+2] |= buf[4]>>1 }
+        case 4:    { dst[dst_curr+2] |= buf[3]<<4
+                   ; dst[dst_curr+1] |= buf[3]>>4 }
+        case 3:    { dst[dst_curr+1] |= buf[1]<<6 | buf[2]<<1 }
+        case 2:    { dst[dst_curr+0] |= buf[0]<<3 | buf[1]>>2 }
         };
 
         match buf_len {
