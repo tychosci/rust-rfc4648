@@ -28,7 +28,7 @@ struct Base64 {
     decode_map_url: ~[u8];
 }
 
-fn base64() -> @Base64 {
+fn base64() -> Base64 {
     let table_std = str::bytes("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
     let table_url = str::bytes("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_");
 
@@ -40,7 +40,7 @@ fn base64() -> @Base64 {
         decode_map_url[table_url[i]] = i;
     }
 
-    @Base64 {
+    Base64 {
         table_std: table_std,
         table_url: table_url,
         decode_map_std: vec::from_mut(decode_map_std),

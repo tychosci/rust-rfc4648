@@ -28,7 +28,7 @@ struct Base32 {
     decode_map_hex: ~[u8];
 }
 
-fn base32() -> @Base32 {
+fn base32() -> Base32 {
     let table_std = str::bytes("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567");
     let table_hex = str::bytes("0123456789ABCDEFGHIJKLMNOPQRSTUV");
 
@@ -40,7 +40,7 @@ fn base32() -> @Base32 {
         decode_map_hex[table_hex[i]] = i;
     }
 
-    @Base32 {
+    Base32 {
         table_std: table_std,
         table_hex: table_hex,
         decode_map_std: vec::from_mut(decode_map_std),

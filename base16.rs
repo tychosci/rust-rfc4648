@@ -24,7 +24,7 @@ struct Base16 {
     decode_map: ~[u8];
 }
 
-fn base16() -> @Base16 {
+fn base16() -> Base16 {
     let table = str::bytes("0123456789ABCDEF");
     let decode_map = vec::to_mut(vec::from_elem(256u, 0xff_u8));
 
@@ -35,7 +35,7 @@ fn base16() -> @Base16 {
         decode_map[table[i]+32] = i;
     }
 
-    @Base16 {
+    Base16 {
         table: table,
         decode_map: vec::from_mut(decode_map)
     }
