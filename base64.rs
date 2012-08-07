@@ -7,17 +7,17 @@
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  * use encoding;
- * import encoding::codec;
+ * import encoding::Codec;
  *
  * let src = "base64";
- * let res = src.encode(encoding::base64);
+ * let res = src.encode(encoding::Base64);
  * let res = str::from_bytes(res);
  *
  * io::println(fmt!("%s", res));
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-export base64, encode, urlsafe_encode, decode, urlsafe_decode;
+export encode, urlsafe_encode, decode, urlsafe_decode;
 
 const PAD: u8 = 61u8;
 
@@ -86,7 +86,7 @@ struct Base64 {
     decode_map_url: [u8]/256;
 }
 
-fn base64() -> Base64 {
+fn Base64() -> Base64 {
     Base64 {
         table_std: TABLE_STD,
         table_url: TABLE_URL,
@@ -105,7 +105,7 @@ pure fn decoded_len(src_length: uint) -> uint {
     src_length / 4 * 3
 }
 
-impl Base64 : encode {
+impl Base64 : Encode {
     fn encode(dst: &[mut u8], src: &[u8]) {
         b64encode(self.table_std, dst, src);
     }
@@ -156,7 +156,7 @@ impl Base64 : encode {
     }
 }
 
-impl Base64 : decode {
+impl Base64 : Decode {
     fn decode(dst: &[mut u8], src: &[u8]) -> uint {
         b64decode(self.decode_map_std, dst, src)
     }
@@ -219,7 +219,7 @@ impl Base64 : decode {
  * base64-encoded bytes
  */
 fn encode(src: &[u8]) -> ~[u8] {
-    let base64 = base64();
+    let base64 = Base64();
     base64.encode_bytes(src)
 }
 
@@ -235,7 +235,7 @@ fn encode(src: &[u8]) -> ~[u8] {
  * base64-encoded bytes (url and filename safe)
  */
 fn urlsafe_encode(src: &[u8]) -> ~[u8] {
-    let base64 = base64();
+    let base64 = Base64();
     base64.encode_bytes_u(src)
 }
 
@@ -251,7 +251,7 @@ fn urlsafe_encode(src: &[u8]) -> ~[u8] {
  * decoded bytes
  */
 fn decode(src: &[u8]) -> ~[u8] {
-    let base64 = base64();
+    let base64 = Base64();
     base64.decode_bytes(src)
 }
 
@@ -267,7 +267,7 @@ fn decode(src: &[u8]) -> ~[u8] {
  * decoded bytes
  */
 fn urlsafe_decode(src: &[u8]) -> ~[u8] {
-    let base64 = base64();
+    let base64 = Base64();
     base64.decode_bytes_u(src)
 }
 
@@ -384,7 +384,7 @@ fn b64decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
 module tests {
     #[test]
     fn test_encode_bytes() {
-        let base64 = base64();
+        let base64 = Base64();
 
         let source = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
         let expect = ["", "Zg==", "Zm8=", "Zm9v", "Zm9vYg==", "Zm9vYmE=", "Zm9vYmFy"];
@@ -397,7 +397,7 @@ module tests {
     }
     #[test]
     fn test_encode_bytes_u() {
-        let base64 = base64();
+        let base64 = Base64();
 
         let source = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"];
         let expect = ["", "Zg==", "Zm8=", "Zm8-", "Zm9vYg==", "Zm9vYmE=", "Zm8_YmE_"];
@@ -410,7 +410,7 @@ module tests {
     }
     #[test]
     fn test_decode_bytes() {
-        let base64 = base64();
+        let base64 = Base64();
 
         let source = ["", "Zg==", "Zm8=", "Zm8+", "Zm9v\r\nYg==", "\tZm9vYmE=", "Zm8/YmE/"];
         let expect = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"];
@@ -423,7 +423,7 @@ module tests {
     }
     #[test]
     fn test_decode_bytes_u() {
-        let base64 = base64();
+        let base64 = Base64();
 
         let source = ["", "Zg==", "Zm8=", "Zm8-", "Zm9v\r\nYg==", "\tZm9vYmE=", "Zm8_YmE_"];
         let expect = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"];

@@ -7,17 +7,17 @@
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  * use encoding;
- * import encoding::codec;
+ * import encoding::Codec;
  *
  * let src = "base32";
- * let res = src.encode(encoding::base32);
+ * let res = src.encode(encoding::Base32);
  * let res = str::from_bytes(res);
  *
  * io::println(fmt!("%s", res));
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-export base32, encode, hex_encode, decode, hex_decode;
+export encode, hex_encode, decode, hex_decode;
 
 const PAD: u8 = 61u8;
 
@@ -78,7 +78,7 @@ struct Base32 {
     decode_map_hex: [u8]/256;
 }
 
-fn base32() -> Base32 {
+fn Base32() -> Base32 {
     Base32 {
         table_std: TABLE_STD,
         table_hex: TABLE_HEX,
@@ -97,7 +97,7 @@ pure fn decoded_len(src_length: uint) -> uint {
     src_length / 8 * 5
 }
 
-impl Base32 : encode {
+impl Base32 : Encode {
     fn encode(dst: &[mut u8], src: &[u8]) {
         b32encode(self.table_std, dst, src);
     }
@@ -148,7 +148,7 @@ impl Base32 : encode {
     }
 }
 
-impl Base32 : decode {
+impl Base32 : Decode {
     fn decode(dst: &[mut u8], src: &[u8]) -> uint {
         b32decode(self.decode_map_std, dst, src)
     }
@@ -211,7 +211,7 @@ impl Base32 : decode {
  * base32-encoded bytes
  */
 fn encode(src: &[u8]) -> ~[u8] {
-    let base32 = base32();
+    let base32 = Base32();
     base32.encode_bytes(src)
 }
 
@@ -227,7 +227,7 @@ fn encode(src: &[u8]) -> ~[u8] {
  * base32-encoded bytes (extended hex alphabet)
  */
 fn hex_encode(src: &[u8]) -> ~[u8] {
-    let base32 = base32();
+    let base32 = Base32();
     base32.encode_bytes_h(src)
 }
 
@@ -243,7 +243,7 @@ fn hex_encode(src: &[u8]) -> ~[u8] {
  * decoded bytes
  */
 fn decode(src: &[u8]) -> ~[u8] {
-    let base32 = base32();
+    let base32 = Base32();
     base32.decode_bytes(src)
 }
 
@@ -259,7 +259,7 @@ fn decode(src: &[u8]) -> ~[u8] {
  * decoded bytes
  */
 fn hex_decode(src: &[u8]) -> ~[u8] {
-    let base32 = base32();
+    let base32 = Base32();
     base32.decode_bytes_h(src)
 }
 
@@ -413,7 +413,7 @@ fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
 module tests {
     #[test]
     fn test_encode_bytes() {
-        let base32 = base32();
+        let base32 = Base32();
 
         let source = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
         let expect = ["", "MY======", "MZXQ====", "MZXW6===", "MZXW6YQ=",
@@ -427,7 +427,7 @@ module tests {
     }
     #[test]
     fn test_encode_bytes_h() {
-        let base32 = base32();
+        let base32 = Base32();
 
         let source = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
         let expect = ["", "CO======", "CPNG====", "CPNMU===",
@@ -441,7 +441,7 @@ module tests {
     }
     #[test]
     fn test_decode_bytes() {
-        let base32 = base32();
+        let base32 = Base32();
 
         let source = ["", "MY======", "MZXQ====", "MZXW6===",
                       "\tMZXW\r\n6YQ=", "MZXW6YTB", "MZXW6YTBOI======"];
@@ -455,7 +455,7 @@ module tests {
     }
     #[test]
     fn test_decode_bytes_h() {
-        let base32 = base32();
+        let base32 = Base32();
 
         let source = ["", "CO======", "CPNG====", "CPNMU===",
                       "\tCPNM\r\nUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"];

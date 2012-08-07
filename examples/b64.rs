@@ -1,7 +1,7 @@
 use encoding;
 
 import io::writer_util;
-import encoding::codec;
+import encoding::Codec;
 
 fn main(args: ~[~str]) {
     let binary = copy args[0];
@@ -15,8 +15,8 @@ fn main(args: ~[~str]) {
 
     match io::read_whole_file(args[2]) {
         result::ok(data) => match args[1] {
-            ~"encode" => stdout.write(data.encode(encoding::base64))
-          , ~"decode" => stdout.write(data.decode(encoding::base64))
+            ~"encode" => stdout.write(data.encode(encoding::Base64))
+          , ~"decode" => stdout.write(data.decode(encoding::Base64))
           , _         => return
         }
         result::err(msg) => {

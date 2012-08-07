@@ -7,17 +7,17 @@
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  * use encoding;
- * import encoding::codec;
+ * import encoding::Codec;
  *
  * let src = "base16";
- * let res = src.encode(encoding::base16);
+ * let res = src.encode(encoding::Base16);
  * let res = str::from_bytes(res);
  *
  * io::println(fmt!("%s", res));
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-export base16, encode, decode;
+export encode, decode;
 
 // 0123456789ABCDEF
 const TABLE: [u8]/16 = [
@@ -49,7 +49,7 @@ struct Base16 {
     decode_map: [u8]/256;
 }
 
-fn base16() -> Base16 {
+fn Base16() -> Base16 {
     Base16 {table: TABLE, decode_map: DECODE_MAP}
 }
 
@@ -58,7 +58,7 @@ pure fn encoded_len(src_length: uint) -> uint { src_length * 2 }
 #[inline(always)]
 pure fn decoded_len(src_length: uint) -> uint { src_length / 2 }
 
-impl Base16 : encode {
+impl Base16 : Encode {
     fn encode(dst: &[mut u8], src: &[u8]) {
         b16encode(self.table, dst, src);
     }
@@ -85,7 +85,7 @@ impl Base16 : encode {
     }
 }
 
-impl Base16 : decode {
+impl Base16 : Decode {
     fn decode(dst: &[mut u8], src: &[u8]) -> uint {
         b16decode(self.decode_map, dst, src)
     }
@@ -124,7 +124,7 @@ impl Base16 : decode {
  * hex-encoded bytes
  */
 fn encode(src: &[u8]) -> ~[u8] {
-    let base16 = base16();
+    let base16 = Base16();
     base16.encode_bytes(src)
 }
 
@@ -140,7 +140,7 @@ fn encode(src: &[u8]) -> ~[u8] {
  * decoded bytes
  */
 fn decode(src: &[u8]) -> ~[u8] {
-    let base16 = base16();
+    let base16 = Base16();
     base16.decode_bytes(src)
 }
 

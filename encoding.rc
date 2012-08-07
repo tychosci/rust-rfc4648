@@ -11,10 +11,8 @@
 
 use std;
 
-export base16, base32, base64, url;
+export base16, base32, base64;
 
 module base16;
 module base32;
 module base64;
-
-module url;
