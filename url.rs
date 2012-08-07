@@ -67,7 +67,7 @@ fn url_escape(s: &str, mode: enc_mode) -> ~str {
     let mut hex_count = 0u;
     let table =
         [48u8, 49u8, 50u8, 51u8, 52u8, 53u8, 54u8, 55u8,
-         56u8, 57u8, 65u8, 66u8, 67u8, 68u8, 69u8, 70u8]/_;
+         56u8, 57u8, 65u8, 66u8, 67u8, 68u8, 69u8, 70u8];
 
     for uint::range(0, src_length) |i| {
         let c = bs[i];

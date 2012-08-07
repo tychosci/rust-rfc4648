@@ -343,7 +343,7 @@ fn b32encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
 }
 
 fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
-    let buf = [mut 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8]/_;
+    let buf = [mut 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8];
     let mut src_length = src.len();
     let mut src_curr = 0u;
     let mut dst_curr = 0u;
@@ -415,9 +415,9 @@ module tests {
     fn test_encode_bytes() {
         let base32 = base32();
 
-        let source = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
+        let source = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
         let expect = ["", "MY======", "MZXQ====", "MZXW6===", "MZXW6YQ=",
-                      "MZXW6YTB", "MZXW6YTBOI======"]/_;
+                      "MZXW6YTB", "MZXW6YTBOI======"];
         let source = source.map(|e| str::bytes(e));
         let expect = expect.map(|e| str::bytes(e));
 
@@ -429,9 +429,9 @@ module tests {
     fn test_encode_bytes_h() {
         let base32 = base32();
 
-        let source = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
+        let source = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
         let expect = ["", "CO======", "CPNG====", "CPNMU===",
-                      "CPNMUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"]/_;
+                      "CPNMUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"];
         let source = source.map(|e| str::bytes(e));
         let expect = expect.map(|e| str::bytes(e));
 
@@ -444,8 +444,8 @@ module tests {
         let base32 = base32();
 
         let source = ["", "MY======", "MZXQ====", "MZXW6===",
-                      "\tMZXW\r\n6YQ=", "MZXW6YTB", "MZXW6YTBOI======"]/_;
-        let expect = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
+                      "\tMZXW\r\n6YQ=", "MZXW6YTB", "MZXW6YTBOI======"];
+        let expect = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
         let source = source.map(|e| str::bytes(e));
         let expect = expect.map(|e| str::bytes(e));
 
@@ -458,8 +458,8 @@ module tests {
         let base32 = base32();
 
         let source = ["", "CO======", "CPNG====", "CPNMU===",
-                      "\tCPNM\r\nUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"]/_;
-        let expect = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
+                      "\tCPNM\r\nUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"];
+        let expect = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
 
         let source = source.map(|e| str::bytes(e));
         let expect = expect.map(|e| str::bytes(e));

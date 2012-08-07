@@ -331,7 +331,7 @@ fn b64encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
 }
 
 fn b64decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
-    let buf = [mut 0u8, 0u8, 0u8, 0u8]/_;
+    let buf = [mut 0u8, 0u8, 0u8, 0u8];
     let mut src_length = src.len();
     let mut src_curr = 0u;
     let mut dst_curr = 0u;
@@ -386,8 +386,8 @@ module tests {
     fn test_encode_bytes() {
         let base64 = base64();
 
-        let source = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
-        let expect = ["", "Zg==", "Zm8=", "Zm9v", "Zm9vYg==", "Zm9vYmE=", "Zm9vYmFy"]/_;
+        let source = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
+        let expect = ["", "Zg==", "Zm8=", "Zm9v", "Zm9vYg==", "Zm9vYmE=", "Zm9vYmFy"];
         let source = source.map(|e| str::bytes(e));
         let expect = expect.map(|e| str::bytes(e));
 
@@ -399,8 +399,8 @@ module tests {
     fn test_encode_bytes_u() {
         let base64 = base64();
 
-        let source = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"]/_;
-        let expect = ["", "Zg==", "Zm8=", "Zm8-", "Zm9vYg==", "Zm9vYmE=", "Zm8_YmE_"]/_;
+        let source = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"];
+        let expect = ["", "Zg==", "Zm8=", "Zm8-", "Zm9vYg==", "Zm9vYmE=", "Zm8_YmE_"];
         let source = source.map(|e| str::bytes(e));
         let expect = expect.map(|e| str::bytes(e));
 
@@ -412,8 +412,8 @@ module tests {
     fn test_decode_bytes() {
         let base64 = base64();
 
-        let source = ["", "Zg==", "Zm8=", "Zm8+", "Zm9v\r\nYg==", "\tZm9vYmE=", "Zm8/YmE/"]/_;
-        let expect = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"]/_;
+        let source = ["", "Zg==", "Zm8=", "Zm8+", "Zm9v\r\nYg==", "\tZm9vYmE=", "Zm8/YmE/"];
+        let expect = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"];
         let source = source.map(|e| str::bytes(e));
         let expect = expect.map(|e| str::bytes(e));
 
@@ -425,8 +425,8 @@ module tests {
     fn test_decode_bytes_u() {
         let base64 = base64();
 
-        let source = ["", "Zg==", "Zm8=", "Zm8-", "Zm9v\r\nYg==", "\tZm9vYmE=", "Zm8_YmE_"]/_;
-        let expect = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"]/_;
+        let source = ["", "Zg==", "Zm8=", "Zm8-", "Zm9v\r\nYg==", "\tZm9vYmE=", "Zm8_YmE_"];
+        let expect = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"];
         let source = source.map(|e| str::bytes(e));
         let expect = expect.map(|e| str::bytes(e));
 
