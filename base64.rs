@@ -29,8 +29,8 @@ struct Base64 {
 }
 
 fn base64() -> @Base64 {
-    let table_std = str::bytes(~"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
-    let table_url = str::bytes(~"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_");
+    let table_std = str::bytes("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
+    let table_url = str::bytes("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_");
 
     let decode_map_std = vec::to_mut(vec::from_elem(256, 0xFF_u8));
     let decode_map_url = vec::to_mut(vec::from_elem(256, 0xFF_u8));
@@ -235,6 +235,10 @@ macro_rules! switch {
     }
 }
 
+macro_rules! abort {
+    { $s:expr } => { fail str::from_slice($s) }
+}
+
 fn b64encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     let src_length = src.len();
     let dst_length = dst.len();
@@ -244,7 +248,7 @@ fn b64encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     }
 
     if dst_length % 4 != 0 {
-        fail ~"dst's length should be divisible by 4";
+        abort!("dst's length should be divisible by 4");
     }
 
     for uint::range(0, (src_length + 2) / 3) |i| {
@@ -294,7 +298,7 @@ fn b64decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
         let mut i = 0u;
         while i < 4 {
             if src_length == 0 {
-                fail ~"malformed base64 string";
+                abort!("malformed base64 string");
             }
             let chr = src[src_curr];
             src_curr += 1;
@@ -304,7 +308,7 @@ fn b64decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
             }
             if chr == PAD && i >= 2 && src_length < 4 {
                 if src_length > 0 && src[src_curr] != PAD {
-                    fail ~"malformed base64 string";
+                    abort!("malformed base64 string");
                 }
                 buf_len = i;
                 end = true;
@@ -312,7 +316,7 @@ fn b64decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
             }
             buf[i] = decode_map[chr];
             if buf[i] == 0xff {
-                fail ~"malformed base64 string";
+                abort!("malformed base64 string");
             }
             i += 1;
         }
@@ -335,8 +339,8 @@ module tests {
     fn test_encode_bytes() {
         let base64 = base64();
 
-        let source = [~"", ~"f", ~"fo", ~"foo", ~"foob", ~"fooba", ~"foobar"]/_;
-        let expect = [~"", ~"Zg==", ~"Zm8=", ~"Zm9v", ~"Zm9vYg==", ~"Zm9vYmE=", ~"Zm9vYmFy"]/_;
+        let source = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
+        let expect = ["", "Zg==", "Zm8=", "Zm9v", "Zm9vYg==", "Zm9vYmE=", "Zm9vYmFy"]/_;
         let source = source.map(|e| str::bytes(e));
         let expect = expect.map(|e| str::bytes(e));
 
@@ -348,8 +352,8 @@ module tests {
     fn test_encode_bytes_u() {
         let base64 = base64();
 
-        let source = [~"", ~"f", ~"fo", ~"fo>", ~"foob", ~"fooba", ~"fo?ba?"]/_;
-        let expect = [~"", ~"Zg==", ~"Zm8=", ~"Zm8-", ~"Zm9vYg==", ~"Zm9vYmE=", ~"Zm8_YmE_"]/_;
+        let source = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"]/_;
+        let expect = ["", "Zg==", "Zm8=", "Zm8-", "Zm9vYg==", "Zm9vYmE=", "Zm8_YmE_"]/_;
         let source = source.map(|e| str::bytes(e));
         let expect = expect.map(|e| str::bytes(e));
 
@@ -361,8 +365,8 @@ module tests {
     fn test_decode_bytes() {
         let base64 = base64();
 
-        let source = [~"", ~"Zg==", ~"Zm8=", ~"Zm8+", ~"Zm9v\r\nYg==", ~"\tZm9vYmE=", ~"Zm8/YmE/"]/_;
-        let expect = [~"", ~"f", ~"fo", ~"fo>", ~"foob", ~"fooba", ~"fo?ba?"]/_;
+        let source = ["", "Zg==", "Zm8=", "Zm8+", "Zm9v\r\nYg==", "\tZm9vYmE=", "Zm8/YmE/"]/_;
+        let expect = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"]/_;
         let source = source.map(|e| str::bytes(e));
         let expect = expect.map(|e| str::bytes(e));
 
@@ -374,8 +378,8 @@ module tests {
     fn test_decode_bytes_u() {
         let base64 = base64();
 
-        let source = [~"", ~"Zg==", ~"Zm8=", ~"Zm8-", ~"Zm9v\r\nYg==", ~"\tZm9vYmE=", ~"Zm8_YmE_"]/_;
-        let expect = [~"", ~"f", ~"fo", ~"fo>", ~"foob", ~"fooba", ~"fo?ba?"]/_;
+        let source = ["", "Zg==", "Zm8=", "Zm8-", "Zm9v\r\nYg==", "\tZm9vYmE=", "Zm8_YmE_"]/_;
+        let expect = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"]/_;
         let source = source.map(|e| str::bytes(e));
         let expect = expect.map(|e| str::bytes(e));
 

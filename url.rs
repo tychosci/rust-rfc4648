@@ -6,8 +6,12 @@ export query_escape, query_unescape;
 
 enum enc_mode { query, path, fragment, userinfo }
 
-fn query_escape(s: ~str) -> ~str { url_escape(s, query) }
-fn query_unescape(s: ~str) -> ~str { url_unescape(s, query) }
+fn query_escape(s: &str) -> ~str { url_escape(s, query) }
+fn query_unescape(s: &str) -> ~str { url_unescape(s, query) }
+
+macro_rules! abort {
+    { $s:expr } => { fail str::from_slice($s) }
+}
 
 #[inline(always)]
 pure fn ishex(c: u8) -> bool {
@@ -25,7 +29,7 @@ pure fn unhex(c: u8) -> u8 {
         48u8 to  57u8 => c - 48u8          // 0 .. 9
       , 65u8 to  90u8 => c - 65u8 + 10u8   // A .. Z
       , 97u8 to 122u8 => c - 97u8 + 10u8   // a .. z
-      , _             => fail ~"should be unreachable"
+      , _             => abort!("should be unreachable")
     }
 }
 
@@ -56,7 +60,7 @@ pure fn should_escape(c: u8, mode: enc_mode) -> bool {
     }
 }
 
-fn url_escape(s: ~str, mode: enc_mode) -> ~str {
+fn url_escape(s: &str, mode: enc_mode) -> ~str {
     let bs = str::bytes(s);
     let src_length = bs.len();
     let mut space_count = 0u;
@@ -78,7 +82,7 @@ fn url_escape(s: ~str, mode: enc_mode) -> ~str {
 
     // Nothing to do if there's no space and no escapable chars in `s`
     if space_count == 0 && hex_count == 0 {
-        return copy s;
+        return str::from_slice(s);
     }
 
     let ts = vec::to_mut(vec::from_elem(src_length + 2u * hex_count, 0u8));
@@ -105,7 +109,7 @@ fn url_escape(s: ~str, mode: enc_mode) -> ~str {
     str::from_bytes(vec::from_mut(ts))
 }
 
-fn url_unescape(s: ~str, mode: enc_mode) -> ~str {
+fn url_unescape(s: &str, mode: enc_mode) -> ~str {
     let bs = str::bytes(s);
     let src_length = bs.len();
     let mut n = 0u;
@@ -117,7 +121,7 @@ fn url_unescape(s: ~str, mode: enc_mode) -> ~str {
         if c == 37u8 {
             n += 1;
             if i+2 >= src_length || !ishex(bs[i+1]) || !ishex(bs[i+2]) {
-                fail fmt!{"Invalid URL escape: '%s'", s};
+                abort!(fmt!("Invalid URL escape: '%s'", s));
             }
             i += 3;
         } else if c == 43u8 {
@@ -129,7 +133,7 @@ fn url_unescape(s: ~str, mode: enc_mode) -> ~str {
     }
 
     if n == 0 && !hasplus {
-        return copy s;
+        return str::from_slice(s);
     }
 
     let ts = vec::to_mut(vec::from_elem(src_length - 2 * n, 0u8));
@@ -176,18 +180,18 @@ module tests {
     }
     #[test]
     fn test_query_escape() {
-        assert query_escape(~"a") == ~"a";
-        assert query_escape(~"a z") == ~"a+z";
-        assert query_escape(~"å") == ~"%C3%A5";
-        assert query_escape(~"?") == ~"%3F";
-        assert query_escape(~"あ") == ~"%E3%81%82";
+        assert query_escape("a") == ~"a";
+        assert query_escape("a z") == ~"a+z";
+        assert query_escape("å") == ~"%C3%A5";
+        assert query_escape("?") == ~"%3F";
+        assert query_escape("あ") == ~"%E3%81%82";
     }
     #[test]
     fn test_query_unescape() {
-        assert query_unescape(~"a") == ~"a";
-        assert query_unescape(~"a+z") == ~"a z";
-        assert query_unescape(~"%3f") == ~"?";
-        assert query_unescape(~"%C3%A5") == ~"å";
-        assert query_unescape(~"%E3%81%82") == ~"あ";
+        assert query_unescape("a") == ~"a";
+        assert query_unescape("a+z") == ~"a z";
+        assert query_unescape("%3f") == ~"?";
+        assert query_unescape("%C3%A5") == ~"å";
+        assert query_unescape("%E3%81%82") == ~"あ";
     }
 }

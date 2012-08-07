@@ -29,8 +29,8 @@ struct Base32 {
 }
 
 fn base32() -> @Base32 {
-    let table_std = str::bytes(~"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567");
-    let table_hex = str::bytes(~"0123456789ABCDEFGHIJKLMNOPQRSTUV");
+    let table_std = str::bytes("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567");
+    let table_hex = str::bytes("0123456789ABCDEFGHIJKLMNOPQRSTUV");
 
     let decode_map_std = vec::to_mut(vec::from_elem(256, 0xff_u8));
     let decode_map_hex = vec::to_mut(vec::from_elem(256, 0xff_u8));
@@ -235,6 +235,10 @@ macro_rules! switch {
     }
 }
 
+macro_rules! abort {
+    { $s:expr } => { fail str::from_slice($s) }
+}
+
 fn b32encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     let src_length = src.len();
     let dst_length = dst.len();
@@ -244,7 +248,7 @@ fn b32encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     }
 
     if dst_length % 8 != 0 {
-        fail ~"dst's length should be divisible by 8";
+        abort!("dst's length should be divisible by 8");
     }
 
     for uint::range(0, (src_length + 4) / 5) |i| {
@@ -316,7 +320,7 @@ fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
         let mut i = 0u;
         while i < 8 {
             if src_length == 0 {
-                fail ~"malformed base32 string";
+                abort!("malformed base32 string");
             }
             let chr = src[src_curr];
             src_curr += 1;
@@ -327,7 +331,7 @@ fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
             if chr == PAD && i >= 2 && src_length < 8 {
                 for uint::range(0, (8-i-1)) |j| {
                     if src_length > j && src[src_curr + j] != PAD {
-                        fail ~"malformed base32 string";
+                        abort!("malformed base32 string");
                     }
                 }
                 buf_len = i;
@@ -336,13 +340,13 @@ fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
             }
             buf[i] = decode_map[chr];
             if buf[i] == 0xff {
-                fail ~"malformed base32 string";
+                abort!("malformed base32 string");
             }
             i += 1;
         }
 
         switch! { buf_len =>
-        default:   { fail ~"malformed base32 string" }
+        default:   { abort!("malformed base32 string") }
         case 7, 8: { dst[dst_curr+4] |= buf[6]<<5 | buf[7]
                    ; dst[dst_curr+3] |= buf[6]>>3 }
         case 5, 6: { dst[dst_curr+3] |= buf[4]<<7 | buf[5]<<2
@@ -359,7 +363,7 @@ fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
           , 5     => dst_curr += 3
           , 6 | 7 => dst_curr += 4
           , 8     => dst_curr += 5
-          , _     => fail ~"malformed base32 string"
+          , _     => abort!("malformed base32 string")
         }
     }
 
@@ -372,9 +376,9 @@ module tests {
     fn test_encode_bytes() {
         let base32 = base32();
 
-        let source = [~"", ~"f", ~"fo", ~"foo", ~"foob", ~"fooba", ~"foobar"]/_;
-        let expect = [~"", ~"MY======", ~"MZXQ====", ~"MZXW6===", ~"MZXW6YQ=",
-                      ~"MZXW6YTB", ~"MZXW6YTBOI======"]/_;
+        let source = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
+        let expect = ["", "MY======", "MZXQ====", "MZXW6===", "MZXW6YQ=",
+                      "MZXW6YTB", "MZXW6YTBOI======"]/_;
         let source = source.map(|e| str::bytes(e));
         let expect = expect.map(|e| str::bytes(e));
 
@@ -386,9 +390,9 @@ module tests {
     fn test_encode_bytes_h() {
         let base32 = base32();
 
-        let source = [~"", ~"f", ~"fo", ~"foo", ~"foob", ~"fooba", ~"foobar"]/_;
-        let expect = [~"", ~"CO======", ~"CPNG====", ~"CPNMU===",
-                      ~"CPNMUOG=", ~"CPNMUOJ1", ~"CPNMUOJ1E8======"]/_;
+        let source = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
+        let expect = ["", "CO======", "CPNG====", "CPNMU===",
+                      "CPNMUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"]/_;
         let source = source.map(|e| str::bytes(e));
         let expect = expect.map(|e| str::bytes(e));
 
@@ -400,9 +404,9 @@ module tests {
     fn test_decode_bytes() {
         let base32 = base32();
 
-        let source = [~"", ~"MY======", ~"MZXQ====", ~"MZXW6===",
-                      ~"\tMZXW\r\n6YQ=", ~"MZXW6YTB", ~"MZXW6YTBOI======"]/_;
-        let expect = [~"", ~"f", ~"fo", ~"foo", ~"foob", ~"fooba", ~"foobar"]/_;
+        let source = ["", "MY======", "MZXQ====", "MZXW6===",
+                      "\tMZXW\r\n6YQ=", "MZXW6YTB", "MZXW6YTBOI======"]/_;
+        let expect = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
         let source = source.map(|e| str::bytes(e));
         let expect = expect.map(|e| str::bytes(e));
 
@@ -414,9 +418,9 @@ module tests {
     fn test_decode_bytes_h() {
         let base32 = base32();
 
-        let source = [~"", ~"CO======", ~"CPNG====", ~"CPNMU===",
-                      ~"\tCPNM\r\nUOG=", ~"CPNMUOJ1", ~"CPNMUOJ1E8======"]/_;
-        let expect = [~"", ~"f", ~"fo", ~"foo", ~"foob", ~"fooba", ~"foobar"]/_;
+        let source = ["", "CO======", "CPNG====", "CPNMU===",
+                      "\tCPNM\r\nUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"]/_;
+        let expect = ["", "f", "fo", "foo", "foob", "fooba", "foobar"]/_;
 
         let source = source.map(|e| str::bytes(e));
         let expect = expect.map(|e| str::bytes(e));

@@ -23,7 +23,10 @@ trait codec {
     fn decode(e: encoding) -> ~[u8];
 }
 
-impl &[u8] : codec {
+type Buffer = &[u8];
+type String = &str;
+
+impl Buffer : codec {
     fn encode(e: encoding) -> ~[u8] {
         match e {
             base16        => base16::encode(self)
@@ -44,7 +47,7 @@ impl &[u8] : codec {
     }
 }
 
-impl ~str : codec {
+impl String : codec {
     fn encode(e: encoding) -> ~[u8] {
         let bytes = str::bytes(self);
         bytes.encode(e)

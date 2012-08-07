@@ -25,7 +25,7 @@ struct Base16 {
 }
 
 fn base16() -> @Base16 {
-    let table = str::bytes(~"0123456789ABCDEF");
+    let table = str::bytes("0123456789ABCDEF");
     let decode_map = vec::to_mut(vec::from_elem(256u, 0xff_u8));
 
     for u8::range(0, 16) |i| {
@@ -132,6 +132,10 @@ fn decode(src: &[u8]) -> ~[u8] {
     base16.decode_bytes(src)
 }
 
+macro_rules! abort {
+    { $s:expr } => { fail str::from_slice($s) }
+}
+
 fn b16encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     for uint::range(0, src.len()) |j| {
         dst[j+1*j]     = table[src[j]>>4];
@@ -154,7 +158,7 @@ fn b16decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
         let chr1 = decode_map[src[i]];
         let chr2 = decode_map[src[i+1]];
         if chr1 == 0xff_u8 || chr2 == 0xff_u8 {
-            fail ~"malformed base16 string";
+            abort!("malformed base16 string");
         }
         dst[j] = chr1<<4 | chr2;
 
@@ -170,15 +174,15 @@ fn b16decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
 module tests {
     #[test]
     fn test_encode() {
-        let source = str::bytes(~"foo");
-        let expect = str::bytes(~"666F6F");
+        let source = str::bytes("foo");
+        let expect = str::bytes("666F6F");
         let actual = encode(source);
         assert expect == actual;
     }
     #[test]
     fn test_decode() {
-        let source = str::bytes(~"\t66 6f\r\n 6f");
-        let expect = str::bytes(~"foo");
+        let source = str::bytes("\t66 6f\r\n 6f");
+        let expect = str::bytes("foo");
         let actual = decode(source);
         assert expect == actual;
     }
