@@ -13,7 +13,7 @@
  * let res = src.encode(encoding::base64);
  * let res = str::from_bytes(res);
  *
- * io::println(#fmt["%s", res]);
+ * io::println(fmt!("%s", res));
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
