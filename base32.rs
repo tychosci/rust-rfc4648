@@ -397,12 +397,12 @@ fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
         };
 
         match buf_len {
-            2     => dst_curr += 1
-          , 3 | 4 => dst_curr += 2
-          , 5     => dst_curr += 3
-          , 6 | 7 => dst_curr += 4
-          , 8     => dst_curr += 5
-          , _     => abort!("malformed base32 string")
+            2     => dst_curr += 1,
+            3 | 4 => dst_curr += 2,
+            5     => dst_curr += 3,
+            6 | 7 => dst_curr += 4,
+            8     => dst_curr += 5,
+            _     => abort!("malformed base32 string")
         }
     }
 
