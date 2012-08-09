@@ -271,6 +271,104 @@ fn urlsafe_decode(src: &[u8]) -> ~[u8] {
     base64.decode_bytes_u(src)
 }
 
+struct Base64Writer {
+    base64: &Base64;
+    writer: &io::writer;
+    outbuf: [mut u8]/1024;
+    chunk:  [mut u8]/3;
+    mut nchunk: uint;
+}
+
+fn Base64Writer(base64: &Base64, writer: &io::writer) -> Base64Writer {
+    Base64Writer {
+        base64: base64,
+        writer: writer,
+        outbuf: [mut 0, ..1024],
+        chunk: [mut 0, ..3],
+        nchunk: 0
+    }
+}
+
+impl Base64Writer {
+    fn write(buf: &[u8]) {
+        let buflen  = buf.len();
+        let mut buf = vec::view(buf, 0, buflen);
+
+        if self.nchunk > 0 {
+            let mut i = 0;
+            while i < buflen && self.nchunk < 3 {
+                self.chunk[self.nchunk] = buf[i];
+                self.nchunk += 1;
+                i += 1;
+            }
+
+            buf = vec::view(buf, i, buflen);
+            if self.nchunk < 3 {
+                return;
+            }
+
+            self.base64.encode(self.outbuf, vec::slice(self.chunk, 0, 3));
+            self.writer.write(vec::mut_view(self.outbuf, 0, 4));
+            self.nchunk = 0;
+        }
+
+        while buf.len() >= 3 {
+            let nleft = buf.len();
+            let nn = self.outbuf.len() / 4 * 3;
+            let nn = if nn > nleft { nleft } else { nn };
+            let nn = nn - nn % 3;
+
+            if nn > 0 {
+                self.base64.encode(self.outbuf, vec::view(buf, 0, nn));
+                self.writer.write(vec::mut_view(self.outbuf, 0, nn / 3 * 4));
+            }
+
+            buf = vec::view(buf, nn, nleft);
+        }
+
+        for uint::range(0, buf.len()) |i| {
+            self.chunk[i] = buf[i];
+        }
+        self.nchunk += buf.len();
+    }
+    // TODO call this method on dropping (or put these stmts to `drop {...}`)
+    fn close() {
+        if self.nchunk > 0 {
+            let nchunk = self.nchunk;
+            self.nchunk = 0;
+
+            let chunk = vec::slice(self.chunk, 0, nchunk);
+            self.base64.encode(self.outbuf, chunk);
+            self.writer.write(vec::mut_view(self.outbuf, 0, 4));
+        }
+    }
+}
+
+// struct Base64Reader {
+//     base64: &Base64;
+//     reader: &io::reader;
+//     outbuf: [mut u8]/1024;
+//     chunk:  [mut u8]/4;
+//     mut nchunk: uint;
+// }
+//
+// fn Base64Reader(base64: &Base64, reader: &io::reader) -> Base64Reader {
+//     Base64Reader {
+//         base64: base64,
+//         reader: reader,
+//         outbuf: [mut 0, ..1024],
+//         chunk: [mut 0, ..4],
+//         nchunk: 0
+//     }
+// }
+//
+// impl Base64Reader {
+//     fn read(_nbytes: uint) -> ~[u8] {
+//         // FIXME write
+//         return ~[];
+//     }
+// }
+
 macro_rules! switch {
     {
         $name:ident =>
@@ -431,6 +529,22 @@ module tests {
         let expect = expect.map(|e| str::bytes(e));
 
         let actual = source.map(|e| base64.decode_bytes_u(e));
+
+        assert expect == actual;
+    }
+    #[test]
+    fn test_base64_writer() {
+        let base64 = Base64();
+
+        let source1 = str::bytes("f");
+        let source2 = str::bytes("oobar");
+        let expect  = str::bytes("Zm9vYmFy");
+        let actual  = io::with_buf_writer(|writer| {
+            let writer = Base64Writer(&base64, &writer);
+            writer.write(source1);
+            writer.write(source2);
+            writer.close();
+        });
 
         assert expect == actual;
     }
