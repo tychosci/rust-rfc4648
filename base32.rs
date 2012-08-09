@@ -263,6 +263,78 @@ fn hex_decode(src: &[u8]) -> ~[u8] {
     base32.decode_bytes_h(src)
 }
 
+struct Base32Writer {
+    base32: &Base32;
+    writer: &io::writer;
+    outbuf: [mut u8]/1024;
+    buf: [mut u8]/5;
+    mut nbuf: uint;
+}
+
+fn Base32Writer(base32: &Base32, writer: &io::writer) -> Base32Writer {
+    Base32Writer {
+        base32: base32,
+        writer: writer,
+        outbuf: [mut 0, ..1024],
+        buf: [mut 0, ..5],
+        nbuf: 0
+    }
+}
+
+impl Base32Writer {
+    fn write(buf: &[u8]) {
+        let buflen = buf.len();
+        let mut buf = vec::view(buf, 0, buflen);
+
+        if self.nbuf > 0 {
+            let mut i = 0;
+            while i < buflen && self.nbuf < 5 {
+                self.buf[self.nbuf] = buf[i];
+                self.nbuf += 1;
+                i += 1;
+            }
+
+            buf = vec::view(buf, i, buflen);
+            if self.nbuf < 5 {
+                return;
+            }
+
+            self.base32.encode(self.outbuf, vec::slice(self.buf, 0, 5));
+            self.writer.write(vec::mut_view(self.outbuf, 0, 8));
+            self.nbuf = 0;
+        }
+
+        while buf.len() >= 5 {
+            let buflen = buf.len();
+            let nn = buflen / 5 * 8;
+            let nn = if nn > buflen { buflen } else { nn };
+            let nn = nn - nn % 8;
+
+            if nn > 0 {
+                self.base32.encode(self.outbuf, vec::view(buf, 0, nn));
+                self.writer.write(vec::mut_view(self.outbuf, 0, nn / 8 * 5));
+            }
+
+            buf = vec::view(buf, nn, buflen);
+        }
+
+        for uint::range(0, buf.len()) |i| {
+            self.buf[i] = buf[i];
+        }
+        self.nbuf = buf.len();
+    }
+    fn close() {
+        if self.nbuf > 0 {
+            let nbuf = self.nbuf;
+            self.nbuf = 0;
+
+            let buf = vec::slice(self.buf, 0, nbuf);
+            self.base32.encode(self.outbuf, buf);
+            self.writer.write(vec::mut_view(self.outbuf, 0, 8));
+        }
+    }
+}
+
 macro_rules! switch {
     {
         $name:ident =>
@@ -465,6 +537,22 @@ module tests {
         let expect = expect.map(|e| str::bytes(e));
 
         let actual = source.map(|e| base32.decode_bytes_h(e));
+
+        assert expect == actual;
+    }
+    #[test]
+    fn test_base32_writer() {
+        let base32 = Base32();
+
+        let source1 = str::bytes("f");
+        let source2 = str::bytes("ooba");
+        let expect  = str::bytes("MZXW6YTB");
+        let actual  = io::with_buf_writer(|writer| {
+            let writer = Base32Writer(&base32, &writer);
+            writer.write(source1);
+            writer.write(source2);
+            writer.close();
+        });
 
         assert expect == actual;
     }
