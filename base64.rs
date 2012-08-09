@@ -344,31 +344,6 @@ impl Base64Writer {
     }
 }
 
-// struct Base64Reader {
-//     base64: &Base64;
-//     reader: &io::reader;
-//     outbuf: [mut u8]/1024;
-//     buf:  [mut u8]/4;
-//     mut nbuf: uint;
-// }
-//
-// fn Base64Reader(base64: &Base64, reader: &io::reader) -> Base64Reader {
-//     Base64Reader {
-//         base64: base64,
-//         reader: reader,
-//         outbuf: [mut 0, ..1024],
-//         buf: [mut 0, ..4],
-//         nbuf: 0
-//     }
-// }
-//
-// impl Base64Reader {
-//     fn read(_nbytes: uint) -> ~[u8] {
-//         // FIXME write
-//         return ~[];
-//     }
-// }
-
 macro_rules! switch {
     {
         $name:ident =>
