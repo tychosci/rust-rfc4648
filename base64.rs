@@ -292,6 +292,32 @@ impl Base64Writer {
     }
 }
 
+struct Base64Reader {
+    base64: &Base64;
+    reader: &io::reader;
+}
+
+fn Base64Reader(base64: &Base64, reader: &io::reader) -> Base64Reader {
+    Base64Reader {
+        base64: base64,
+        reader: reader,
+    }
+}
+
+impl Base64Reader {
+    fn read(buf: &[mut u8], len: uint) -> uint {
+        // FIXME write
+        return 0;
+    }
+    fn read_bytes(_nbytes: uint) -> ~[u8] {
+        // FIXME write
+        return ~[];
+    }
+    fn eof() -> bool {
+        self.reader.eof()
+    }
+}
+
 macro_rules! switch {
     {
         $name:ident =>
@@ -457,6 +483,23 @@ module tests {
             writer.write(source1);
             writer.write(source2);
             writer.close();
+        });
+
+        assert expect == actual;
+    }
+    // #[test]
+    fn test_base64_reader() {
+        let source = str::bytes("Zm9vYmFy");
+        let expect = str::bytes("foobar");
+        let actual = io::with_bytes_reader(source, |reader| {
+            let reader = Base64Reader(BASE64_STD, &reader);
+
+            io::with_buf_writer(|writer| {
+                while !reader.eof() {
+                    let buf = reader.read_bytes(1024);
+                    writer.write(buf);
+                }
+            })
         });
 
         assert expect == actual;
