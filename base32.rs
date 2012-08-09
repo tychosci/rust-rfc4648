@@ -17,6 +17,7 @@
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
+export BASE32_STD, BASE32_HEX, Base32Writer;
 export encode, hex_encode, decode, hex_decode;
 
 const PAD: u8 = 61u8;
@@ -71,20 +72,19 @@ const DECODE_MAP_HEX: [u8]/256 = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
 ];
 
-struct Base32 {
-    table_std: [u8]/32;
-    table_hex: [u8]/32;
-    decode_map_std: [u8]/256;
-    decode_map_hex: [u8]/256;
-}
+const BASE32_STD: &Base32 = &Base32 {
+    table: TABLE_STD,
+    decode_map: DECODE_MAP_STD,
+};
 
-fn Base32() -> Base32 {
-    Base32 {
-        table_std: TABLE_STD,
-        table_hex: TABLE_HEX,
-        decode_map_std: DECODE_MAP_STD,
-        decode_map_hex: DECODE_MAP_HEX
-    }
+const BASE32_HEX: &Base32 = &Base32 {
+    table: TABLE_HEX,
+    decode_map: DECODE_MAP_HEX,
+};
+
+struct Base32 {
+    table: [u8]/32;
+    decode_map: [u8]/256;
 }
 
 #[inline(always)]
@@ -99,10 +99,7 @@ pure fn decoded_len(src_length: uint) -> uint {
 
 impl Base32 : Encode {
     fn encode(dst: &[mut u8], src: &[u8]) {
-        b32encode(self.table_std, dst, src);
-    }
-    fn encode_h(dst: &[mut u8], src: &[u8]) {
-        b32encode(self.table_hex, dst, src);
+        b32encode(self.table, dst, src);
     }
     fn encoded_len(src_length: uint) -> uint {
         encoded_len(src_length)
@@ -125,35 +122,11 @@ impl Base32 : Encode {
         self.encode(dst, src);
         vec::from_mut(dst)
     }
-
-    /**
-     * Encode input bytes to base32-encoded bytes.
-     *
-     * Note that this method is for base32-hex encoding.
-     * See <http://tools.ietf.org/html/rfc4648#section-7> for details.
-     *
-     * # Arguments
-     *
-     * * src - bytes for encoding
-     *
-     * # Return
-     *
-     * base32-encoded bytes
-     */
-    fn encode_bytes_h(src: &[u8]) -> ~[u8] {
-        let dst_length = self.encoded_len(src.len());
-        let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
-        self.encode_h(dst, src);
-        vec::from_mut(dst)
-    }
 }
 
 impl Base32 : Decode {
     fn decode(dst: &[mut u8], src: &[u8]) -> uint {
-        b32decode(self.decode_map_std, dst, src)
-    }
-    fn decode_h(dst: &[mut u8], src: &[u8]) -> uint {
-        b32decode(self.decode_map_hex, dst, src)
+        b32decode(self.decode_map, dst, src)
     }
     fn decoded_len(src_length: uint) -> uint {
         decoded_len(src_length)
@@ -176,27 +149,6 @@ impl Base32 : Decode {
         let end = self.decode(dst, src);
         vec::slice(vec::from_mut(dst), 0u, end)
     }
-
-    /**
-     * Decode base32-encoded bytes to its original bytes.
-     *
-     * Note that this method is for base32-hex encoding.
-     * See <http://tools.ietf.org/html/rfc4648#section-7> for details.
-     *
-     * # Arguments
-     *
-     * * src - base32-encoded bytes
-     *
-     * # Return
-     *
-     * decoded bytes
-     */
-    fn decode_bytes_h(src: &[u8]) -> ~[u8] {
-        let dst_length = self.decoded_len(src.len());
-        let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
-        let end = self.decode_h(dst, src);
-        vec::slice(vec::from_mut(dst), 0u, end)
-    }
 }
 
 /**
@@ -211,12 +163,11 @@ impl Base32 : Decode {
  * base32-encoded bytes
  */
 fn encode(src: &[u8]) -> ~[u8] {
-    let base32 = Base32();
-    base32.encode_bytes(src)
+    BASE32_STD.encode_bytes(src)
 }
 
 /**
- * Shortcut for base32#encode_bytes_h
+ * Shortcut for base32#encode_bytes
  *
  * # Arguments
  *
@@ -227,8 +178,7 @@ fn encode(src: &[u8]) -> ~[u8] {
  * base32-encoded bytes (extended hex alphabet)
  */
 fn hex_encode(src: &[u8]) -> ~[u8] {
-    let base32 = Base32();
-    base32.encode_bytes_h(src)
+    BASE32_HEX.encode_bytes(src)
 }
 
 /**
@@ -243,12 +193,11 @@ fn hex_encode(src: &[u8]) -> ~[u8] {
  * decoded bytes
  */
 fn decode(src: &[u8]) -> ~[u8] {
-    let base32 = Base32();
-    base32.decode_bytes(src)
+    BASE32_STD.decode_bytes(src)
 }
 
 /**
- * Shortcut for base32#decode_bytes_h
+ * Shortcut for base32#decode_bytes
  *
  * # Arguments
  *
@@ -259,8 +208,7 @@ fn decode(src: &[u8]) -> ~[u8] {
  * decoded bytes
  */
 fn hex_decode(src: &[u8]) -> ~[u8] {
-    let base32 = Base32();
-    base32.decode_bytes_h(src)
+    BASE32_HEX.decode_bytes(src)
 }
 
 struct Base32Writer {
@@ -332,6 +280,32 @@ impl Base32Writer {
             self.base32.encode(self.outbuf, buf);
             self.writer.write(vec::mut_view(self.outbuf, 0, 8));
         }
+    }
+}
+
+struct Base32Reader {
+    base32: &Base32;
+    reader: &io::reader;
+}
+
+fn Base32Reader(base32: &Base32, reader: &io::reader) -> Base32Reader {
+    Base32Reader {
+        base32: base32,
+        reader: reader,
+    }
+}
+
+impl Base32Reader {
+    fn read(buf: &[mut u8], len: uint) -> uint {
+        // FIXME write
+        return 0;
+    }
+    fn read_bytes(_nbytes: uint) -> ~[u8] {
+        // FIXME write
+        return ~[];
+    }
+    fn eof() -> bool {
+        self.reader.eof()
     }
 }
 
@@ -484,51 +458,43 @@ fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
 #[cfg(test)]
 module tests {
     #[test]
-    fn test_encode_bytes() {
-        let base32 = Base32();
-
+    fn test_encode() {
         let source = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
         let expect = ["", "MY======", "MZXQ====", "MZXW6===", "MZXW6YQ=",
                       "MZXW6YTB", "MZXW6YTBOI======"];
         let source = source.map(|e| str::bytes(e));
         let expect = expect.map(|e| str::bytes(e));
 
-        let actual = source.map(|e| base32.encode_bytes(e));
+        let actual = source.map(|e| encode(e));
 
         assert expect == actual;
     }
     #[test]
-    fn test_encode_bytes_h() {
-        let base32 = Base32();
-
+    fn test_hex_encode() {
         let source = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
         let expect = ["", "CO======", "CPNG====", "CPNMU===",
                       "CPNMUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"];
         let source = source.map(|e| str::bytes(e));
         let expect = expect.map(|e| str::bytes(e));
 
-        let actual = source.map(|e| base32.encode_bytes_h(e));
+        let actual = source.map(|e| hex_encode(e));
 
         assert expect == actual;
     }
     #[test]
-    fn test_decode_bytes() {
-        let base32 = Base32();
-
+    fn test_decode() {
         let source = ["", "MY======", "MZXQ====", "MZXW6===",
                       "\tMZXW\r\n6YQ=", "MZXW6YTB", "MZXW6YTBOI======"];
         let expect = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
         let source = source.map(|e| str::bytes(e));
         let expect = expect.map(|e| str::bytes(e));
 
-        let actual = source.map(|e| base32.decode_bytes(e));
+        let actual = source.map(|e| decode(e));
 
         assert expect == actual;
     }
     #[test]
-    fn test_decode_bytes_h() {
-        let base32 = Base32();
-
+    fn test_hex_decode() {
         let source = ["", "CO======", "CPNG====", "CPNMU===",
                       "\tCPNM\r\nUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"];
         let expect = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
@@ -536,22 +502,37 @@ module tests {
         let source = source.map(|e| str::bytes(e));
         let expect = expect.map(|e| str::bytes(e));
 
-        let actual = source.map(|e| base32.decode_bytes_h(e));
+        let actual = source.map(|e| hex_decode(e));
 
         assert expect == actual;
     }
     #[test]
     fn test_base32_writer() {
-        let base32 = Base32();
-
         let source1 = str::bytes("f");
         let source2 = str::bytes("ooba");
         let expect  = str::bytes("MZXW6YTB");
         let actual  = io::with_buf_writer(|writer| {
-            let writer = Base32Writer(&base32, &writer);
+            let writer = Base32Writer(BASE32_STD, &writer);
             writer.write(source1);
             writer.write(source2);
             writer.close();
+        });
+
+        assert expect == actual;
+    }
+    // #[test]
+    fn test_base32_reader() {
+        let source = str::bytes("MZXW6YTB");
+        let expect = str::bytes("fooba");
+        let actual = io::with_bytes_reader(source, |reader| {
+            let reader = Base32Reader(BASE32_STD, &reader);
+
+            io::with_buf_writer(|writer| {
+                while !reader.eof() {
+                    let buf = reader.read_bytes(1024);
+                    writer.write(buf);
+                }
+            })
         });
 
         assert expect == actual;

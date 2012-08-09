@@ -17,6 +17,7 @@
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
+export BASE64_STD, BASE64_URL, Base64Writer;
 export encode, urlsafe_encode, decode, urlsafe_decode;
 
 const PAD: u8 = 61u8;
@@ -79,20 +80,19 @@ const DECODE_MAP_URL: [u8]/256 = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
 ];
 
-struct Base64 {
-    table_std: [u8]/64;
-    table_url: [u8]/64;
-    decode_map_std: [u8]/256;
-    decode_map_url: [u8]/256;
-}
+const BASE64_STD: &Base64 = &Base64 {
+    table: TABLE_STD,
+    decode_map: DECODE_MAP_STD,
+};
 
-fn Base64() -> Base64 {
-    Base64 {
-        table_std: TABLE_STD,
-        table_url: TABLE_URL,
-        decode_map_std: DECODE_MAP_STD,
-        decode_map_url: DECODE_MAP_URL
-    }
+const BASE64_URL: &Base64 = &Base64 {
+    table: TABLE_URL,
+    decode_map: DECODE_MAP_URL,
+};
+
+struct Base64 {
+    table: [u8]/64;
+    decode_map: [u8]/256;
 }
 
 #[inline(always)]
@@ -107,10 +107,7 @@ pure fn decoded_len(src_length: uint) -> uint {
 
 impl Base64 : Encode {
     fn encode(dst: &[mut u8], src: &[u8]) {
-        b64encode(self.table_std, dst, src);
-    }
-    fn encode_u(dst: &[mut u8], src: &[u8]) {
-        b64encode(self.table_url, dst, src);
+        b64encode(self.table, dst, src);
     }
     fn encoded_len(src_length: uint) -> uint {
         encoded_len(src_length)
@@ -133,35 +130,11 @@ impl Base64 : Encode {
         self.encode(dst, src);
         vec::from_mut(dst)
     }
-
-    /**
-     * Encode input bytes to base64-encoded bytes.
-     *
-     * Note that this method is for url and filename safe base64 encoding.
-     * See <http://tools.ietf.org/html/rfc4648#section-5> for details.
-     *
-     * # Arguments
-     *
-     * * src - bytes for encoding
-     *
-     * # Return
-     *
-     * base64-encoded bytes
-     */
-    fn encode_bytes_u(src: &[u8]) -> ~[u8] {
-        let dst_length = self.encoded_len(src.len());
-        let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
-        self.encode_u(dst, src);
-        vec::from_mut(dst)
-    }
 }
 
 impl Base64 : Decode {
     fn decode(dst: &[mut u8], src: &[u8]) -> uint {
-        b64decode(self.decode_map_std, dst, src)
-    }
-    fn decode_u(dst: &[mut u8], src: &[u8]) -> uint {
-        b64decode(self.decode_map_url, dst, src)
+        b64decode(self.decode_map, dst, src)
     }
     fn decoded_len(src_length: uint) -> uint {
         decoded_len(src_length)
@@ -184,27 +157,6 @@ impl Base64 : Decode {
         let end = self.decode(dst, src);
         vec::slice(vec::from_mut(dst), 0u, end)
     }
-
-    /**
-     * Decode base64-encoded bytes to its original bytes.
-     *
-     * Note that this method is for url and filename safe base64 encoding.
-     * See <http://tools.ietf.org/html/rfc4648#section-5> for details.
-     *
-     * # Arguments
-     *
-     * * src - base64-encoded bytes
-     *
-     * # Return
-     *
-     * decoded bytes
-     */
-    fn decode_bytes_u(src: &[u8]) -> ~[u8] {
-        let dst_length = self.decoded_len(src.len());
-        let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
-        let end = self.decode_u(dst, src);
-        vec::slice(vec::from_mut(dst), 0u, end)
-    }
 }
 
 /**
@@ -219,12 +171,11 @@ impl Base64 : Decode {
  * base64-encoded bytes
  */
 fn encode(src: &[u8]) -> ~[u8] {
-    let base64 = Base64();
-    base64.encode_bytes(src)
+    BASE64_STD.encode_bytes(src)
 }
 
 /**
- * Shortcut for base64#encode_bytes_u
+ * Shortcut for base64#encode_bytes
  *
  * # Arguments
  *
@@ -235,8 +186,7 @@ fn encode(src: &[u8]) -> ~[u8] {
  * base64-encoded bytes (url and filename safe)
  */
 fn urlsafe_encode(src: &[u8]) -> ~[u8] {
-    let base64 = Base64();
-    base64.encode_bytes_u(src)
+    BASE64_URL.encode_bytes(src)
 }
 
 /**
@@ -251,12 +201,11 @@ fn urlsafe_encode(src: &[u8]) -> ~[u8] {
  * decoded bytes
  */
 fn decode(src: &[u8]) -> ~[u8] {
-    let base64 = Base64();
-    base64.decode_bytes(src)
+    BASE64_STD.decode_bytes(src)
 }
 
 /**
- * Shortcut for base64#decode_bytes_u
+ * Shortcut for base64#decode_bytes
  *
  * # Arguments
  *
@@ -267,8 +216,7 @@ fn decode(src: &[u8]) -> ~[u8] {
  * decoded bytes
  */
 fn urlsafe_decode(src: &[u8]) -> ~[u8] {
-    let base64 = Base64();
-    base64.decode_bytes_u(src)
+    BASE64_URL.decode_bytes(src)
 }
 
 struct Base64Writer {
@@ -456,66 +404,56 @@ fn b64decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
 #[cfg(test)]
 module tests {
     #[test]
-    fn test_encode_bytes() {
-        let base64 = Base64();
-
+    fn test_encode() {
         let source = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
         let expect = ["", "Zg==", "Zm8=", "Zm9v", "Zm9vYg==", "Zm9vYmE=", "Zm9vYmFy"];
         let source = source.map(|e| str::bytes(e));
         let expect = expect.map(|e| str::bytes(e));
 
-        let actual = source.map(|e| base64.encode_bytes(e));
+        let actual = source.map(|e| encode(e));
 
         assert expect == actual;
     }
     #[test]
-    fn test_encode_bytes_u() {
-        let base64 = Base64();
-
+    fn test_urlsafe_encode() {
         let source = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"];
         let expect = ["", "Zg==", "Zm8=", "Zm8-", "Zm9vYg==", "Zm9vYmE=", "Zm8_YmE_"];
         let source = source.map(|e| str::bytes(e));
         let expect = expect.map(|e| str::bytes(e));
 
-        let actual = source.map(|e| base64.encode_bytes_u(e));
+        let actual = source.map(|e| urlsafe_encode(e));
 
         assert expect == actual;
     }
     #[test]
-    fn test_decode_bytes() {
-        let base64 = Base64();
-
+    fn test_decode() {
         let source = ["", "Zg==", "Zm8=", "Zm8+", "Zm9v\r\nYg==", "\tZm9vYmE=", "Zm8/YmE/"];
         let expect = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"];
         let source = source.map(|e| str::bytes(e));
         let expect = expect.map(|e| str::bytes(e));
 
-        let actual = source.map(|e| base64.decode_bytes(e));
+        let actual = source.map(|e| decode(e));
 
         assert expect == actual;
     }
     #[test]
-    fn test_decode_bytes_u() {
-        let base64 = Base64();
-
+    fn test_urlsafe_decode() {
         let source = ["", "Zg==", "Zm8=", "Zm8-", "Zm9v\r\nYg==", "\tZm9vYmE=", "Zm8_YmE_"];
         let expect = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"];
         let source = source.map(|e| str::bytes(e));
         let expect = expect.map(|e| str::bytes(e));
 
-        let actual = source.map(|e| base64.decode_bytes_u(e));
+        let actual = source.map(|e| urlsafe_decode(e));
 
         assert expect == actual;
     }
     #[test]
     fn test_base64_writer() {
-        let base64 = Base64();
-
         let source1 = str::bytes("f");
         let source2 = str::bytes("oobar");
         let expect  = str::bytes("Zm9vYmFy");
         let actual  = io::with_buf_writer(|writer| {
-            let writer = Base64Writer(&base64, &writer);
+            let writer = Base64Writer(BASE64_STD, &writer);
             writer.write(source1);
             writer.write(source2);
             writer.close();

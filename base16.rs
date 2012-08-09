@@ -17,6 +17,7 @@
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
+export BASE16, Base16Writer;
 export encode, decode;
 
 // 0123456789ABCDEF
@@ -44,13 +45,14 @@ const DECODE_MAP: [u8]/256 = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
 ];
 
+const BASE16: &Base16 = &Base16 {
+    table: TABLE,
+    decode_map: DECODE_MAP,
+};
+
 struct Base16 {
     table: [u8]/16;
     decode_map: [u8]/256;
-}
-
-fn Base16() -> Base16 {
-    Base16 {table: TABLE, decode_map: DECODE_MAP}
 }
 
 #[inline(always)]
@@ -124,8 +126,7 @@ impl Base16 : Decode {
  * hex-encoded bytes
  */
 fn encode(src: &[u8]) -> ~[u8] {
-    let base16 = Base16();
-    base16.encode_bytes(src)
+    BASE16.encode_bytes(src)
 }
 
 /**
@@ -140,8 +141,7 @@ fn encode(src: &[u8]) -> ~[u8] {
  * decoded bytes
  */
 fn decode(src: &[u8]) -> ~[u8] {
-    let base16 = Base16();
-    base16.decode_bytes(src)
+    BASE16.decode_bytes(src)
 }
 
 struct Base16Writer {
@@ -233,13 +233,11 @@ module tests {
     }
     #[test]
     fn test_base16_writer() {
-        let base16 = Base16();
-
         let source1 = str::bytes("fo");
         let source2 = str::bytes("o");
         let expect  = str::bytes("666F6F");
         let actual  = io::with_buf_writer(|writer| {
-            let writer = Base16Writer(&base16, &writer);
+            let writer = Base16Writer(BASE16, &writer);
             writer.write(source1);
             writer.write(source2);
         });
