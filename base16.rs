@@ -144,6 +144,39 @@ fn decode(src: &[u8]) -> ~[u8] {
     base16.decode_bytes(src)
 }
 
+struct Base16Writer {
+    base16: &Base16;
+    writer: &io::writer;
+    outbuf: [mut u8]/1024;
+}
+
+fn Base16Writer(base16: &Base16, writer: &io::writer) -> Base16Writer {
+    Base16Writer {
+        base16: base16,
+        writer: writer,
+        outbuf: [mut 0, ..1024]
+    }
+}
+
+impl Base16Writer {
+    fn write(buf: &[u8]) {
+        let mut buf = vec::view(buf, 0, buf.len());
+
+        while buf.len() > 0 {
+            let buflen = buf.len();
+            let nn = self.outbuf.len() / 2;
+            let nn = if nn > buflen { buflen } else { nn };
+
+            if nn > 0 {
+                self.base16.encode(self.outbuf, vec::view(buf, 0, nn));
+                self.writer.write(vec::mut_view(self.outbuf, 0, nn * 2));
+            }
+
+            buf = vec::view(buf, nn, buflen);
+        }
+    }
+}
+
 macro_rules! abort {
     { $s:expr } => { fail str::from_slice($s) }
 }
@@ -196,6 +229,21 @@ module tests {
         let source = str::bytes("\t66 6f\r\n 6f");
         let expect = str::bytes("foo");
         let actual = decode(source);
+        assert expect == actual;
+    }
+    #[test]
+    fn test_base16_writer() {
+        let base16 = Base16();
+
+        let source1 = str::bytes("fo");
+        let source2 = str::bytes("o");
+        let expect  = str::bytes("666F6F");
+        let actual  = io::with_buf_writer(|writer| {
+            let writer = Base16Writer(&base16, &writer);
+            writer.write(source1);
+            writer.write(source2);
+        });
+
         assert expect == actual;
     }
 }
