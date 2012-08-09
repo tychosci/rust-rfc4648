@@ -275,8 +275,8 @@ struct Base64Writer {
     base64: &Base64;
     writer: &io::writer;
     outbuf: [mut u8]/1024;
-    chunk:  [mut u8]/3;
-    mut nchunk: uint;
+    buf: [mut u8]/3;
+    mut nbuf: uint;
 }
 
 fn Base64Writer(base64: &Base64, writer: &io::writer) -> Base64Writer {
@@ -284,8 +284,8 @@ fn Base64Writer(base64: &Base64, writer: &io::writer) -> Base64Writer {
         base64: base64,
         writer: writer,
         outbuf: [mut 0, ..1024],
-        chunk: [mut 0, ..3],
-        nchunk: 0
+        buf: [mut 0, ..3],
+        nbuf: 0
     }
 }
 
@@ -294,22 +294,22 @@ impl Base64Writer {
         let buflen  = buf.len();
         let mut buf = vec::view(buf, 0, buflen);
 
-        if self.nchunk > 0 {
+        if self.nbuf > 0 {
             let mut i = 0;
-            while i < buflen && self.nchunk < 3 {
-                self.chunk[self.nchunk] = buf[i];
-                self.nchunk += 1;
+            while i < buflen && self.nbuf < 3 {
+                self.buf[self.nbuf] = buf[i];
+                self.nbuf += 1;
                 i += 1;
             }
 
             buf = vec::view(buf, i, buflen);
-            if self.nchunk < 3 {
+            if self.nbuf < 3 {
                 return;
             }
 
-            self.base64.encode(self.outbuf, vec::slice(self.chunk, 0, 3));
+            self.base64.encode(self.outbuf, vec::slice(self.buf, 0, 3));
             self.writer.write(vec::mut_view(self.outbuf, 0, 4));
-            self.nchunk = 0;
+            self.nbuf = 0;
         }
 
         while buf.len() >= 3 {
@@ -327,18 +327,18 @@ impl Base64Writer {
         }
 
         for uint::range(0, buf.len()) |i| {
-            self.chunk[i] = buf[i];
+            self.buf[i] = buf[i];
         }
-        self.nchunk += buf.len();
+        self.nbuf += buf.len();
     }
     // TODO call this method on dropping (or put these stmts to `drop {...}`)
     fn close() {
-        if self.nchunk > 0 {
-            let nchunk = self.nchunk;
-            self.nchunk = 0;
+        if self.nbuf > 0 {
+            let nbuf = self.nbuf;
+            self.nbuf = 0;
 
-            let chunk = vec::slice(self.chunk, 0, nchunk);
-            self.base64.encode(self.outbuf, chunk);
+            let buf = vec::slice(self.buf, 0, nbuf);
+            self.base64.encode(self.outbuf, buf);
             self.writer.write(vec::mut_view(self.outbuf, 0, 4));
         }
     }
@@ -348,8 +348,8 @@ impl Base64Writer {
 //     base64: &Base64;
 //     reader: &io::reader;
 //     outbuf: [mut u8]/1024;
-//     chunk:  [mut u8]/4;
-//     mut nchunk: uint;
+//     buf:  [mut u8]/4;
+//     mut nbuf: uint;
 // }
 //
 // fn Base64Reader(base64: &Base64, reader: &io::reader) -> Base64Reader {
@@ -357,8 +357,8 @@ impl Base64Writer {
 //         base64: base64,
 //         reader: reader,
 //         outbuf: [mut 0, ..1024],
-//         chunk: [mut 0, ..4],
-//         nchunk: 0
+//         buf: [mut 0, ..4],
+//         nbuf: 0
 //     }
 // }
 //
