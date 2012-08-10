@@ -1,7 +1,7 @@
 use encoding;
 
 import io::writer_util;
-import encoding::Codec;
+import encoding::BaseNNCodec;
 
 fn main(args: ~[~str]) {
     let binary = copy args[0];
