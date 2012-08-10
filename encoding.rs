@@ -10,7 +10,7 @@ import BASE16         = baseNN::base16::BASE16;
 import BASE32         = baseNN::base32::BASE32_STD;
 import BASE64         = baseNN::base64::BASE64_STD;
 import BASE32_HEX     = baseNN::base32::BASE32_HEX;
-import BASE64_URLSAFE = baseNN::base64::BASE64_URL;
+import BASE64_URL     = baseNN::base64::BASE64_URL;
 
 // import structs in baseNN/base{16,32,64}.rs
 import Base16Writer   = baseNN::base16::Base16Writer;
@@ -36,7 +36,7 @@ export BASE16;
 export BASE32;
 export BASE64;
 export BASE32_HEX;
-export BASE64_URLSAFE;
+export BASE64_URL;
 
 // export structs
 export Base16Writer;
