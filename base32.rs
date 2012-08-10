@@ -225,7 +225,7 @@ fn Base32Writer(base32: &Base32, writer: &io::writer) -> Base32Writer {
         writer: writer,
         outbuf: [mut 0, ..1024],
         buf: [mut 0, ..5],
-        nbuf: 0
+        nbuf: 0,
     }
 }
 

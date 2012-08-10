@@ -154,7 +154,7 @@ fn Base16Writer(base16: &Base16, writer: &io::writer) -> Base16Writer {
     Base16Writer {
         base16: base16,
         writer: writer,
-        outbuf: [mut 0, ..1024]
+        outbuf: [mut 0, ..1024],
     }
 }
 

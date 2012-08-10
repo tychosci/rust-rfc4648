@@ -233,7 +233,7 @@ fn Base64Writer(base64: &Base64, writer: &io::writer) -> Base64Writer {
         writer: writer,
         outbuf: [mut 0, ..1024],
         buf: [mut 0, ..3],
-        nbuf: 0
+        nbuf: 0,
     }
 }
 
