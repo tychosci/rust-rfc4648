@@ -392,33 +392,28 @@ fn b32encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
 }
 
 fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
-    let buf = [mut 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8];
-    let mut src_length = src.len();
-    let mut src_curr = 0u;
-    let mut dst_curr = 0u;
-    let mut buf_len = 8u;
+    let mut ndecoded = 0u;
+    let mut dst = vec::mut_view(dst, 0, dst.len());
+    let mut src = vec::view(src, 0, src.len());
     let mut end = false;
 
-    while src_length > 0 && !end {
-        buf[0] = 0xff; buf[1] = 0xff;
-        buf[2] = 0xff; buf[3] = 0xff;
-        buf[4] = 0xff; buf[5] = 0xff;
-        buf[6] = 0xff; buf[7] = 0xff;
+    while src.len() > 0 && !end {
+        let buf = [mut 0xff_u8, ..8];
+        let mut buf_len = 8u;
 
         let mut i = 0u;
         while i < 8 {
-            if src_length == 0 {
+            if src.len() == 0 {
                 abort!("malformed base32 string");
             }
-            let chr = src[src_curr];
-            src_curr += 1;
-            src_length -= 1;
+            let chr = src[0];
+            src = vec::view(src, 1, src.len());
             if char::is_whitespace(chr as char) {
                 again;
             }
-            if chr == PAD && i >= 2 && src_length < 8 {
+            if chr == PAD && i >= 2 && src.len() < 8 {
                 for uint::range(0, (8-i-1)) |j| {
-                    if src_length > j && src[src_curr + j] != PAD {
+                    if src.len() > j && src[j] != PAD {
                         abort!("malformed base32 string");
                     }
                 }
@@ -435,30 +430,31 @@ fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
 
         switch! { buf_len =>
         default:   { abort!("malformed base32 string") }
-        case 7, 8: { dst[dst_curr+4] |= buf[6]<<5 | buf[7]
-                   ; dst[dst_curr+3] |= buf[6]>>3 }
-        case 5, 6: { dst[dst_curr+3] |= buf[4]<<7 | buf[5]<<2
-                   ; dst[dst_curr+2] |= buf[4]>>1 }
-        case 4:    { dst[dst_curr+2] |= buf[3]<<4
-                   ; dst[dst_curr+1] |= buf[3]>>4 }
-        case 3:    { dst[dst_curr+1] |= buf[1]<<6 | buf[2]<<1 }
-        case 2:    { dst[dst_curr+0] |= buf[0]<<3 | buf[1]>>2 }
+        case 7, 8: { dst[4] |= buf[6]<<5 | buf[7]
+                   ; dst[3] |= buf[6]>>3 }
+        case 5, 6: { dst[3] |= buf[4]<<7 | buf[5]<<2
+                   ; dst[2] |= buf[4]>>1 }
+        case 4:    { dst[2] |= buf[3]<<4
+                   ; dst[1] |= buf[3]>>4 }
+        case 3:    { dst[1] |= buf[1]<<6 | buf[2]<<1 }
+        case 2:    { dst[0] |= buf[0]<<3 | buf[1]>>2 }
         };
 
+        dst = vec::mut_view(dst, 5, dst.len());
         match buf_len {
-            2     => dst_curr += 1,
-            3 | 4 => dst_curr += 2,
-            5     => dst_curr += 3,
-            6 | 7 => dst_curr += 4,
-            8     => dst_curr += 5,
+            2     => ndecoded += 1,
+            3 | 4 => ndecoded += 2,
+            5     => ndecoded += 3,
+            6 | 7 => ndecoded += 4,
+            8     => ndecoded += 5,
             _     => abort!("malformed base32 string")
         }
     }
 
     if end {
-        End(dst_curr)
+        End(ndecoded)
     } else {
-        Continue(dst_curr)
+        Continue(ndecoded)
     }
 }
 

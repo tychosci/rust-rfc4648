@@ -381,30 +381,27 @@ fn b64encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
 }
 
 fn b64decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
-    let buf = [mut 0u8, 0u8, 0u8, 0u8];
-    let mut src_length = src.len();
-    let mut src_curr = 0u;
-    let mut dst_curr = 0u;
-    let mut buf_len = 4u;
+    let mut ndecoded = 0u;
+    let mut dst = vec::mut_view(dst, 0, dst.len());
+    let mut src = vec::view(src, 0, src.len());
     let mut end = false;
 
-    while src_length > 0 && !end {
-        buf[0] = 0xff; buf[1] = 0xff;
-        buf[2] = 0xff; buf[3] = 0xff;
+    while src.len() > 0 && !end {
+        let buf = [mut 0xff_u8, ..4];
+        let mut buf_len = 4u;
 
         let mut i = 0u;
         while i < 4 {
-            if src_length == 0 {
+            if src.len() == 0 {
                 abort!("malformed base64 string");
             }
-            let chr = src[src_curr];
-            src_curr += 1;
-            src_length -= 1;
+            let chr = src[0];
+            src = vec::view(src, 1, src.len());
             if char::is_whitespace(chr as char) {
                 again;
             }
-            if chr == PAD && i >= 2 && src_length < 4 {
-                if src_length > 0 && src[src_curr] != PAD {
+            if chr == PAD && i >= 2 && src.len() < 4 {
+                if src.len() > 0 && src[0] != PAD {
                     abort!("malformed base64 string");
                 }
                 buf_len = i;
@@ -419,18 +416,19 @@ fn b64decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
         }
 
         switch! { buf_len =>
-        default: { dst[dst_curr+2] = buf[2]<<6 | buf[3] }
-        case 03: { dst[dst_curr+1] = buf[1]<<4 | buf[2]>>2 }
-        case 02: { dst[dst_curr+0] = buf[0]<<2 | buf[1]>>4 }
+        default: { dst[2] = buf[2]<<6 | buf[3] }
+        case 03: { dst[1] = buf[1]<<4 | buf[2]>>2 }
+        case 02: { dst[0] = buf[0]<<2 | buf[1]>>4 }
         };
 
-        dst_curr += buf_len - 1;
+        dst = vec::mut_view(dst, 3, dst.len());
+        ndecoded += buf_len - 1;
     }
 
     if end {
-        End(dst_curr)
+        End(ndecoded)
     } else {
-        Continue(dst_curr)
+        Continue(ndecoded)
     }
 }
 
