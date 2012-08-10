@@ -11,6 +11,15 @@ enum DecodeResult {
     End(uint),      // Decode method have encountered paddings
 }
 
+impl DecodeResult {
+    fn get() -> uint {
+        match self {
+            Continue(n) => n,
+            End(n)      => n
+        }
+    }
+}
+
 trait Encode {
     fn encode(dst: &[mut u8], src: &[u8]);
     fn encoded_len(src_length: uint) -> uint;
