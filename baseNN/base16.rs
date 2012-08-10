@@ -7,10 +7,10 @@
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  * use encoding;
- * import encoding::Codec;
+ * import encoding::Base16;
  *
  * let src = "base16";
- * let res = src.encode(encoding::Base16);
+ * let res = src.to_base16();
  * let res = str::from_bytes(res);
  *
  * io::println(fmt!("%s", res));

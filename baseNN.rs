@@ -1,13 +1,5 @@
 // baseNN.rs
 
-enum Encoding {
-    Base16,
-    Base32,
-    Base64,
-    Base32Hex,
-    Base64Urlsafe,
-}
-
 enum DecodeResult {
     Continue(uint), // Decode method have not encountered paddings yet
     End(uint),      // Decode method have encountered paddings
@@ -34,42 +26,112 @@ trait Decode {
     fn decode_bytes(src: &[u8]) -> ~[u8];
 }
 
-trait Codec {
-    fn encode(e: Encoding) -> ~[u8];
-    fn decode(e: Encoding) -> ~[u8];
+trait Base64 {
+    fn from_base64() -> ~[u8];
+    fn to_base64() -> ~[u8];
+    fn from_base64_url() -> ~[u8];
+    fn to_base64_url() -> ~[u8];
+}
+
+trait Base32 {
+    fn from_base32() -> ~[u8];
+    fn to_base32() -> ~[u8];
+    fn from_base32_hex() -> ~[u8];
+    fn to_base32_hex() -> ~[u8];
+}
+
+trait Base16 {
+    fn from_base16() -> ~[u8];
+    fn to_base16() -> ~[u8];
 }
 
 type Buffer = &[u8];
 type String = &str;
 
-impl Buffer : Codec {
-    fn encode(e: Encoding) -> ~[u8] {
-        match e {
-            Base16        => base16::encode(self),
-            Base32        => base32::encode(self),
-            Base64        => base64::encode(self),
-            Base32Hex     => base32::hex_encode(self),
-            Base64Urlsafe => base64::urlsafe_encode(self)
-        }
+impl Buffer : Base64 {
+    fn from_base64() -> ~[u8] {
+        base64::decode(self)
     }
-    fn decode(e: Encoding) -> ~[u8] {
-        match e {
-            Base16        => base16::decode(self),
-            Base32        => base32::decode(self),
-            Base64        => base64::decode(self),
-            Base32Hex     => base32::hex_decode(self),
-            Base64Urlsafe => base64::urlsafe_decode(self)
-        }
+    fn to_base64() -> ~[u8] {
+        base64::encode(self)
+    }
+    fn from_base64_url() -> ~[u8] {
+        base64::urlsafe_decode(self)
+    }
+    fn to_base64_url() -> ~[u8] {
+        base64::urlsafe_encode(self)
     }
 }
 
-impl String : Codec {
-    fn encode(e: Encoding) -> ~[u8] {
-        let bytes = str::bytes(self);
-        bytes.encode(e)
+impl Buffer : Base32 {
+    fn from_base32() -> ~[u8] {
+        base32::decode(self)
     }
-    fn decode(e: Encoding) -> ~[u8] {
+    fn to_base32() -> ~[u8] {
+        base32::encode(self)
+    }
+    fn from_base32_hex() -> ~[u8] {
+        base32::hex_decode(self)
+    }
+    fn to_base32_hex() -> ~[u8] {
+        base32::hex_encode(self)
+    }
+}
+
+impl Buffer : Base16 {
+    fn from_base16() -> ~[u8] {
+        base16::decode(self)
+    }
+    fn to_base16() -> ~[u8] {
+        base16::encode(self)
+    }
+}
+
+impl String : Base64 {
+    fn from_base64() -> ~[u8] {
         let bytes = str::bytes(self);
-        bytes.decode(e)
+        bytes.from_base64()
+    }
+    fn to_base64() -> ~[u8] {
+        let bytes = str::bytes(self);
+        bytes.to_base64()
+    }
+    fn from_base64_url() -> ~[u8] {
+        let bytes = str::bytes(self);
+        bytes.from_base64_url()
+    }
+    fn to_base64_url() -> ~[u8] {
+        let bytes = str::bytes(self);
+        bytes.to_base64_url()
+    }
+}
+
+impl String : Base32 {
+    fn from_base32() -> ~[u8] {
+        let bytes = str::bytes(self);
+        bytes.from_base32()
+    }
+    fn to_base32() -> ~[u8] {
+        let bytes = str::bytes(self);
+        bytes.to_base32()
+    }
+    fn from_base32_hex() -> ~[u8] {
+        let bytes = str::bytes(self);
+        bytes.from_base32_hex()
+    }
+    fn to_base32_hex() -> ~[u8] {
+        let bytes = str::bytes(self);
+        bytes.to_base32_hex()
+    }
+}
+
+impl String : Base16 {
+    fn from_base16() -> ~[u8] {
+        let bytes = str::bytes(self);
+        bytes.from_base16()
+    }
+    fn to_base16() -> ~[u8] {
+        let bytes = str::bytes(self);
+        bytes.to_base16()
     }
 }

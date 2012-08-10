@@ -7,10 +7,10 @@
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  * use encoding;
- * import encoding::Codec;
+ * import encoding::Base64;
  *
  * let src = "base64";
- * let res = src.encode(encoding::Base64);
+ * let res = src.to_base64();
  * let res = str::from_bytes(res);
  *
  * io::println(fmt!("%s", res));

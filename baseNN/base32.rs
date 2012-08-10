@@ -7,10 +7,10 @@
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  * use encoding;
- * import encoding::Codec;
+ * import encoding::Base32;
  *
  * let src = "base32";
- * let res = src.encode(encoding::Base32);
+ * let res = src.to_base32();
  * let res = str::from_bytes(res);
  *
  * io::println(fmt!("%s", res));
