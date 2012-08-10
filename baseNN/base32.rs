@@ -17,7 +17,7 @@
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-export BASE32_STD, BASE32_HEX, Base32Writer;
+export BASE32_STD, BASE32_HEX, Base32Writer, Base32Reader;
 export encode, hex_encode, decode, hex_decode;
 
 macro_rules! abort {

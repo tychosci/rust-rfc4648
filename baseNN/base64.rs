@@ -17,7 +17,7 @@
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-export BASE64_STD, BASE64_URL, Base64Writer;
+export BASE64_STD, BASE64_URL, Base64Writer, Base64Reader;
 export encode, urlsafe_encode, decode, urlsafe_decode;
 
 macro_rules! abort {
