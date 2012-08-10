@@ -20,6 +20,10 @@
 export BASE32_STD, BASE32_HEX, Base32Writer;
 export encode, hex_encode, decode, hex_decode;
 
+macro_rules! abort {
+    { $s:expr } => { fail str::from_slice($s) }
+}
+
 const PAD: u8 = 61u8;
 
 // ABCDEFGHIJKLMNOPQRSTUVWXYZ234567
@@ -125,7 +129,7 @@ impl Base32 : Encode {
 }
 
 impl Base32 : Decode {
-    fn decode(dst: &[mut u8], src: &[u8]) -> uint {
+    fn decode(dst: &[mut u8], src: &[u8]) -> DecodeResult {
         b32decode(self.decode_map, dst, src)
     }
     fn decoded_len(src_length: uint) -> uint {
@@ -146,8 +150,11 @@ impl Base32 : Decode {
     fn decode_bytes(src: &[u8]) -> ~[u8] {
         let dst_length = self.decoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
-        let end = self.decode(dst, src);
-        vec::slice(vec::from_mut(dst), 0u, end)
+        let res = self.decode(dst, src);
+        match res {
+            Continue(n) => vec::slice(vec::from_mut(dst), 0u, n),
+            End(n)      => vec::slice(vec::from_mut(dst), 0u, n)
+        }
     }
 }
 
@@ -286,12 +293,14 @@ impl Base32Writer {
 struct Base32Reader {
     base32: &Base32;
     reader: &io::reader;
+    mut end: bool;
 }
 
 fn Base32Reader(base32: &Base32, reader: &io::reader) -> Base32Reader {
     Base32Reader {
         base32: base32,
         reader: reader,
+        end: false,
     }
 }
 
@@ -304,9 +313,7 @@ impl Base32Reader {
         // FIXME write
         return ~[];
     }
-    fn eof() -> bool {
-        self.reader.eof()
-    }
+    fn eof() -> bool { self.end || self.reader.eof() }
 }
 
 macro_rules! switch {
@@ -318,10 +325,6 @@ macro_rules! switch {
         $(if $($v < $name)&&+ { $blk })+
         $(if $($v == $name)||+ { $blk } else)+ { $default }
     }
-}
-
-macro_rules! abort {
-    { $s:expr } => { fail str::from_slice($s) }
 }
 
 fn b32encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
@@ -388,7 +391,7 @@ fn b32encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     }
 }
 
-fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
+fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
     let buf = [mut 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8];
     let mut src_length = src.len();
     let mut src_curr = 0u;
@@ -452,7 +455,11 @@ fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
         }
     }
 
-    dst_curr
+    if end {
+        End(dst_curr)
+    } else {
+        Continue(dst_curr)
+    }
 }
 
 #[cfg(test)]

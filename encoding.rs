@@ -6,6 +6,11 @@ enum Encoding {
     Base64Urlsafe,
 }
 
+enum DecodeResult {
+    Continue(uint), // Decode method have not encountered paddings yet
+    End(uint),      // Decode method have encountered paddings
+}
+
 trait Encode {
     fn encode(dst: &[mut u8], src: &[u8]);
     fn encoded_len(src_length: uint) -> uint;
@@ -13,7 +18,7 @@ trait Encode {
 }
 
 trait Decode {
-    fn decode(dst: &[mut u8], src: &[u8]) -> uint;
+    fn decode(dst: &[mut u8], src: &[u8]) -> DecodeResult;
     fn decoded_len(src_length: uint) -> uint;
     fn decode_bytes(src: &[u8]) -> ~[u8];
 }

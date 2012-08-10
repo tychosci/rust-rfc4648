@@ -20,6 +20,10 @@
 export BASE16, Base16Writer;
 export encode, decode;
 
+macro_rules! abort {
+    { $s:expr } => { fail str::from_slice($s) }
+}
+
 // 0123456789ABCDEF
 const TABLE: [u8]/16 = [
     48, 49, 50, 51, 52, 53, 54, 55,
@@ -88,7 +92,7 @@ impl Base16 : Encode {
 }
 
 impl Base16 : Decode {
-    fn decode(dst: &[mut u8], src: &[u8]) -> uint {
+    fn decode(dst: &[mut u8], src: &[u8]) -> DecodeResult {
         b16decode(self.decode_map, dst, src)
     }
     fn decoded_len(src_length: uint) -> uint {
@@ -109,8 +113,11 @@ impl Base16 : Decode {
     fn decode_bytes(src: &[u8]) -> ~[u8] {
         let dst_len = self.decoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_len, 0u8));
-        let end = self.decode(dst, src);
-        vec::slice(vec::from_mut(dst), 0u, end)
+        let res = self.decode(dst, src);
+        match res {
+            Continue(n) => vec::slice(vec::from_mut(dst), 0u, n),
+            End(_)      => abort!("unexpected condition")
+        }
     }
 }
 
@@ -177,10 +184,6 @@ impl Base16Writer {
     }
 }
 
-macro_rules! abort {
-    { $s:expr } => { fail str::from_slice($s) }
-}
-
 fn b16encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     for uint::range(0, src.len()) |j| {
         dst[j+1*j]     = table[src[j]>>4];
@@ -188,7 +191,7 @@ fn b16encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     }
 }
 
-fn b16decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
+fn b16decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
     let mut src_length = src.len();
     let mut i = 0u;
     let mut j = 0u;
@@ -212,7 +215,7 @@ fn b16decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> uint {
         j += 1;
     }
 
-    j
+    Continue(j)
 }
 
 #[cfg(test)]
