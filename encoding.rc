@@ -11,8 +11,8 @@
 
 use std;
 
-module baseNN {
-    module base16;
-    module base32;
-    module base64;
+mod baseNN {
+    mod base16;
+    mod base32;
+    mod base64;
 }

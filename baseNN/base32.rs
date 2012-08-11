@@ -456,7 +456,7 @@ fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
 }
 
 #[cfg(test)]
-module tests {
+mod tests {
     #[test]
     fn test_encode() {
         let source = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
