@@ -1,6 +1,6 @@
 // encoding.rs
 
-// import items in baseNN.rs
+// import traits in baseNN.rs
 import Base16         = baseNN::Base16;
 import Base32         = baseNN::Base32;
 import Base64         = baseNN::Base64;
