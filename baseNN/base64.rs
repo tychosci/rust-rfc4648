@@ -320,8 +320,54 @@ fn Base64Reader(base64: &Base64, reader: &io::reader) -> Base64Reader {
 
 impl Base64Reader {
     fn read(p: &[mut u8], len: uint) -> uint {
-        // FIXME write
-        return 0;
+        // use leftover output (decoded bytes) if it exists
+        if self.noutbuf > 0 {
+            vec::u8::memcpy(p, self.outbuf, self.noutbuf);
+
+            let n = if len > self.noutbuf { self.noutbuf } else { len };
+            self.noutbuf -= n;
+
+            return n;
+        }
+        // calculate least required # of bytes to read
+        let nn = len / 3 * 4;
+        let nn = if nn < 4 { 4 } else { nn };
+        let nn = if nn > self.buf.len() { self.buf.len() } else { nn };
+
+        let buf = vec::mut_view(self.buf, self.nbuf, nn);
+        let nn  = self.reader.read(buf, buf.len());
+
+        self.nbuf += nn;
+        if self.nbuf < 4 {
+            abort!("malformed base64 input");
+        }
+
+        let nr = self.nbuf / 4 * 4; // total read bytes (except fringe bytes)
+        let nw = self.nbuf / 4 * 3; // size of decoded bytes
+
+        let buf = vec::view(self.buf, 0, nr);
+        let nencoded = if nw > len {
+            let (end, n) = self.base64.decode(self.outbuf, buf);
+            // copy self.outbuf[0:len] to p
+            vec::u8::memcpy(p, self.outbuf, len);
+            // shift unreaded bytes to head
+            for uint::range(0, n - len) |i| {
+                self.outbuf[i] = self.outbuf[i+len];
+            }
+            self.end = end;
+            len
+        } else {
+            let (end, n) = self.base64.decode(p, buf);
+            self.end = end;
+            n
+        };
+        self.nbuf -= nr;
+        // shift undecoded bytes to head
+        for uint::range(0, self.nbuf) |i| {
+            self.buf[i] = self.buf[i+nr];
+        }
+
+        return nencoded;
     }
     fn read_bytes(len: uint) -> ~[u8] {
         let mut buf = ~[mut];
