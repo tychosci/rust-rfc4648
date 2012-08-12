@@ -345,7 +345,9 @@ impl Base64Reader {
         let nr = self.nbuf / 4 * 4; // total read bytes (except fringe bytes)
         let nw = self.nbuf / 4 * 3; // size of decoded bytes
 
-        let buf = vec::view(self.buf, 0, nr);
+        // FIXME this copy is unfortunate
+        let buf = vec::slice(self.buf, 0, nr);
+
         let nencoded = if nw > len {
             let res = self.base64.decode(self.outbuf, buf);
             // copy self.outbuf[0:len] to p
@@ -550,7 +552,7 @@ mod tests {
 
         assert expect == actual;
     }
-    // #[test]
+    #[test]
     fn test_base64_reader() {
         let source = str::bytes("Zm9vYmFy");
         let expect = str::bytes("foobar");
