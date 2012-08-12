@@ -1,18 +1,8 @@
 // baseNN.rs
 
-enum DecodeResult {
-    Continue(uint), // Decode method have not encountered paddings yet
-    End(uint),      // Decode method have encountered paddings
-}
-
-impl DecodeResult {
-    fn get() -> uint {
-        match self {
-            Continue(n) => n,
-            End(n)      => n
-        }
-    }
-}
+// first parameter of this type indicates whether
+// the Decode method have encountered paddings or not.
+type DecodeResult = (bool, uint);
 
 trait Encode {
     fn encode(dst: &[mut u8], src: &[u8]);

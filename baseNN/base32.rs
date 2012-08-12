@@ -150,8 +150,8 @@ impl Base32 : Decode {
     fn decode_bytes(src: &[u8]) -> ~[u8] {
         let dst_length = self.decoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
-        let end = self.decode(dst, src).get();
-        vec::slice(vec::from_mut(dst), 0u, end)
+        let (_, n) = self.decode(dst, src);
+        vec::slice(vec::from_mut(dst), 0u, n)
     }
 }
 
@@ -306,11 +306,21 @@ impl Base32Reader {
         // FIXME write
         return 0;
     }
-    fn read_bytes(_nbytes: uint) -> ~[u8] {
-        // FIXME write
-        return ~[];
+    fn read_bytes(len: uint) -> ~[u8] {
+        let mut buf = ~[mut];
+
+        vec::reserve(buf, len);
+        unsafe { vec::unsafe::set_len(buf, len); }
+
+        let nread = self.read(buf, len);
+
+        unsafe { vec::unsafe::set_len(buf, nread); }
+
+        vec::from_mut(buf)
     }
-    fn eof() -> bool { self.end || self.reader.eof() }
+    fn eof() -> bool {
+        self.end || self.reader.eof()
+    }
 }
 
 macro_rules! switch {
@@ -448,11 +458,7 @@ fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
         }
     }
 
-    if end {
-        End(ndecoded)
-    } else {
-        Continue(ndecoded)
-    }
+    (end, ndecoded)
 }
 
 #[cfg(test)]
@@ -511,6 +517,7 @@ mod tests {
         let source1 = str::bytes("f");
         let source2 = str::bytes("ooba");
         let expect  = str::bytes("MZXW6YTB");
+
         let actual  = io::with_buf_writer(|writer| {
             let writer = Base32Writer(BASE32_STD, &writer);
             writer.write(source1);
@@ -524,6 +531,7 @@ mod tests {
     fn test_base32_reader() {
         let source = str::bytes("MZXW6YTB");
         let expect = str::bytes("fooba");
+
         let actual = io::with_bytes_reader(source, |reader| {
             let reader = Base32Reader(BASE32_STD, &reader);
 

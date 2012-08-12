@@ -158,8 +158,8 @@ impl Base64 : Decode {
     fn decode_bytes(src: &[u8]) -> ~[u8] {
         let dst_length = self.decoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
-        let end = self.decode(dst, src).get();
-        vec::slice(vec::from_mut(dst), 0u, end)
+        let (_, n) = self.decode(dst, src);
+        vec::slice(vec::from_mut(dst), 0u, n)
     }
 }
 
@@ -299,6 +299,10 @@ impl Base64Writer {
 struct Base64Reader {
     base64: &Base64;
     reader: &io::reader;
+    buf: [mut u8]/1024;
+    outbuf: [mut u8]/768;
+    mut nbuf: uint;
+    mut noutbuf: uint;
     mut end: bool;
 }
 
@@ -306,20 +310,34 @@ fn Base64Reader(base64: &Base64, reader: &io::reader) -> Base64Reader {
     Base64Reader {
         base64: base64,
         reader: reader,
+        buf: [mut 0, ..1024],
+        outbuf: [mut 0, ..768],
+        nbuf: 0,
+        noutbuf: 0,
         end: false,
     }
 }
 
 impl Base64Reader {
-    fn read(buf: &[mut u8], len: uint) -> uint {
+    fn read(p: &[mut u8], len: uint) -> uint {
         // FIXME write
         return 0;
     }
-    fn read_bytes(_nbytes: uint) -> ~[u8] {
-        // FIXME write
-        return ~[];
+    fn read_bytes(len: uint) -> ~[u8] {
+        let mut buf = ~[mut];
+
+        vec::reserve(buf, len);
+        unsafe { vec::unsafe::set_len(buf, len); }
+
+        let nread = self.read(buf, len);
+
+        unsafe { vec::unsafe::set_len(buf, nread); }
+
+        vec::from_mut(buf)
     }
-    fn eof() -> bool { self.end || self.reader.eof() }
+    fn eof() -> bool {
+        self.end || self.reader.eof()
+    }
 }
 
 macro_rules! switch {
@@ -422,11 +440,7 @@ fn b64decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
         ndecoded += buf_len - 1;
     }
 
-    if end {
-        End(ndecoded)
-    } else {
-        Continue(ndecoded)
-    }
+    (end, ndecoded)
 }
 
 #[cfg(test)]
@@ -480,6 +494,7 @@ mod tests {
         let source1 = str::bytes("f");
         let source2 = str::bytes("oobar");
         let expect  = str::bytes("Zm9vYmFy");
+
         let actual  = io::with_buf_writer(|writer| {
             let writer = Base64Writer(BASE64_STD, &writer);
             writer.write(source1);
@@ -493,6 +508,7 @@ mod tests {
     fn test_base64_reader() {
         let source = str::bytes("Zm9vYmFy");
         let expect = str::bytes("foobar");
+
         let actual = io::with_bytes_reader(source, |reader| {
             let reader = Base64Reader(BASE64_STD, &reader);
 
