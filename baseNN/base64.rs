@@ -322,10 +322,14 @@ impl Base64Reader {
     fn read(p: &[mut u8], len: uint) -> uint {
         // use leftover output (decoded bytes) if it exists
         if self.noutbuf > 0 {
-            vec::u8::memcpy(p, self.outbuf, self.noutbuf);
+            vec::u8::memcpy(p, self.outbuf, len);
 
             let n = if len > self.noutbuf { self.noutbuf } else { len };
             self.noutbuf -= n;
+            // shift unreaded bytes to head
+            for uint::range(0, self.noutbuf) |i| {
+                self.outbuf[i] = self.outbuf[i+n];
+            }
 
             return n;
         }
@@ -356,6 +360,7 @@ impl Base64Reader {
             for uint::range(0, res.ndecoded - len) |i| {
                 self.outbuf[i] = self.outbuf[i+len];
             }
+            self.noutbuf = res.ndecoded - len;
             self.end = res.end;
             len
         } else {
@@ -384,7 +389,7 @@ impl Base64Reader {
         vec::from_mut(buf)
     }
     fn eof() -> bool {
-        self.end || self.reader.eof()
+        self.noutbuf == 0 && (self.end || self.reader.eof())
     }
 }
 
@@ -554,17 +559,21 @@ mod tests {
     }
     #[test]
     fn test_base64_reader() {
-        let source = str::bytes("Zm9vYmFy");
-        let expect = str::bytes("foobar");
+        let source = ["Zg==", "Zm8=", "Zm8+", "Zm9vYg==", "Zm9vYmE=", "Zm8/YmE/"];
+        let expect = ["f", "fo", "fo>", "foob", "fooba", "fo?ba?"];
+        let source = source.map(|e| str::bytes(e));
+        let expect = expect.map(|e| str::bytes(e));
 
-        let actual = io::with_bytes_reader(source, |reader| {
-            let reader = Base64Reader(BASE64_STD, &reader);
+        let actual = source.map(|e| {
+            io::with_bytes_reader(e, |reader| {
+                let reader = Base64Reader(BASE64_STD, &reader);
 
-            io::with_buf_writer(|writer| {
-                while !reader.eof() {
-                    let buf = reader.read_bytes(1024);
-                    writer.write(buf);
-                }
+                io::with_buf_writer(|writer| {
+                    while !reader.eof() {
+                        let buf = reader.read_bytes(1);
+                        writer.write(buf);
+                    }
+                })
             })
         });
 
