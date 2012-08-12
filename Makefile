@@ -15,6 +15,9 @@ libencoding: encoding.rc $(SOURCES)
 b64: libencoding
 	rustc -O $(E)/b64.rs -L $(LIBDIR) -o $(BINDIR)/$@
 
+b64-stream: libencoding
+	rustc -O $(E)/b64-stream.rs -L $(LIBDIR) -o $(BINDIR)/$@
+
 setup-test:
 	mkdir -p $(TESTDIR)
 
