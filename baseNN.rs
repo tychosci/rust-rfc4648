@@ -1,8 +1,10 @@
 // baseNN.rs
 
-// first parameter of this type indicates whether
-// the Decode method have encountered paddings or not.
-type DecodeResult = (bool, uint);
+// `end` indicates whether the Decode method have encountered paddings or not.
+struct DecodeResult {
+    end: bool;
+    ndecoded: uint;
+}
 
 trait Encode {
     fn encode(dst: &[mut u8], src: &[u8]);

@@ -113,8 +113,8 @@ impl Base16 : Decode {
     fn decode_bytes(src: &[u8]) -> ~[u8] {
         let dst_len = self.decoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_len, 0u8));
-        let (_, n) = self.decode(dst, src);
-        vec::slice(vec::from_mut(dst), 0u, n)
+        let res = self.decode(dst, src);
+        vec::slice(vec::from_mut(dst), 0u, res.ndecoded)
     }
 }
 
@@ -212,7 +212,7 @@ fn b16decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
         j += 1;
     }
 
-    (false, j)
+    DecodeResult { end: false, ndecoded: j }
 }
 
 #[cfg(test)]

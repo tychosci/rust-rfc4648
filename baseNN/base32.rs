@@ -150,8 +150,8 @@ impl Base32 : Decode {
     fn decode_bytes(src: &[u8]) -> ~[u8] {
         let dst_length = self.decoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
-        let (_, n) = self.decode(dst, src);
-        vec::slice(vec::from_mut(dst), 0u, n)
+        let res = self.decode(dst, src);
+        vec::slice(vec::from_mut(dst), 0u, res.ndecoded)
     }
 }
 
@@ -458,7 +458,7 @@ fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
         }
     }
 
-    (end, ndecoded)
+    DecodeResult { end: end, ndecoded: ndecoded }
 }
 
 #[cfg(test)]

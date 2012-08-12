@@ -158,8 +158,8 @@ impl Base64 : Decode {
     fn decode_bytes(src: &[u8]) -> ~[u8] {
         let dst_length = self.decoded_len(src.len());
         let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
-        let (_, n) = self.decode(dst, src);
-        vec::slice(vec::from_mut(dst), 0u, n)
+        let res = self.decode(dst, src);
+        vec::slice(vec::from_mut(dst), 0u, res.ndecoded)
     }
 }
 
@@ -347,19 +347,19 @@ impl Base64Reader {
 
         let buf = vec::view(self.buf, 0, nr);
         let nencoded = if nw > len {
-            let (end, n) = self.base64.decode(self.outbuf, buf);
+            let res = self.base64.decode(self.outbuf, buf);
             // copy self.outbuf[0:len] to p
             vec::u8::memcpy(p, self.outbuf, len);
             // shift unreaded bytes to head
-            for uint::range(0, n - len) |i| {
+            for uint::range(0, res.ndecoded - len) |i| {
                 self.outbuf[i] = self.outbuf[i+len];
             }
-            self.end = end;
+            self.end = res.end;
             len
         } else {
-            let (end, n) = self.base64.decode(p, buf);
-            self.end = end;
-            n
+            let res = self.base64.decode(p, buf);
+            self.end = res.end;
+            res.ndecoded
         };
         self.nbuf -= nr;
         // shift undecoded bytes to head
@@ -486,7 +486,7 @@ fn b64decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
         ndecoded += buf_len - 1;
     }
 
-    (end, ndecoded)
+    DecodeResult { end: end, ndecoded: ndecoded }
 }
 
 #[cfg(test)]
