@@ -352,7 +352,7 @@ impl Base64Reader {
         // FIXME this copy is unfortunate
         let buf = vec::slice(self.buf, 0, nr);
 
-        let nencoded = if nw > len {
+        let ndecoded = if nw > len {
             let res = self.base64.decode(self.outbuf, buf);
             // copy self.outbuf[0:len] to p
             vec::u8::memcpy(p, self.outbuf, len);
@@ -374,7 +374,7 @@ impl Base64Reader {
             self.buf[i] = self.buf[i+nr];
         }
 
-        return nencoded;
+        return ndecoded;
     }
     fn read_bytes(len: uint) -> ~[u8] {
         let mut buf = ~[mut];

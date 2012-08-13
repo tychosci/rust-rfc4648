@@ -181,6 +181,99 @@ impl Base16Writer {
     }
 }
 
+struct Base16Reader {
+    base16: &Base16;
+    reader: &io::reader;
+    buf: [mut u8]/1024;
+    outbuf: [mut u8]/512;
+    mut nbuf: uint;
+    mut noutbuf: uint;
+}
+
+fn Base16Reader(base16: &Base16, reader: &io::reader) -> Base16Reader {
+    Base16Reader {
+        base16: base16,
+        reader: reader,
+        buf: [mut 0, ..1024],
+        outbuf: [mut 0, ..512],
+        nbuf: 0,
+        noutbuf: 0,
+    }
+}
+
+impl Base16Reader {
+    fn read(p: &[mut u8], len: uint) -> uint {
+        // use leftover output (decoded bytes) if it exists
+        if self.noutbuf > 0 {
+            vec::u8::memcpy(p, self.outbuf, len);
+
+            let n = if len > self.noutbuf { self.noutbuf } else { len };
+            self.noutbuf -= n;
+            // shift unread bytes to head
+            for uint::range(0, self.noutbuf) |i| {
+                self.outbuf[i] = self.outbuf[i+n];
+            }
+
+            return n;
+        }
+        // calculate least required # of bytes to read
+        let nn = len * 2;
+        let nn = if nn < 2 { 2 } else { nn };
+        let nn = if nn > self.buf.len() { self.buf.len() } else { nn };
+
+        let buf = vec::mut_view(self.buf, self.nbuf, nn);
+        let nn  = self.reader.read(buf, buf.len());
+
+        self.nbuf += nn;
+        if self.nbuf < 2 {
+            abort!("malformed base64 input");
+        }
+
+        let nr = self.nbuf / 2 * 2; // total read bytes (except fringe bytes)
+        let nw = self.nbuf / 2;     // size of decoded bytes
+
+        // FIXME this copy is unfortunate
+        let buf = vec::slice(self.buf, 0, nr);
+
+        let ndecoded = if nw > len {
+            let res = self.base16.decode(self.outbuf, buf);
+            // copy self.outbuf[0:len] to p
+            vec::u8::memcpy(p, self.outbuf, len);
+            // shift unread bytes to head
+            for uint::range(0, res.ndecoded - len) |i| {
+                self.outbuf[i] = self.outbuf[i+len];
+            }
+            self.noutbuf = res.ndecoded - len;
+            len
+        } else {
+            let res = self.base16.decode(p, buf);
+            res.ndecoded
+        };
+        self.nbuf -= nr;
+        // shift undecoded bytes to head
+        for uint::range(0, self.nbuf) |i| {
+            self.buf[i] = self.buf[i+nr];
+        }
+
+        return ndecoded;
+    }
+    fn read_bytes(len: uint) -> ~[u8] {
+        let mut buf = ~[mut];
+
+        vec::reserve(buf, len);
+        unsafe { vec::unsafe::set_len(buf, len); }
+
+        let nread = self.read(buf, len);
+
+        unsafe { vec::unsafe::set_len(buf, nread); }
+
+        vec::from_mut(buf)
+    }
+    fn eof() -> bool {
+        self.noutbuf == 0 && self.reader.eof()
+    }
+}
+
 fn b16encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     for uint::range(0, src.len()) |j| {
         dst[j+1*j]     = table[src[j]>>4];
@@ -221,14 +314,18 @@ mod tests {
     fn test_encode() {
         let source = str::bytes("foo");
         let expect = str::bytes("666F6F");
+
         let actual = encode(source);
+
         assert expect == actual;
     }
     #[test]
     fn test_decode() {
         let source = str::bytes("\t66 6f\r\n 6f");
         let expect = str::bytes("foo");
+
         let actual = decode(source);
+
         assert expect == actual;
     }
     #[test]
@@ -236,10 +333,29 @@ mod tests {
         let source1 = str::bytes("fo");
         let source2 = str::bytes("o");
         let expect  = str::bytes("666F6F");
+
         let actual  = io::with_buf_writer(|writer| {
             let writer = Base16Writer(BASE16, &writer);
             writer.write(source1);
             writer.write(source2);
+        });
+
+        assert expect == actual;
+    }
+    #[test]
+    fn test_base16_reader() {
+        let source = str::bytes("666f6f");
+        let expect = str::bytes("foo");
+
+        let actual = io::with_bytes_reader(source, |reader| {
+            let reader = Base16Reader(BASE16, &reader);
+
+            io::with_buf_writer(|writer| {
+                while !reader.eof() {
+                    let buf = reader.read_bytes(1);
+                    writer.write(buf);
+                }
+            })
         });
 
         assert expect == actual;
