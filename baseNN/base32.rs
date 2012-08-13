@@ -310,9 +310,62 @@ fn Base32Reader(base32: &Base32, reader: &io::reader) -> Base32Reader {
 }
 
 impl Base32Reader {
-    fn read(buf: &[mut u8], len: uint) -> uint {
-        // FIXME write
-        return 0;
+    fn read(p: &[mut u8], len: uint) -> uint {
+        // use leftover output (decoded bytes) if it exists
+        if self.noutbuf > 0 {
+            vec::u8::memcpy(p, self.outbuf, len);
+
+            let n = if len > self.noutbuf { self.noutbuf } else { len };
+            self.noutbuf -= n;
+            // shift unread bytes to head
+            for uint::range(0, self.noutbuf) |i| {
+                self.outbuf[i] = self.outbuf[i+n];
+            }
+
+            return n;
+        }
+        // calculate least required # of bytes to read
+        let nn = len / 5 * 8;
+        let nn = if nn < 8 { 8 } else { nn };
+        let nn = if nn > self.buf.len() { self.buf.len() } else { nn };
+
+        let buf = vec::mut_view(self.buf, self.nbuf, nn);
+        let nn  = self.reader.read(buf, buf.len());
+
+        self.nbuf += nn;
+        if self.nbuf < 8 {
+            abort!("malformed base32 input");
+        }
+
+        let nr = self.nbuf / 8 * 8; // total read bytes (except fringe bytes)
+        let nw = self.nbuf / 8 * 5; // size of decoded bytes
+
+        // FIXME this copy is unfortunate
+        let buf = vec::slice(self.buf, 0, nr);
+
+        let nencoded = if nw > len {
+            let res = self.base32.decode(self.outbuf, buf);
+            // copy self.outbuf[0:len] to p
+            vec::u8::memcpy(p, self.outbuf, len);
+            // shift unread bytes to head
+            for uint::range(0, res.ndecoded - len) |i| {
+                self.outbuf[i] = self.outbuf[i+len];
+            }
+            self.noutbuf = res.ndecoded - len;
+            self.end = res.end;
+            len
+        } else {
+            let res = self.base32.decode(p, buf);
+            self.end = res.end;
+            res.ndecoded
+        };
+        self.nbuf -= nr;
+        // shift undecoded bytes to head
+        for uint::range(0, self.nbuf) |i| {
+            self.buf[i] = self.buf[i+nr];
+        }
+
+        return nencoded;
     }
     fn read_bytes(len: uint) -> ~[u8] {
         let mut buf = ~[mut];
@@ -327,7 +380,7 @@ impl Base32Reader {
         vec::from_mut(buf)
     }
     fn eof() -> bool {
-        self.end || self.reader.eof()
+        self.noutbuf == 0 && (self.end || self.reader.eof())
     }
 }
 
@@ -443,6 +496,9 @@ fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
             i += 1;
         }
 
+        dst[0] = 0; dst[1] = 0; dst[2] = 0;
+        dst[3] = 0; dst[4] = 0;
+
         switch! { buf_len =>
         default:   { abort!("malformed base32 string") }
         case 7, 8: { dst[4] |= buf[6]<<5 | buf[7]
@@ -535,19 +591,25 @@ mod tests {
 
         assert expect == actual;
     }
-    // #[test]
+    #[test]
     fn test_base32_reader() {
-        let source = str::bytes("MZXW6YTB");
-        let expect = str::bytes("fooba");
+        let source = ["MY======", "MZXQ====", "MZXW6===",
+                      "MZXW6YQ=", "MZXW6YTB", "MZXW6YTBOI======"];
+        let expect = ["f", "fo", "foo", "foob", "fooba", "foobar"];
 
-        let actual = io::with_bytes_reader(source, |reader| {
-            let reader = Base32Reader(BASE32_STD, &reader);
+        let source = source.map(|e| str::bytes(e));
+        let expect = expect.map(|e| str::bytes(e));
 
-            io::with_buf_writer(|writer| {
-                while !reader.eof() {
-                    let buf = reader.read_bytes(1024);
-                    writer.write(buf);
-                }
+        let actual = source.map(|e| {
+            io::with_bytes_reader(e, |reader| {
+                let reader = Base32Reader(BASE32_STD, &reader);
+
+                io::with_buf_writer(|writer| {
+                    while !reader.eof() {
+                        let buf = reader.read_bytes(1);
+                        writer.write(buf);
+                    }
+                })
             })
         });
 

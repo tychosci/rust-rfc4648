@@ -356,7 +356,7 @@ impl Base64Reader {
             let res = self.base64.decode(self.outbuf, buf);
             // copy self.outbuf[0:len] to p
             vec::u8::memcpy(p, self.outbuf, len);
-            // shift unreaded bytes to head
+            // shift unread bytes to head
             for uint::range(0, res.ndecoded - len) |i| {
                 self.outbuf[i] = self.outbuf[i+len];
             }
