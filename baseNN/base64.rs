@@ -326,7 +326,7 @@ impl Base64Reader {
 
             let n = if len > self.noutbuf { self.noutbuf } else { len };
             self.noutbuf -= n;
-            // shift unreaded bytes to head
+            // shift unread bytes to head
             for uint::range(0, self.noutbuf) |i| {
                 self.outbuf[i] = self.outbuf[i+n];
             }

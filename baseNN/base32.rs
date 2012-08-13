@@ -290,6 +290,10 @@ impl Base32Writer {
 struct Base32Reader {
     base32: &Base32;
     reader: &io::reader;
+    buf: [mut u8]/1024;
+    outbuf: [mut u8]/640;
+    mut nbuf: uint;
+    mut noutbuf: uint;
     mut end: bool;
 }
 
@@ -297,6 +301,10 @@ fn Base32Reader(base32: &Base32, reader: &io::reader) -> Base32Reader {
     Base32Reader {
         base32: base32,
         reader: reader,
+        buf: [mut 0, ..1024],
+        outbuf: [mut 0, ..640],
+        nbuf: 0,
+        noutbuf: 0,
         end: false,
     }
 }
