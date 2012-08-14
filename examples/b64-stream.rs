@@ -41,6 +41,7 @@ fn encode(filename: &str, writer: &io::writer) {
         writer.write(buf);
     }
 
+    // FIXME Remove this line once we get drop intrinsics.
     writer.close();
 }
 
