@@ -129,9 +129,14 @@ impl Base64 : Encode {
      * base64-encoded bytes
      */
     fn encode_bytes(src: &[u8]) -> ~[u8] {
+        let mut dst = ~[mut];
         let dst_length = self.encoded_len(src.len());
-        let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
+
+        vec::reserve(dst, dst_length);
+        unsafe { vec::unsafe::set_len(dst, dst_length); }
+
         self.encode(dst, src);
+
         vec::from_mut(dst)
     }
 }
@@ -156,10 +161,17 @@ impl Base64 : Decode {
      * decoded bytes
      */
     fn decode_bytes(src: &[u8]) -> ~[u8] {
+        let mut dst = ~[mut];
         let dst_length = self.decoded_len(src.len());
-        let dst = vec::to_mut(vec::from_elem(dst_length, 0u8));
+
+        vec::reserve(dst, dst_length);
+        unsafe { vec::unsafe::set_len(dst, dst_length); }
+
         let res = self.decode(dst, src);
-        vec::slice(vec::from_mut(dst), 0u, res.ndecoded)
+
+        unsafe { vec::unsafe::set_len(dst, res.ndecoded); }
+
+        vec::from_mut(dst)
     }
 }
 
