@@ -3,7 +3,7 @@
 E       := examples
 SRCDIR  := .
 LIBDIR  := .
-BINDIR  := .
+BINDIR  := bin
 TESTDIR := test
 SOURCES := $(wildcard $(SRCDIR)/*.rs)
 
@@ -12,11 +12,14 @@ all: libencoding
 libencoding: encoding.rc $(SOURCES)
 	rustc -O encoding.rc
 
-b64: libencoding
+b64: setup-bin libencoding
 	rustc -O $(E)/b64.rs -L $(LIBDIR) -o $(BINDIR)/$@
 
-b64-stream: libencoding
+b64-stream: setup-bin libencoding
 	rustc -O $(E)/b64-stream.rs -L $(LIBDIR) -o $(BINDIR)/$@
+
+setup-bin:
+	mkdir -p $(BINDIR)
 
 setup-test:
 	mkdir -p $(TESTDIR)
@@ -30,5 +33,4 @@ clean:
 	-rm -r libencoding-*.dSYM
 	-rm -r libencoding-*.dylib
 	if [ -d "$(TESTDIR)" ]; then rm -r $(TESTDIR); fi
-	if [ -e "$(BINDIR)/b64" ]; then rm -r $(BINDIR)/b64; fi
-	if [ -e "$(BINDIR)/b64.dSYM" ]; then rm -r $(BINDIR)/b64.dSYM; fi
+	if [ -d "$(BINDIR)" ]; then rm -r $(BINDIR); fi
