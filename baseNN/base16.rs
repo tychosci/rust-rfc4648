@@ -162,11 +162,11 @@ fn decode(src: &[u8]) -> ~[u8] {
 
 struct Base16Writer {
     base16: &Base16;
-    writer: &io::writer;
+    writer: io::Writer;
     outbuf: [mut u8]/1024;
 }
 
-fn Base16Writer(base16: &Base16, writer: &io::writer) -> Base16Writer {
+fn Base16Writer(base16: &Base16, writer: io::Writer) -> Base16Writer {
     Base16Writer {
         base16: base16,
         writer: writer,
@@ -195,14 +195,14 @@ impl Base16Writer {
 
 struct Base16Reader {
     base16: &Base16;
-    reader: &io::reader;
+    reader: io::Reader;
     buf: [mut u8]/1024;
     outbuf: [mut u8]/512;
     mut nbuf: uint;
     mut noutbuf: uint;
 }
 
-fn Base16Reader(base16: &Base16, reader: &io::reader) -> Base16Reader {
+fn Base16Reader(base16: &Base16, reader: io::Reader) -> Base16Reader {
     Base16Reader {
         base16: base16,
         reader: reader,
@@ -347,7 +347,7 @@ mod tests {
         let expect  = str::bytes("666F6F");
 
         let actual  = io::with_buf_writer(|writer| {
-            let writer = Base16Writer(BASE16, &writer);
+            let writer = Base16Writer(BASE16, writer);
             writer.write(source1);
             writer.write(source2);
         });
@@ -360,7 +360,7 @@ mod tests {
         let expect = str::bytes("foo");
 
         let actual = io::with_bytes_reader(source, |reader| {
-            let reader = Base16Reader(BASE16, &reader);
+            let reader = Base16Reader(BASE16, reader);
 
             io::with_buf_writer(|writer| {
                 while !reader.eof() {

@@ -237,13 +237,13 @@ fn urlsafe_decode(src: &[u8]) -> ~[u8] {
 
 struct Base64Writer {
     base64: &Base64;
-    writer: &io::writer;
+    writer: io::Writer;
     outbuf: [mut u8]/1024;
     buf: [mut u8]/3;
     mut nbuf: uint;
 }
 
-fn Base64Writer(base64: &Base64, writer: &io::writer) -> Base64Writer {
+fn Base64Writer(base64: &Base64, writer: io::Writer) -> Base64Writer {
     Base64Writer {
         base64: base64,
         writer: writer,
@@ -310,7 +310,7 @@ impl Base64Writer {
 
 struct Base64Reader {
     base64: &Base64;
-    reader: &io::reader;
+    reader: io::Reader;
     buf: [mut u8]/1024;
     outbuf: [mut u8]/768;
     mut nbuf: uint;
@@ -318,7 +318,7 @@ struct Base64Reader {
     mut end: bool;
 }
 
-fn Base64Reader(base64: &Base64, reader: &io::reader) -> Base64Reader {
+fn Base64Reader(base64: &Base64, reader: io::Reader) -> Base64Reader {
     Base64Reader {
         base64: base64,
         reader: reader,
@@ -561,7 +561,7 @@ mod tests {
         let expect  = str::bytes("Zm9vYmFy");
 
         let actual  = io::with_buf_writer(|writer| {
-            let writer = Base64Writer(BASE64_STD, &writer);
+            let writer = Base64Writer(BASE64_STD, writer);
             writer.write(source1);
             writer.write(source2);
             // FIXME Remove this line once we get drop intrinsics.
@@ -579,7 +579,7 @@ mod tests {
 
         let actual = source.map(|e| {
             io::with_bytes_reader(e, |reader| {
-                let reader = Base64Reader(BASE64_STD, &reader);
+                let reader = Base64Reader(BASE64_STD, reader);
 
                 io::with_buf_writer(|writer| {
                     while !reader.eof() {

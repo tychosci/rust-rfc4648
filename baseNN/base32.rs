@@ -229,13 +229,13 @@ fn hex_decode(src: &[u8]) -> ~[u8] {
 
 struct Base32Writer {
     base32: &Base32;
-    writer: &io::writer;
+    writer: io::Writer;
     outbuf: [mut u8]/1024;
     buf: [mut u8]/5;
     mut nbuf: uint;
 }
 
-fn Base32Writer(base32: &Base32, writer: &io::writer) -> Base32Writer {
+fn Base32Writer(base32: &Base32, writer: io::Writer) -> Base32Writer {
     Base32Writer {
         base32: base32,
         writer: writer,
@@ -301,7 +301,7 @@ impl Base32Writer {
 
 struct Base32Reader {
     base32: &Base32;
-    reader: &io::reader;
+    reader: io::Reader;
     buf: [mut u8]/1024;
     outbuf: [mut u8]/640;
     mut nbuf: uint;
@@ -309,7 +309,7 @@ struct Base32Reader {
     mut end: bool;
 }
 
-fn Base32Reader(base32: &Base32, reader: &io::reader) -> Base32Reader {
+fn Base32Reader(base32: &Base32, reader: io::Reader) -> Base32Reader {
     Base32Reader {
         base32: base32,
         reader: reader,
@@ -595,7 +595,7 @@ mod tests {
         let expect  = str::bytes("MZXW6YTB");
 
         let actual  = io::with_buf_writer(|writer| {
-            let writer = Base32Writer(BASE32_STD, &writer);
+            let writer = Base32Writer(BASE32_STD, writer);
             writer.write(source1);
             writer.write(source2);
             // FIXME Remove this line once we get drop intrinsics.
@@ -615,7 +615,7 @@ mod tests {
 
         let actual = source.map(|e| {
             io::with_bytes_reader(e, |reader| {
-                let reader = Base32Reader(BASE32_STD, &reader);
+                let reader = Base32Reader(BASE32_STD, reader);
 
                 io::with_buf_writer(|writer| {
                     while !reader.eof() {

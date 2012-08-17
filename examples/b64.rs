@@ -1,6 +1,6 @@
 use encoding;
 
-import io::writer_util;
+import io::WriterUtil;
 import encoding::Base64;
 
 fn main(args: ~[~str]) {
