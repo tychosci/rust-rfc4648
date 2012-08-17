@@ -64,7 +64,7 @@ pure fn encoded_len(src_length: uint) -> uint { src_length * 2 }
 #[inline(always)]
 pure fn decoded_len(src_length: uint) -> uint { src_length / 2 }
 
-impl Base16 : Encode {
+impl Base16 : BaseNNEncode {
     fn encode(dst: &[mut u8], src: &[u8]) {
         b16encode(self.table, dst, src);
     }
@@ -96,7 +96,7 @@ impl Base16 : Encode {
     }
 }
 
-impl Base16 : Decode {
+impl Base16 : BaseNNDecode {
     fn decode(dst: &[mut u8], src: &[u8]) -> DecodeResult {
         b16decode(self.decode_map, dst, src)
     }
