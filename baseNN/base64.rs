@@ -405,17 +405,6 @@ impl Base64Reader {
     }
 }
 
-macro_rules! switch {
-    {
-        $name:ident =>
-        default : $default:expr
-        $(case $($v:expr),+ : $blk:expr)+
-    } => {
-        $(if $($v < $name)&&+ { $blk })+
-        $(if $($v == $name)||+ { $blk } else)+ { $default }
-    }
-}
-
 fn b64encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     let src_length = src.len();
     let dst_length = dst.len();
@@ -433,30 +422,14 @@ fn b64encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
         let dst_curr = 4 * i;
         let remain = src_length - src_curr;
 
-        dst[dst_curr+0] = 0; dst[dst_curr+1] = 0;
-        dst[dst_curr+2] = 0; dst[dst_curr+3] = 0;
+        let n = (src[src_curr+0] as uint)<<16
+            | if remain > 1 { (src[src_curr+1] as uint)<<8 } else { 0 }
+            | if remain > 2 { (src[src_curr+2] as uint)    } else { 0 };
 
-        switch! { remain =>
-        default: { dst[dst_curr+3] |= src[src_curr+2]    & 0x3f
-                 ; dst[dst_curr+2] |= src[src_curr+2]>>6 }
-        case 02: { dst[dst_curr+2] |= src[src_curr+1]<<2 & 0x3f
-                 ; dst[dst_curr+1] |= src[src_curr+1]>>4 }
-        case 01: { dst[dst_curr+1] |= src[src_curr+0]<<4 & 0x3f
-                 ; dst[dst_curr+0] |= src[src_curr+0]>>2 }
-        };
-
-        dst[dst_curr+0] = table[dst[dst_curr+0]];
-        dst[dst_curr+1] = table[dst[dst_curr+1]];
-        dst[dst_curr+2] = table[dst[dst_curr+2]];
-        dst[dst_curr+3] = table[dst[dst_curr+3]];
-
-        if remain < 3 {
-            dst[dst_curr+3] = PAD;
-            if remain < 2 {
-                dst[dst_curr+2] = PAD;
-            }
-            break;
-        }
+        dst[dst_curr+0] = table[n>>18 & 0x3f];
+        dst[dst_curr+1] = table[n>>12 & 0x3f];
+        dst[dst_curr+2] = if remain > 1 { table[n>>6 & 0x3f] } else { PAD };
+        dst[dst_curr+3] = if remain > 2 { table[n    & 0x3f] } else { PAD };
     }
 }
 
@@ -495,11 +468,9 @@ fn b64decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
             i += 1;
         }
 
-        switch! { buf_len =>
-        default: { dst[2] = buf[2]<<6 | buf[3] }
-        case 03: { dst[1] = buf[1]<<4 | buf[2]>>2 }
-        case 02: { dst[0] = buf[0]<<2 | buf[1]>>4 }
-        };
+        dst[0] = buf[0]<<2 | buf[1]>>4;
+        dst[1] = if buf_len > 2 { buf[1]<<4 | buf[2]>>2 } else { 0 };
+        dst[2] = if buf_len > 3 { buf[2]<<6 | buf[3]    } else { 0 };
 
         dst = vec::mut_view(dst, 3, dst.len());
         ndecoded += buf_len - 1;

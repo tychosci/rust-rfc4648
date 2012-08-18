@@ -396,17 +396,6 @@ impl Base32Reader {
     }
 }
 
-macro_rules! switch {
-    {
-        $name:ident =>
-        default : $default:expr
-        $(case $($v:expr),+ : $blk:expr)+
-    } => {
-        $(if $($v < $name)&&+ { $blk })+
-        $(if $($v == $name)||+ { $blk } else)+ { $default }
-    }
-}
-
 fn b32encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     let src_length = src.len();
     let dst_length = dst.len();
@@ -429,45 +418,20 @@ fn b32encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
         dst[dst_curr+4] = 0; dst[dst_curr+5] = 0;
         dst[dst_curr+6] = 0; dst[dst_curr+7] = 0;
 
-        switch! { remain =>
-        default: { dst[dst_curr+7] |= src[src_curr+4]    & 0x1f
-                 ; dst[dst_curr+6] |= src[src_curr+4]>>5 }
-        case 04: { dst[dst_curr+6] |= src[src_curr+3]<<3 & 0x1f
-                 ; dst[dst_curr+5] |= src[src_curr+3]>>2 & 0x1f
-                 ; dst[dst_curr+4] |= src[src_curr+3]>>7 }
-        case 03: { dst[dst_curr+4] |= src[src_curr+2]<<1 & 0x1f
-                 ; dst[dst_curr+3] |= src[src_curr+2]>>4 & 0x1f }
-        case 02: { dst[dst_curr+3] |= src[src_curr+1]<<4 & 0x1f
-                 ; dst[dst_curr+2] |= src[src_curr+1]>>1 & 0x1f
-                 ; dst[dst_curr+1] |= src[src_curr+1]>>6 & 0x1f }
-        case 01: { dst[dst_curr+1] |= src[src_curr+0]<<2 & 0x1f
-                 ; dst[dst_curr+0] |= src[src_curr+0]>>3 }
-        };
+        let n = (src[src_curr+0] as u64)<<32
+            | if remain > 1 { (src[src_curr+1] as u64)<<24 } else { 0 }
+            | if remain > 2 { (src[src_curr+2] as u64)<<16 } else { 0 }
+            | if remain > 3 { (src[src_curr+3] as u64)<< 8 } else { 0 }
+            | if remain > 4 { (src[src_curr+4] as u64)     } else { 0 };
 
-        dst[dst_curr+0] = table[dst[dst_curr+0]];
-        dst[dst_curr+1] = table[dst[dst_curr+1]];
-        dst[dst_curr+2] = table[dst[dst_curr+2]];
-        dst[dst_curr+3] = table[dst[dst_curr+3]];
-        dst[dst_curr+4] = table[dst[dst_curr+4]];
-        dst[dst_curr+5] = table[dst[dst_curr+5]];
-        dst[dst_curr+6] = table[dst[dst_curr+6]];
-        dst[dst_curr+7] = table[dst[dst_curr+7]];
-
-        if remain < 5 {
-            dst[dst_curr+7] = PAD;
-            if remain < 4 {
-                dst[dst_curr+6] = PAD;
-                dst[dst_curr+5] = PAD;
-                if remain < 3 {
-                    dst[dst_curr+4] = PAD;
-                    if remain < 2 {
-                        dst[dst_curr+3] = PAD;
-                        dst[dst_curr+2] = PAD;
-                    }
-                }
-            }
-            break;
-        }
+        dst[dst_curr+0] = table[n>>35 & 0x1f];
+        dst[dst_curr+1] = table[n>>30 & 0x1f];
+        dst[dst_curr+2] = if remain > 1 { table[n>>25 & 0x1f] } else { PAD };
+        dst[dst_curr+3] = if remain > 1 { table[n>>20 & 0x1f] } else { PAD };
+        dst[dst_curr+4] = if remain > 2 { table[n>>15 & 0x1f] } else { PAD };
+        dst[dst_curr+5] = if remain > 3 { table[n>>10 & 0x1f] } else { PAD };
+        dst[dst_curr+6] = if remain > 3 { table[n>> 5 & 0x1f] } else { PAD };
+        dst[dst_curr+7] = if remain > 4 { table[n     & 0x1f] } else { PAD };
     }
 }
 
@@ -511,17 +475,18 @@ fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
         dst[0] = 0; dst[1] = 0; dst[2] = 0;
         dst[3] = 0; dst[4] = 0;
 
-        switch! { buf_len =>
-        default:   { abort!("malformed base32 string") }
-        case 7, 8: { dst[4] |= buf[6]<<5 | buf[7]
-                   ; dst[3] |= buf[6]>>3 }
-        case 5, 6: { dst[3] |= buf[4]<<7 | buf[5]<<2
-                   ; dst[2] |= buf[4]>>1 }
-        case 4:    { dst[2] |= buf[3]<<4
-                   ; dst[1] |= buf[3]>>4 }
-        case 3:    { dst[1] |= buf[1]<<6 | buf[2]<<1 }
-        case 2:    { dst[0] |= buf[0]<<3 | buf[1]>>2 }
-        };
+        if buf_len < 2 || 8 < buf_len {
+            abort!("malformed base32 string");
+        }
+
+        dst[0] |= buf[0]<<3 | buf[1]>>2;
+        dst[1] |= if buf_len > 2 { buf[1]<<6 | buf[2]<<1 } else { 0 };
+        dst[1] |= if buf_len > 3 { buf[3]>>4             } else { 0 };
+        dst[2] |= if buf_len > 3 { buf[3]<<4             } else { 0 };
+        dst[2] |= if buf_len > 4 { buf[4]>>1             } else { 0 };
+        dst[3] |= if buf_len > 4 { buf[4]<<7 | buf[5]<<2 } else { 0 };
+        dst[3] |= if buf_len > 6 { buf[6]>>3             } else { 0 };
+        dst[4] |= if buf_len > 6 { buf[6]<<5 | buf[7]    } else { 0 };
 
         dst = vec::mut_view(dst, 5, dst.len());
         match buf_len {
