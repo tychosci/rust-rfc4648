@@ -539,41 +539,36 @@ fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
 
 #[cfg(test)]
 mod tests {
+    fn t(source: &[&str], expect: &[&str], cb: fn&((&[u8])) -> ~[u8]) {
+        let source = source.map(str::bytes);
+        let expect = expect.map(str::bytes);
+        let actual = source.map(|e| cb(e));
+        debug!("expect: %?, actual: %?", expect, actual);
+        assert expect == actual;
+    }
     #[test]
     fn test_encode() {
         let source = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
         let expect = ["", "MY======", "MZXQ====", "MZXW6===", "MZXW6YQ=",
                       "MZXW6YTB", "MZXW6YTBOI======"];
-        let source = source.map(|e| str::bytes(e));
-        let expect = expect.map(|e| str::bytes(e));
 
-        let actual = source.map(|e| encode(e));
-
-        assert expect == actual;
+        t(source, expect, encode);
     }
     #[test]
     fn test_hex_encode() {
         let source = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
         let expect = ["", "CO======", "CPNG====", "CPNMU===",
                       "CPNMUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"];
-        let source = source.map(|e| str::bytes(e));
-        let expect = expect.map(|e| str::bytes(e));
 
-        let actual = source.map(|e| hex_encode(e));
-
-        assert expect == actual;
+        t(source, expect, hex_encode);
     }
     #[test]
     fn test_decode() {
         let source = ["", "MY======", "MZXQ====", "MZXW6===",
                       "\tMZXW\r\n6YQ=", "MZXW6YTB", "MZXW6YTBOI======"];
         let expect = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
-        let source = source.map(|e| str::bytes(e));
-        let expect = expect.map(|e| str::bytes(e));
 
-        let actual = source.map(|e| decode(e));
-
-        assert expect == actual;
+        t(source, expect, decode);
     }
     #[test]
     fn test_hex_decode() {
@@ -581,12 +576,7 @@ mod tests {
                       "\tCPNM\r\nUOG=", "CPNMUOJ1", "CPNMUOJ1E8======"];
         let expect = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
 
-        let source = source.map(|e| str::bytes(e));
-        let expect = expect.map(|e| str::bytes(e));
-
-        let actual = source.map(|e| hex_decode(e));
-
-        assert expect == actual;
+        t(source, expect, hex_decode);
     }
     #[test]
     fn test_base32_writer() {
@@ -610,8 +600,8 @@ mod tests {
                       "MZXW6YQ=", "MZXW6YTB", "MZXW6YTBOI======"];
         let expect = ["f", "fo", "foo", "foob", "fooba", "foobar"];
 
-        let source = source.map(|e| str::bytes(e));
-        let expect = expect.map(|e| str::bytes(e));
+        let source = source.map(str::bytes);
+        let expect = expect.map(str::bytes);
 
         let actual = source.map(|e| {
             io::with_bytes_reader(e, |reader| {

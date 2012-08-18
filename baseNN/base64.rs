@@ -510,49 +510,40 @@ fn b64decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
 
 #[cfg(test)]
 mod tests {
+    fn t(source: &[&str], expect: &[&str], cb: fn((&[u8])) -> ~[u8]) {
+        let source = source.map(str::bytes);
+        let expect = expect.map(str::bytes);
+        let actual = source.map(|e| cb(e));
+        debug!("expect: %?, actual: %?", expect, actual);
+        assert expect == actual;
+    }
     #[test]
     fn test_encode() {
         let source = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
         let expect = ["", "Zg==", "Zm8=", "Zm9v", "Zm9vYg==", "Zm9vYmE=", "Zm9vYmFy"];
-        let source = source.map(|e| str::bytes(e));
-        let expect = expect.map(|e| str::bytes(e));
 
-        let actual = source.map(|e| encode(e));
-
-        assert expect == actual;
+        t(source, expect, encode);
     }
     #[test]
     fn test_urlsafe_encode() {
         let source = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"];
         let expect = ["", "Zg==", "Zm8=", "Zm8-", "Zm9vYg==", "Zm9vYmE=", "Zm8_YmE_"];
-        let source = source.map(|e| str::bytes(e));
-        let expect = expect.map(|e| str::bytes(e));
 
-        let actual = source.map(|e| urlsafe_encode(e));
-
-        assert expect == actual;
+        t(source, expect, urlsafe_encode);
     }
     #[test]
     fn test_decode() {
         let source = ["", "Zg==", "Zm8=", "Zm8+", "Zm9v\r\nYg==", "\tZm9vYmE=", "Zm8/YmE/"];
         let expect = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"];
-        let source = source.map(|e| str::bytes(e));
-        let expect = expect.map(|e| str::bytes(e));
 
-        let actual = source.map(|e| decode(e));
-
-        assert expect == actual;
+        t(source, expect, decode);
     }
     #[test]
     fn test_urlsafe_decode() {
         let source = ["", "Zg==", "Zm8=", "Zm8-", "Zm9v\r\nYg==", "\tZm9vYmE=", "Zm8_YmE_"];
         let expect = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"];
-        let source = source.map(|e| str::bytes(e));
-        let expect = expect.map(|e| str::bytes(e));
 
-        let actual = source.map(|e| urlsafe_decode(e));
-
-        assert expect == actual;
+        t(source, expect, urlsafe_decode);
     }
     #[test]
     fn test_base64_writer() {
@@ -574,8 +565,8 @@ mod tests {
     fn test_base64_reader() {
         let source = ["Zg==", "Zm8=", "Zm8+", "Zm9vYg==", "Zm9vYmE=", "Zm8/YmE/"];
         let expect = ["f", "fo", "fo>", "foob", "fooba", "fo?ba?"];
-        let source = source.map(|e| str::bytes(e));
-        let expect = expect.map(|e| str::bytes(e));
+        let source = source.map(str::bytes);
+        let expect = expect.map(str::bytes);
 
         let actual = source.map(|e| {
             io::with_bytes_reader(e, |reader| {
