@@ -400,10 +400,6 @@ fn b32encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     let src_length = src.len();
     let dst_length = dst.len();
 
-    if src_length == 0 {
-        return;
-    }
-
     if dst_length % 8 != 0 {
         abort!("dst's length should be divisible by 8");
     }
