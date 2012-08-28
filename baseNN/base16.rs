@@ -20,9 +20,9 @@
 export BASE16, Base16Writer;
 export encode, decode;
 
-macro_rules! abort {
+macro_rules! abort (
     { $s:expr } => { fail str::from_slice($s) }
-}
+)
 
 // 0123456789ABCDEF
 const TABLE: [u8]/16 = [
@@ -166,7 +166,7 @@ struct Base16Writer {
     outbuf: [mut u8]/1024;
 }
 
-fn Base16Writer(base16: &Base16, writer: io::Writer) -> Base16Writer {
+fn Base16Writer(base16: &a/Base16, writer: io::Writer) -> Base16Writer/&a {
     Base16Writer {
         base16: base16,
         writer: writer,
@@ -202,7 +202,7 @@ struct Base16Reader {
     mut noutbuf: uint;
 }
 
-fn Base16Reader(base16: &Base16, reader: io::Reader) -> Base16Reader {
+fn Base16Reader(base16: &a/Base16, reader: io::Reader) -> Base16Reader/&a {
     Base16Reader {
         base16: base16,
         reader: reader,
@@ -324,8 +324,8 @@ fn b16decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
 mod tests {
     #[test]
     fn test_encode() {
-        let source = str::bytes("foo");
-        let expect = str::bytes("666F6F");
+        let source = str::to_bytes("foo");
+        let expect = str::to_bytes("666F6F");
 
         let actual = encode(source);
 
@@ -333,8 +333,8 @@ mod tests {
     }
     #[test]
     fn test_decode() {
-        let source = str::bytes("\t66 6f\r\n 6f");
-        let expect = str::bytes("foo");
+        let source = str::to_bytes("\t66 6f\r\n 6f");
+        let expect = str::to_bytes("foo");
 
         let actual = decode(source);
 
@@ -342,9 +342,9 @@ mod tests {
     }
     #[test]
     fn test_base16_writer() {
-        let source1 = str::bytes("fo");
-        let source2 = str::bytes("o");
-        let expect  = str::bytes("666F6F");
+        let source1 = str::to_bytes("fo");
+        let source2 = str::to_bytes("o");
+        let expect  = str::to_bytes("666F6F");
 
         let actual  = io::with_buf_writer(|writer| {
             let writer = Base16Writer(BASE16, writer);
@@ -356,8 +356,8 @@ mod tests {
     }
     #[test]
     fn test_base16_reader() {
-        let source = str::bytes("666f6f");
-        let expect = str::bytes("foo");
+        let source = str::to_bytes("666f6f");
+        let expect = str::to_bytes("foo");
 
         let actual = io::with_bytes_reader(source, |reader| {
             let reader = Base16Reader(BASE16, reader);

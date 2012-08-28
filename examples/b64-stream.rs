@@ -5,12 +5,12 @@
 //     b64-stream decode <infile> [outfile]
 //
 
-use encoding;
+extern mod encoding;
 
-import io::Reader;
-import encoding::BASE64;
-import encoding::Base64Writer;
-import encoding::Base64Reader;
+use io::Reader;
+use encoding::BASE64;
+use encoding::Base64Writer;
+use encoding::Base64Reader;
 
 fn main(args: ~[~str]) {
     let argc = args.len();

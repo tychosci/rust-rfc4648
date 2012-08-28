@@ -103,10 +103,10 @@ impl<T: Encode Decode> Buffer : Codec<T> {
 
 impl<T: Encode Decode> String : Codec<T> {
     fn encode(encoder: T) -> ~[u8] {
-        encoder.encode(str::bytes(self))
+        encoder.encode(str::to_bytes(self))
     }
     fn decode(decoder: T) -> ~[u8] {
-        decoder.decode(str::bytes(self))
+        decoder.decode(str::to_bytes(self))
     }
 }
 
@@ -114,8 +114,8 @@ impl<T: Encode Decode> String : Codec<T> {
 mod tests {
     #[test]
     fn test_codec_baseNN() {
-        let source = str::bytes("foobar");
-        let expect = str::bytes("Zm9vYmFy");
+        let source = str::to_bytes("foobar");
+        let expect = str::to_bytes("Zm9vYmFy");
 
         let actual = source.encode(Base64);
 

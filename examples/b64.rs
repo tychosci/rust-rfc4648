@@ -1,7 +1,8 @@
-use encoding;
+extern mod encoding;
 
-import io::WriterUtil;
-import encoding::Codec;
+use io::WriterUtil;
+use encoding::Codec;
+use path2::Path;
 
 fn main(args: ~[~str]) {
     let binary = copy args[0];
@@ -13,13 +14,13 @@ fn main(args: ~[~str]) {
         return;
     }
 
-    match io::read_whole_file(args[2]) {
-        result::ok(data) => match args[1] {
+    match io::read_whole_file(&Path(args[2])) {
+        result::Ok(data) => match args[1] {
             ~"encode" => stdout.write(data.encode(encoding::Base64)),
             ~"decode" => stdout.write(data.decode(encoding::Base64)),
             _         => return
         },
-        result::err(msg) => {
+        result::Err(msg) => {
             stderr.write_line(fmt!("Error: %s", msg));
         }
     }

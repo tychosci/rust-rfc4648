@@ -20,9 +20,9 @@
 export BASE32_STD, BASE32_HEX, Base32Writer, Base32Reader;
 export encode, hex_encode, decode, hex_decode;
 
-macro_rules! abort {
+macro_rules! abort (
     { $s:expr } => { fail str::from_slice($s) }
-}
+)
 
 const PAD: u8 = 61u8;
 
@@ -235,7 +235,7 @@ struct Base32Writer {
     mut nbuf: uint;
 }
 
-fn Base32Writer(base32: &Base32, writer: io::Writer) -> Base32Writer {
+fn Base32Writer(base32: &a/Base32, writer: io::Writer) -> Base32Writer/&a {
     Base32Writer {
         base32: base32,
         writer: writer,
@@ -309,7 +309,7 @@ struct Base32Reader {
     mut end: bool;
 }
 
-fn Base32Reader(base32: &Base32, reader: io::Reader) -> Base32Reader {
+fn Base32Reader(base32: &a/Base32, reader: io::Reader) -> Base32Reader/&a {
     Base32Reader {
         base32: base32,
         reader: reader,
@@ -501,8 +501,8 @@ fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
 #[cfg(test)]
 mod tests {
     fn t(source: &[&str], expect: &[&str], cb: fn&((&[u8])) -> ~[u8]) {
-        let source = source.map(str::bytes);
-        let expect = expect.map(str::bytes);
+        let source = source.map(str::to_bytes);
+        let expect = expect.map(str::to_bytes);
         let actual = source.map(|e| cb(e));
         debug!("expect: %?, actual: %?", expect, actual);
         assert expect == actual;
@@ -541,9 +541,9 @@ mod tests {
     }
     #[test]
     fn test_base32_writer() {
-        let source1 = str::bytes("f");
-        let source2 = str::bytes("ooba");
-        let expect  = str::bytes("MZXW6YTB");
+        let source1 = str::to_bytes("f");
+        let source2 = str::to_bytes("ooba");
+        let expect  = str::to_bytes("MZXW6YTB");
 
         let actual  = io::with_buf_writer(|writer| {
             let writer = Base32Writer(BASE32_STD, writer);
@@ -561,8 +561,8 @@ mod tests {
                       "MZXW6YQ=", "MZXW6YTB", "MZXW6YTBOI======"];
         let expect = ["f", "fo", "foo", "foob", "fooba", "foobar"];
 
-        let source = source.map(str::bytes);
-        let expect = expect.map(str::bytes);
+        let source = source.map(str::to_bytes);
+        let expect = expect.map(str::to_bytes);
 
         let actual = source.map(|e| {
             io::with_bytes_reader(e, |reader| {
