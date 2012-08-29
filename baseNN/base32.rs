@@ -246,7 +246,7 @@ fn Base32Writer(base32: &a/Base32, writer: io::Writer) -> Base32Writer/&a {
 }
 
 impl Base32Writer {
-    fn write(buf: &[u8]) {
+    fn write(&self, buf: &[u8]) {
         let buflen = buf.len();
         let mut buf = vec::view(buf, 0, buflen);
 
@@ -287,7 +287,7 @@ impl Base32Writer {
         }
         self.nbuf = buf.len();
     }
-    fn close() {
+    fn close(&self) {
         if self.nbuf > 0 {
             let nbuf = self.nbuf;
             self.nbuf = 0;
@@ -322,7 +322,7 @@ fn Base32Reader(base32: &a/Base32, reader: io::Reader) -> Base32Reader/&a {
 }
 
 impl Base32Reader {
-    fn read(p: &[mut u8], len: uint) -> uint {
+    fn read(&self, p: &[mut u8], len: uint) -> uint {
         // use leftover output (decoded bytes) if it exists
         if self.noutbuf > 0 {
             vec::u8::memcpy(p, self.outbuf, len);
@@ -379,7 +379,7 @@ impl Base32Reader {
 
         return ndecoded;
     }
-    fn read_bytes(len: uint) -> ~[u8] {
+    fn read_bytes(&self, len: uint) -> ~[u8] {
         let mut buf = ~[mut];
 
         vec::reserve(buf, len);
@@ -391,7 +391,7 @@ impl Base32Reader {
 
         vec::from_mut(buf)
     }
-    fn eof() -> bool {
+    fn eof(&self) -> bool {
         self.noutbuf == 0 && (self.end || self.reader.eof())
     }
 }

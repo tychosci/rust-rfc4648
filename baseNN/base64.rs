@@ -254,7 +254,7 @@ fn Base64Writer(base64: &a/Base64, writer: io::Writer) -> Base64Writer/&a {
 }
 
 impl Base64Writer {
-    fn write(buf: &[u8]) {
+    fn write(&self, buf: &[u8]) {
         let buflen  = buf.len();
         let mut buf = vec::view(buf, 0, buflen);
 
@@ -296,7 +296,7 @@ impl Base64Writer {
         self.nbuf += buf.len();
     }
     // TODO call this method on dropping (or put these stmts to `drop {...}`)
-    fn close() {
+    fn close(&self) {
         if self.nbuf > 0 {
             let nbuf = self.nbuf;
             self.nbuf = 0;
@@ -331,7 +331,7 @@ fn Base64Reader(base64: &a/Base64, reader: io::Reader) -> Base64Reader/&a {
 }
 
 impl Base64Reader {
-    fn read(p: &[mut u8], len: uint) -> uint {
+    fn read(&self, p: &[mut u8], len: uint) -> uint {
         // use leftover output (decoded bytes) if it exists
         if self.noutbuf > 0 {
             vec::u8::memcpy(p, self.outbuf, len);
@@ -388,7 +388,7 @@ impl Base64Reader {
 
         return ndecoded;
     }
-    fn read_bytes(len: uint) -> ~[u8] {
+    fn read_bytes(&self, len: uint) -> ~[u8] {
         let mut buf = ~[mut];
 
         vec::reserve(buf, len);
@@ -400,7 +400,7 @@ impl Base64Reader {
 
         vec::from_mut(buf)
     }
-    fn eof() -> bool {
+    fn eof(&self) -> bool {
         self.noutbuf == 0 && (self.end || self.reader.eof())
     }
 }

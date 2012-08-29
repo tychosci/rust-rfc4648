@@ -175,7 +175,7 @@ fn Base16Writer(base16: &a/Base16, writer: io::Writer) -> Base16Writer/&a {
 }
 
 impl Base16Writer {
-    fn write(buf: &[u8]) {
+    fn write(&self, buf: &[u8]) {
         let mut buf = vec::view(buf, 0, buf.len());
 
         while buf.len() > 0 {
@@ -214,7 +214,7 @@ fn Base16Reader(base16: &a/Base16, reader: io::Reader) -> Base16Reader/&a {
 }
 
 impl Base16Reader {
-    fn read(p: &[mut u8], len: uint) -> uint {
+    fn read(&self, p: &[mut u8], len: uint) -> uint {
         // use leftover output (decoded bytes) if it exists
         if self.noutbuf > 0 {
             vec::u8::memcpy(p, self.outbuf, len);
@@ -269,7 +269,7 @@ impl Base16Reader {
 
         return ndecoded;
     }
-    fn read_bytes(len: uint) -> ~[u8] {
+    fn read_bytes(&self, len: uint) -> ~[u8] {
         let mut buf = ~[mut];
 
         vec::reserve(buf, len);
@@ -281,7 +281,7 @@ impl Base16Reader {
 
         vec::from_mut(buf)
     }
-    fn eof() -> bool {
+    fn eof(&self) -> bool {
         self.noutbuf == 0 && self.reader.eof()
     }
 }
