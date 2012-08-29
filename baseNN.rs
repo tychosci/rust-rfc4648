@@ -7,15 +7,15 @@ struct DecodeResult {
 }
 
 trait BaseNNEncode {
-    fn encode(dst: &[mut u8], src: &[u8]);
-    fn encoded_len(src_length: uint) -> uint;
-    fn encode_bytes(src: &[u8]) -> ~[u8];
+    fn encode(&self, dst: &[mut u8], src: &[u8]);
+    fn encoded_len(&self, src_length: uint) -> uint;
+    fn encode_bytes(&self, src: &[u8]) -> ~[u8];
 }
 
 trait BaseNNDecode {
-    fn decode(dst: &[mut u8], src: &[u8]) -> DecodeResult;
-    fn decoded_len(src_length: uint) -> uint;
-    fn decode_bytes(src: &[u8]) -> ~[u8];
+    fn decode(&self, dst: &[mut u8], src: &[u8]) -> DecodeResult;
+    fn decoded_len(&self, src_length: uint) -> uint;
+    fn decode_bytes(&self, src: &[u8]) -> ~[u8];
 }
 
 enum BaseNN {

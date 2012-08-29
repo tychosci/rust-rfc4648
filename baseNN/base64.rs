@@ -110,10 +110,10 @@ pure fn decoded_len(src_length: uint) -> uint {
 }
 
 impl Base64 : BaseNNEncode {
-    fn encode(dst: &[mut u8], src: &[u8]) {
+    fn encode(&self, dst: &[mut u8], src: &[u8]) {
         b64encode(self.table, dst, src);
     }
-    fn encoded_len(src_length: uint) -> uint {
+    fn encoded_len(&self, src_length: uint) -> uint {
         encoded_len(src_length)
     }
 
@@ -128,7 +128,7 @@ impl Base64 : BaseNNEncode {
      *
      * base64-encoded bytes
      */
-    fn encode_bytes(src: &[u8]) -> ~[u8] {
+    fn encode_bytes(&self, src: &[u8]) -> ~[u8] {
         let mut dst = ~[mut];
         let dst_length = self.encoded_len(src.len());
 
@@ -142,10 +142,10 @@ impl Base64 : BaseNNEncode {
 }
 
 impl Base64 : BaseNNDecode {
-    fn decode(dst: &[mut u8], src: &[u8]) -> DecodeResult {
+    fn decode(&self, dst: &[mut u8], src: &[u8]) -> DecodeResult {
         b64decode(self.decode_map, dst, src)
     }
-    fn decoded_len(src_length: uint) -> uint {
+    fn decoded_len(&self, src_length: uint) -> uint {
         decoded_len(src_length)
     }
 
@@ -160,7 +160,7 @@ impl Base64 : BaseNNDecode {
      *
      * decoded bytes
      */
-    fn decode_bytes(src: &[u8]) -> ~[u8] {
+    fn decode_bytes(&self, src: &[u8]) -> ~[u8] {
         let mut dst = ~[mut];
         let dst_length = self.decoded_len(src.len());
 

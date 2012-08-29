@@ -65,10 +65,10 @@ pure fn encoded_len(src_length: uint) -> uint { src_length * 2 }
 pure fn decoded_len(src_length: uint) -> uint { src_length / 2 }
 
 impl Base16 : BaseNNEncode {
-    fn encode(dst: &[mut u8], src: &[u8]) {
+    fn encode(&self, dst: &[mut u8], src: &[u8]) {
         b16encode(self.table, dst, src);
     }
-    fn encoded_len(src_length: uint) -> uint {
+    fn encoded_len(&self, src_length: uint) -> uint {
         encoded_len(src_length)
     }
 
@@ -83,7 +83,7 @@ impl Base16 : BaseNNEncode {
      *
      * hex-encoded bytes
      */
-    fn encode_bytes(src: &[u8]) -> ~[u8] {
+    fn encode_bytes(&self, src: &[u8]) -> ~[u8] {
         let mut dst = ~[mut];
         let dst_length = self.encoded_len(src.len());
 
@@ -97,10 +97,10 @@ impl Base16 : BaseNNEncode {
 }
 
 impl Base16 : BaseNNDecode {
-    fn decode(dst: &[mut u8], src: &[u8]) -> DecodeResult {
+    fn decode(&self, dst: &[mut u8], src: &[u8]) -> DecodeResult {
         b16decode(self.decode_map, dst, src)
     }
-    fn decoded_len(src_length: uint) -> uint {
+    fn decoded_len(&self, src_length: uint) -> uint {
         decoded_len(src_length)
     }
 
@@ -115,7 +115,7 @@ impl Base16 : BaseNNDecode {
      *
      * decoded bytes
      */
-    fn decode_bytes(src: &[u8]) -> ~[u8] {
+    fn decode_bytes(&self, src: &[u8]) -> ~[u8] {
         let mut dst = ~[mut];
         let dst_length = self.decoded_len(src.len());
 
