@@ -546,7 +546,7 @@ mod tests {
         let expect  = str::to_bytes("MZXW6YTB");
 
         let actual  = io::with_buf_writer(|writer| {
-            let writer = Base32Writer(BASE32_STD, writer);
+            let writer = &Base32Writer(BASE32_STD, writer);
             writer.write(source1);
             writer.write(source2);
             // FIXME Remove this line once we get drop intrinsics.
@@ -566,7 +566,7 @@ mod tests {
 
         let actual = source.map(|e| {
             io::with_bytes_reader(e, |reader| {
-                let reader = Base32Reader(BASE32_STD, reader);
+                let reader = &Base32Reader(BASE32_STD, reader);
 
                 io::with_buf_writer(|writer| {
                     while !reader.eof() {

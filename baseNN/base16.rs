@@ -347,7 +347,7 @@ mod tests {
         let expect  = str::to_bytes("666F6F");
 
         let actual  = io::with_buf_writer(|writer| {
-            let writer = Base16Writer(BASE16, writer);
+            let writer = &Base16Writer(BASE16, writer);
             writer.write(source1);
             writer.write(source2);
         });
@@ -360,7 +360,7 @@ mod tests {
         let expect = str::to_bytes("foo");
 
         let actual = io::with_bytes_reader(source, |reader| {
-            let reader = Base16Reader(BASE16, reader);
+            let reader = &Base16Reader(BASE16, reader);
 
             io::with_buf_writer(|writer| {
                 while !reader.eof() {
