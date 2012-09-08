@@ -1,31 +1,27 @@
 // encoding.rs
 
-// import enum variants in baseNN.rs
-use Base16         = baseNN::Base16;
-use Base32         = baseNN::Base32;
-use Base64         = baseNN::Base64;
-use Base32Hex      = baseNN::Base32Hex;
-use Base64Url      = baseNN::Base64Url;
+// import enum variants in misc.rs
+use Base16         = misc::Base16;
+use Base32         = misc::Base32;
+use Base64         = misc::Base64;
+use Base32Hex      = misc::Base32Hex;
+use Base64Url      = misc::Base64Url;
 
-// import constants in baseNN/base{16,32,64}.rs
-use BASE16         = baseNN::base16::BASE16;
-use BASE32         = baseNN::base32::BASE32_STD;
-use BASE64         = baseNN::base64::BASE64_STD;
-use BASE32_HEX     = baseNN::base32::BASE32_HEX;
-use BASE64_URL     = baseNN::base64::BASE64_URL;
+// import constants in misc/base{16,32,64}.rs
+use BASE16         = misc::base16::BASE16;
+use BASE32         = misc::base32::BASE32_STD;
+use BASE64         = misc::base64::BASE64_STD;
+use BASE32_HEX     = misc::base32::BASE32_HEX;
+use BASE64_URL     = misc::base64::BASE64_URL;
 
-// import structs in baseNN/base{16,32,64}.rs
-use Base16Writer   = baseNN::base16::Base16Writer;
-use Base32Writer   = baseNN::base32::Base32Writer;
-use Base64Writer   = baseNN::base64::Base64Writer;
-use Base32Reader   = baseNN::base32::Base32Reader;
-use Base64Reader   = baseNN::base64::Base64Reader;
+// import structs in misc/base{16,32,64}.rs
+use Base16Writer   = misc::base16::Base16Writer;
+use Base32Writer   = misc::base32::Base32Writer;
+use Base64Writer   = misc::base64::Base64Writer;
+use Base32Reader   = misc::base32::Base32Reader;
+use Base64Reader   = misc::base64::Base64Reader;
 
-//===-------------------------------------------------------------------===//
-//                              b a s e N N
-//===-------------------------------------------------------------------===//
-
-// export all BaseNN enum variants
+// export all enum variants in misc.rs
 export Base16;
 export Base32;
 export Base64;
@@ -45,10 +41,6 @@ export Base32Writer;
 export Base64Writer;
 export Base32Reader;
 export Base64Reader;
-
-//===-------------------------------------------------------------------===//
-//                               c o m m o n
-//===-------------------------------------------------------------------===//
 
 export Convert;
 export Encode;
@@ -110,7 +102,7 @@ impl<T: Encode Decode> &str : Codec<T> {
 #[cfg(test)]
 mod tests {
     #[test]
-    fn test_codec_baseNN() {
+    fn test_codec_base64() {
         let source = str::to_bytes("foobar");
         let expect = str::to_bytes("Zm9vYmFy");
 

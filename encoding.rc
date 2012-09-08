@@ -9,11 +9,11 @@
 
 #[doc = "\"encoding\" modules for Rust"];
 
-use std;
+extern mod std;
 
-export baseNN;
+export misc;
 
-mod baseNN {
+mod misc {
     mod base16;
     mod base32;
     mod base64;

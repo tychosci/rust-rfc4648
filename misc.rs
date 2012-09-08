@@ -18,7 +18,7 @@ trait BaseNNDecode {
     fn decode_bytes(&self, src: &[u8]) -> ~[u8];
 }
 
-enum BaseNN {
+enum Misc {
     Base16,
     Base32,
     Base64,
@@ -26,7 +26,7 @@ enum BaseNN {
     Base64Url,
 }
 
-impl BaseNN : Encode {
+impl Misc : Encode {
     fn encode(buf: &[u8]) -> ~[u8] {
         match self {
             Base16    => base16::encode(buf),
@@ -38,7 +38,7 @@ impl BaseNN : Encode {
     }
 }
 
-impl BaseNN : Decode {
+impl Misc : Decode {
     fn decode(buf: &[u8]) -> ~[u8] {
         match self {
             Base16    => base16::decode(buf),
