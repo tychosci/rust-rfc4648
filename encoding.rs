@@ -1,32 +1,29 @@
 // encoding.rs
 
 // import enum variants in baseNN.rs
-import Base16         = baseNN::Base16;
-import Base32         = baseNN::Base32;
-import Base64         = baseNN::Base64;
-import Base32Hex      = baseNN::Base32Hex;
-import Base64Url      = baseNN::Base64Url;
+use Base16         = baseNN::Base16;
+use Base32         = baseNN::Base32;
+use Base64         = baseNN::Base64;
+use Base32Hex      = baseNN::Base32Hex;
+use Base64Url      = baseNN::Base64Url;
 
 // import constants in baseNN/base{16,32,64}.rs
-import BASE16         = baseNN::base16::BASE16;
-import BASE32         = baseNN::base32::BASE32_STD;
-import BASE64         = baseNN::base64::BASE64_STD;
-import BASE32_HEX     = baseNN::base32::BASE32_HEX;
-import BASE64_URL     = baseNN::base64::BASE64_URL;
+use BASE16         = baseNN::base16::BASE16;
+use BASE32         = baseNN::base32::BASE32_STD;
+use BASE64         = baseNN::base64::BASE64_STD;
+use BASE32_HEX     = baseNN::base32::BASE32_HEX;
+use BASE64_URL     = baseNN::base64::BASE64_URL;
 
 // import structs in baseNN/base{16,32,64}.rs
-import Base16Writer   = baseNN::base16::Base16Writer;
-import Base32Writer   = baseNN::base32::Base32Writer;
-import Base64Writer   = baseNN::base64::Base64Writer;
-import Base32Reader   = baseNN::base32::Base32Reader;
-import Base64Reader   = baseNN::base64::Base64Reader;
+use Base16Writer   = baseNN::base16::Base16Writer;
+use Base32Writer   = baseNN::base32::Base32Writer;
+use Base64Writer   = baseNN::base64::Base64Writer;
+use Base32Reader   = baseNN::base32::Base32Reader;
+use Base64Reader   = baseNN::base64::Base64Reader;
 
 //===-------------------------------------------------------------------===//
 //                              b a s e N N
 //===-------------------------------------------------------------------===//
-
-// XXX this line is required to resolve traits in baseNN.
-export baseNN;
 
 // export all BaseNN enum variants
 export Base16;
@@ -58,10 +55,10 @@ export Encode;
 export Decode;
 export Codec;
 
-type Buffer = &[u8];
-type String = &str;
-
-type Convert<T: Encode Decode> = {from: T, to: T};
+struct Convert<T: Encode Decode> {
+    from: T,
+    to: T,
+}
 
 trait Encode {
     fn encode(buf: &[u8]) -> ~[u8];
@@ -92,7 +89,7 @@ impl<T: Encode Decode> Convert<T> : Decode {
     }
 }
 
-impl<T: Encode Decode> Buffer : Codec<T> {
+impl<T: Encode Decode> &[u8] : Codec<T> {
     fn encode(encoder: T) -> ~[u8] {
         encoder.encode(self)
     }
@@ -101,7 +98,7 @@ impl<T: Encode Decode> Buffer : Codec<T> {
     }
 }
 
-impl<T: Encode Decode> String : Codec<T> {
+impl<T: Encode Decode> &str : Codec<T> {
     fn encode(encoder: T) -> ~[u8] {
         encoder.encode(str::to_bytes(self))
     }
@@ -127,10 +124,7 @@ mod tests {
         let source = string.encode(Base32);
         let expect = string.encode(Base64);
 
-        let actual = source.encode({
-            from: Base32,
-            to:   Base64,
-        });
+        let actual = source.encode(Convert{from: Base32, to: Base64});
 
         assert expect == actual;
     }

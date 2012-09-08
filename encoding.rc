@@ -11,6 +11,8 @@
 
 use std;
 
+export baseNN;
+
 mod baseNN {
     mod base16;
     mod base32;

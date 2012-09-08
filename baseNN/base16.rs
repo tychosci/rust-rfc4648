@@ -25,12 +25,12 @@ macro_rules! abort (
 )
 
 // 0123456789ABCDEF
-const TABLE: [u8]/16 = [
+const TABLE: [u8*16] = [
     48, 49, 50, 51, 52, 53, 54, 55,
     56, 57, 65, 66, 67, 68, 69, 70,
 ];
 
-const DECODE_MAP: [u8]/256 = [
+const DECODE_MAP: [u8*256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
@@ -55,8 +55,8 @@ const BASE16: &Base16 = &Base16 {
 };
 
 struct Base16 {
-    table: [u8]/16;
-    decode_map: [u8]/256;
+    table: [u8*16],
+    decode_map: [u8*256],
 }
 
 #[inline(always)]
@@ -161,9 +161,9 @@ fn decode(src: &[u8]) -> ~[u8] {
 }
 
 struct Base16Writer {
-    base16: &Base16;
-    writer: io::Writer;
-    outbuf: [mut u8]/1024;
+    base16: &Base16,
+    writer: io::Writer,
+    outbuf: [mut u8*1024],
 }
 
 fn Base16Writer(base16: &a/Base16, writer: io::Writer) -> Base16Writer/&a {
@@ -194,12 +194,12 @@ impl Base16Writer {
 }
 
 struct Base16Reader {
-    base16: &Base16;
-    reader: io::Reader;
-    buf: [mut u8]/1024;
-    outbuf: [mut u8]/512;
-    mut nbuf: uint;
-    mut noutbuf: uint;
+    base16: &Base16,
+    reader: io::Reader,
+    buf: [mut u8*1024],
+    outbuf: [mut u8*512],
+    mut nbuf: uint,
+    mut noutbuf: uint,
 }
 
 fn Base16Reader(base16: &a/Base16, reader: io::Reader) -> Base16Reader/&a {
@@ -302,7 +302,7 @@ fn b16decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
         if char::is_whitespace(src[i] as char) {
             src_length -= 1;
             i += 1;
-            again;
+            loop;
         }
 
         let chr1 = decode_map[src[i]];

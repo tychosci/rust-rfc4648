@@ -2,8 +2,8 @@
 
 // `end` indicates whether the Decode method have encountered paddings or not.
 struct DecodeResult {
-    end: bool;
-    ndecoded: uint;
+    end: bool,
+    ndecoded: uint,
 }
 
 trait BaseNNEncode {

@@ -27,18 +27,18 @@ macro_rules! abort (
 const PAD: u8 = 61u8;
 
 // ABCDEFGHIJKLMNOPQRSTUVWXYZ234567
-const TABLE_STD: [u8]/32 = [
+const TABLE_STD: [u8*32] = [
     65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80,
     81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 50, 51, 52, 53, 54, 55,
 ];
 
 // 0123456789ABCDEFGHIJKLMNOPQRSTUV
-const TABLE_HEX: [u8]/32 = [
+const TABLE_HEX: [u8*32] = [
     48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70,
     71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86,
 ];
 
-const DECODE_MAP_STD: [u8]/256 = [
+const DECODE_MAP_STD: [u8*256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
@@ -57,7 +57,7 @@ const DECODE_MAP_STD: [u8]/256 = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
 ];
 
-const DECODE_MAP_HEX: [u8]/256 = [
+const DECODE_MAP_HEX: [u8*256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
@@ -87,8 +87,8 @@ const BASE32_HEX: &Base32 = &Base32 {
 };
 
 struct Base32 {
-    table: [u8]/32;
-    decode_map: [u8]/256;
+    table: [u8*32],
+    decode_map: [u8*256],
 }
 
 #[inline(always)]
@@ -228,11 +228,11 @@ fn hex_decode(src: &[u8]) -> ~[u8] {
 }
 
 struct Base32Writer {
-    base32: &Base32;
-    writer: io::Writer;
-    outbuf: [mut u8]/1024;
-    buf: [mut u8]/5;
-    mut nbuf: uint;
+    base32: &Base32,
+    writer: io::Writer,
+    outbuf: [mut u8*1024],
+    buf: [mut u8*5],
+    mut nbuf: uint,
 }
 
 fn Base32Writer(base32: &a/Base32, writer: io::Writer) -> Base32Writer/&a {
@@ -300,13 +300,13 @@ impl Base32Writer {
 }
 
 struct Base32Reader {
-    base32: &Base32;
-    reader: io::Reader;
-    buf: [mut u8]/1024;
-    outbuf: [mut u8]/640;
-    mut nbuf: uint;
-    mut noutbuf: uint;
-    mut end: bool;
+    base32: &Base32,
+    reader: io::Reader,
+    buf: [mut u8*1024],
+    outbuf: [mut u8*640],
+    mut nbuf: uint,
+    mut noutbuf: uint,
+    mut end: bool,
 }
 
 fn Base32Reader(base32: &a/Base32, reader: io::Reader) -> Base32Reader/&a {
@@ -449,7 +449,7 @@ fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
             let chr = src[0];
             src = vec::view(src, 1, src.len());
             if char::is_whitespace(chr as char) {
-                again;
+                loop;
             }
             if chr == PAD && i >= 2 && src.len() < 8 {
                 for uint::range(0, (8-i-1)) |j| {

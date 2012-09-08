@@ -1,8 +1,9 @@
 extern mod encoding;
 
+use io::Writer;
 use io::WriterUtil;
 use encoding::Codec;
-use path2::Path;
+use path::Path;
 
 fn main(args: ~[~str]) {
     let binary = copy args[0];

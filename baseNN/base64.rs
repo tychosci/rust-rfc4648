@@ -29,7 +29,7 @@ const PAD: u8 = 61u8;
 // ABCDEFGHIJKLMNOPQRSTUVWXYZ
 // abcdefghijklmnopqrstuvwxyz
 // 0123456789+/
-const TABLE_STD: [u8]/64 = [
+const TABLE_STD: [u8*64] = [
      65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,  78,  79,  80,
      81,  82,  83,  84,  85,  86,  87,  88,  89,  90,  97,  98,  99, 100, 101, 102,
     103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118,
@@ -39,14 +39,14 @@ const TABLE_STD: [u8]/64 = [
 // ABCDEFGHIJKLMNOPQRSTUVWXYZ
 // abcdefghijklmnopqrstuvwxyz
 // 0123456789-_
-const TABLE_URL: [u8]/64 = [
+const TABLE_URL: [u8*64] = [
      65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,  78,  79,  80,
      81,  82,  83,  84,  85,  86,  87,  88,  89,  90,  97,  98,  99, 100, 101, 102,
     103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118,
     119, 120, 121, 122,  48,  49,  50,  51,  52,  53,  54,  55,  56,  57,  45,  95,
 ];
 
-const DECODE_MAP_STD: [u8]/256 = [
+const DECODE_MAP_STD: [u8*256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,  62, 255, 255, 255,  63,
@@ -65,7 +65,7 @@ const DECODE_MAP_STD: [u8]/256 = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
 ];
 
-const DECODE_MAP_URL: [u8]/256 = [
+const DECODE_MAP_URL: [u8*256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,  62, 255, 255,
@@ -95,8 +95,8 @@ const BASE64_URL: &Base64 = &Base64 {
 };
 
 struct Base64 {
-    table: [u8]/64;
-    decode_map: [u8]/256;
+    table: [u8*64],
+    decode_map: [u8*256],
 }
 
 #[inline(always)]
@@ -236,11 +236,11 @@ fn urlsafe_decode(src: &[u8]) -> ~[u8] {
 }
 
 struct Base64Writer {
-    base64: &Base64;
-    writer: io::Writer;
-    outbuf: [mut u8]/1024;
-    buf: [mut u8]/3;
-    mut nbuf: uint;
+    base64: &Base64,
+    writer: io::Writer,
+    outbuf: [mut u8*1024],
+    buf: [mut u8*3],
+    mut nbuf: uint,
 }
 
 fn Base64Writer(base64: &a/Base64, writer: io::Writer) -> Base64Writer/&a {
@@ -309,13 +309,13 @@ impl Base64Writer {
 }
 
 struct Base64Reader {
-    base64: &Base64;
-    reader: io::Reader;
-    buf: [mut u8]/1024;
-    outbuf: [mut u8]/768;
-    mut nbuf: uint;
-    mut noutbuf: uint;
-    mut end: bool;
+    base64: &Base64,
+    reader: io::Reader,
+    buf: [mut u8*1024],
+    outbuf: [mut u8*768],
+    mut nbuf: uint,
+    mut noutbuf: uint,
+    mut end: bool,
 }
 
 fn Base64Reader(base64: &a/Base64, reader: io::Reader) -> Base64Reader/&a {
@@ -447,7 +447,7 @@ fn b64decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
             let chr = src[0];
             src = vec::view(src, 1, src.len());
             if char::is_whitespace(chr as char) {
-                again;
+                loop;
             }
             if chr == PAD && i >= 2 && src.len() < 4 {
                 if src.len() > 0 && src[0] != PAD {
