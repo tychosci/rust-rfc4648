@@ -55,8 +55,8 @@ const BASE16: &Base16 = &Base16 {
 };
 
 struct Base16 {
-    table: [u8*16],
-    decode_map: [u8*256],
+    priv table: [u8*16],
+    priv decode_map: [u8*256],
 }
 
 #[inline(always)]
@@ -161,9 +161,9 @@ fn decode(src: &[u8]) -> ~[u8] {
 }
 
 struct Base16Writer {
-    base16: &Base16,
-    writer: io::Writer,
-    outbuf: [mut u8*1024],
+    priv base16: &Base16,
+    priv writer: io::Writer,
+    priv outbuf: [mut u8*1024],
 }
 
 fn Base16Writer(base16: &a/Base16, writer: io::Writer) -> Base16Writer/&a {
@@ -194,12 +194,12 @@ impl Base16Writer {
 }
 
 struct Base16Reader {
-    base16: &Base16,
-    reader: io::Reader,
-    buf: [mut u8*1024],
-    outbuf: [mut u8*512],
-    mut nbuf: uint,
-    mut noutbuf: uint,
+    priv base16: &Base16,
+    priv reader: io::Reader,
+    priv buf: [mut u8*1024],
+    priv outbuf: [mut u8*512],
+    priv mut nbuf: uint,
+    priv mut noutbuf: uint,
 }
 
 fn Base16Reader(base16: &a/Base16, reader: io::Reader) -> Base16Reader/&a {

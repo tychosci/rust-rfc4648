@@ -95,8 +95,8 @@ const BASE64_URL: &Base64 = &Base64 {
 };
 
 struct Base64 {
-    table: [u8*64],
-    decode_map: [u8*256],
+    priv table: [u8*64],
+    priv decode_map: [u8*256],
 }
 
 #[inline(always)]
@@ -236,11 +236,11 @@ fn urlsafe_decode(src: &[u8]) -> ~[u8] {
 }
 
 struct Base64Writer {
-    base64: &Base64,
-    writer: io::Writer,
-    outbuf: [mut u8*1024],
-    buf: [mut u8*3],
-    mut nbuf: uint,
+    priv base64: &Base64,
+    priv writer: io::Writer,
+    priv outbuf: [mut u8*1024],
+    priv buf: [mut u8*3],
+    priv mut nbuf: uint,
 }
 
 fn Base64Writer(base64: &a/Base64, writer: io::Writer) -> Base64Writer/&a {
@@ -309,13 +309,13 @@ impl Base64Writer {
 }
 
 struct Base64Reader {
-    base64: &Base64,
-    reader: io::Reader,
-    buf: [mut u8*1024],
-    outbuf: [mut u8*768],
-    mut nbuf: uint,
-    mut noutbuf: uint,
-    mut end: bool,
+    priv base64: &Base64,
+    priv reader: io::Reader,
+    priv buf: [mut u8*1024],
+    priv outbuf: [mut u8*768],
+    priv mut nbuf: uint,
+    priv mut noutbuf: uint,
+    priv mut end: bool,
 }
 
 fn Base64Reader(base64: &a/Base64, reader: io::Reader) -> Base64Reader/&a {

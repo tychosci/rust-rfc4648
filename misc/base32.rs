@@ -87,8 +87,8 @@ const BASE32_HEX: &Base32 = &Base32 {
 };
 
 struct Base32 {
-    table: [u8*32],
-    decode_map: [u8*256],
+    priv table: [u8*32],
+    priv decode_map: [u8*256],
 }
 
 #[inline(always)]
@@ -228,11 +228,11 @@ fn hex_decode(src: &[u8]) -> ~[u8] {
 }
 
 struct Base32Writer {
-    base32: &Base32,
-    writer: io::Writer,
-    outbuf: [mut u8*1024],
-    buf: [mut u8*5],
-    mut nbuf: uint,
+    priv base32: &Base32,
+    priv writer: io::Writer,
+    priv outbuf: [mut u8*1024],
+    priv buf: [mut u8*5],
+    priv mut nbuf: uint,
 }
 
 fn Base32Writer(base32: &a/Base32, writer: io::Writer) -> Base32Writer/&a {
@@ -300,13 +300,13 @@ impl Base32Writer {
 }
 
 struct Base32Reader {
-    base32: &Base32,
-    reader: io::Reader,
-    buf: [mut u8*1024],
-    outbuf: [mut u8*640],
-    mut nbuf: uint,
-    mut noutbuf: uint,
-    mut end: bool,
+    priv base32: &Base32,
+    priv reader: io::Reader,
+    priv buf: [mut u8*1024],
+    priv outbuf: [mut u8*640],
+    priv mut nbuf: uint,
+    priv mut noutbuf: uint,
+    priv mut end: bool,
 }
 
 fn Base32Reader(base32: &a/Base32, reader: io::Reader) -> Base32Reader/&a {
