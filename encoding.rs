@@ -92,10 +92,10 @@ impl<T: Encode Decode> &[u8] : Codec<T> {
 
 impl<T: Encode Decode> &str : Codec<T> {
     fn encode(encoder: T) -> ~[u8] {
-        encoder.encode(str::to_bytes(self))
+        str::byte_slice(self, |b| encoder.encode(b))
     }
     fn decode(decoder: T) -> ~[u8] {
-        decoder.decode(str::to_bytes(self))
+        str::byte_slice(self, |b| decoder.decode(b))
     }
 }
 
