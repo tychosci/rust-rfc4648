@@ -101,7 +101,7 @@ pure fn decoded_len(src_length: uint) -> uint {
     src_length / 8 * 5
 }
 
-impl Base32 : BaseNNEncode {
+impl Base32 : MiscEncode {
     fn encode(&self, dst: &[mut u8], src: &[u8]) {
         b32encode(self.table, dst, src);
     }
@@ -133,7 +133,7 @@ impl Base32 : BaseNNEncode {
     }
 }
 
-impl Base32 : BaseNNDecode {
+impl Base32 : MiscDecode {
     fn decode(&self, dst: &[mut u8], src: &[u8]) -> DecodeResult {
         b32decode(self.decode_map, dst, src)
     }

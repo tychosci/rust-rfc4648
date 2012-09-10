@@ -109,7 +109,7 @@ pure fn decoded_len(src_length: uint) -> uint {
     src_length / 4 * 3
 }
 
-impl Base64 : BaseNNEncode {
+impl Base64 : MiscEncode {
     fn encode(&self, dst: &[mut u8], src: &[u8]) {
         b64encode(self.table, dst, src);
     }
@@ -141,7 +141,7 @@ impl Base64 : BaseNNEncode {
     }
 }
 
-impl Base64 : BaseNNDecode {
+impl Base64 : MiscDecode {
     fn decode(&self, dst: &[mut u8], src: &[u8]) -> DecodeResult {
         b64decode(self.decode_map, dst, src)
     }

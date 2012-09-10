@@ -1,4 +1,4 @@
-// baseNN.rs
+// misc.rs
 
 // `end` indicates whether the Decode method have encountered paddings or not.
 struct DecodeResult {
@@ -6,13 +6,13 @@ struct DecodeResult {
     ndecoded: uint,
 }
 
-trait BaseNNEncode {
+trait MiscEncode {
     fn encode(&self, dst: &[mut u8], src: &[u8]);
     fn encoded_len(&self, src_length: uint) -> uint;
     fn encode_bytes(&self, src: &[u8]) -> ~[u8];
 }
 
-trait BaseNNDecode {
+trait MiscDecode {
     fn decode(&self, dst: &[mut u8], src: &[u8]) -> DecodeResult;
     fn decoded_len(&self, src_length: uint) -> uint;
     fn decode_bytes(&self, src: &[u8]) -> ~[u8];
