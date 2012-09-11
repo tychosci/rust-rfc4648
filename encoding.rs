@@ -69,7 +69,7 @@ impl<T: Encode Decode> Convert<T> : Encode {
     fn encode(buf: &[u8]) -> ~[u8] {
         let buf = self.from.decode(buf);
         let buf = self.to.encode(buf);
-        return buf;
+        move buf
     }
 }
 
@@ -77,25 +77,25 @@ impl<T: Encode Decode> Convert<T> : Decode {
     fn decode(buf: &[u8]) -> ~[u8] {
         let buf = self.from.decode(buf);
         let buf = self.to.encode(buf);
-        return buf;
+        move buf
     }
 }
 
 impl<T: Encode Decode> &[u8] : Codec<T> {
     fn encode(encoder: T) -> ~[u8] {
-        encoder.encode(self)
+        move encoder.encode(self)
     }
     fn decode(decoder: T) -> ~[u8] {
-        decoder.decode(self)
+        move decoder.decode(self)
     }
 }
 
 impl<T: Encode Decode> &str : Codec<T> {
     fn encode(encoder: T) -> ~[u8] {
-        str::byte_slice(self, |b| encoder.encode(b))
+        move str::byte_slice(self, |b| encoder.encode(b))
     }
     fn decode(decoder: T) -> ~[u8] {
-        str::byte_slice(self, |b| decoder.decode(b))
+        move str::byte_slice(self, |b| decoder.decode(b))
     }
 }
 

@@ -137,7 +137,7 @@ impl Base64 : MiscEncode {
 
         self.encode(dst, src);
 
-        vec::from_mut(dst)
+        move vec::from_mut(dst)
     }
 }
 
@@ -171,7 +171,7 @@ impl Base64 : MiscDecode {
 
         unsafe { vec::unsafe::set_len(dst, res.ndecoded); }
 
-        vec::from_mut(dst)
+        move vec::from_mut(dst)
     }
 }
 
@@ -187,7 +187,7 @@ impl Base64 : MiscDecode {
  * base64-encoded bytes
  */
 fn encode(src: &[u8]) -> ~[u8] {
-    BASE64_STD.encode_bytes(src)
+    move BASE64_STD.encode_bytes(src)
 }
 
 /**
@@ -202,7 +202,7 @@ fn encode(src: &[u8]) -> ~[u8] {
  * base64-encoded bytes (url and filename safe)
  */
 fn urlsafe_encode(src: &[u8]) -> ~[u8] {
-    BASE64_URL.encode_bytes(src)
+    move BASE64_URL.encode_bytes(src)
 }
 
 /**
@@ -217,7 +217,7 @@ fn urlsafe_encode(src: &[u8]) -> ~[u8] {
  * decoded bytes
  */
 fn decode(src: &[u8]) -> ~[u8] {
-    BASE64_STD.decode_bytes(src)
+    move BASE64_STD.decode_bytes(src)
 }
 
 /**
@@ -232,7 +232,7 @@ fn decode(src: &[u8]) -> ~[u8] {
  * decoded bytes
  */
 fn urlsafe_decode(src: &[u8]) -> ~[u8] {
-    BASE64_URL.decode_bytes(src)
+    move BASE64_URL.decode_bytes(src)
 }
 
 struct Base64Writer {
@@ -398,7 +398,7 @@ impl Base64Reader {
 
         unsafe { vec::unsafe::set_len(buf, nread); }
 
-        vec::from_mut(buf)
+        move vec::from_mut(buf)
     }
     fn eof(&self) -> bool {
         self.noutbuf == 0 && (self.end || self.reader.eof())

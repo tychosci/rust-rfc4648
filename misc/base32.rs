@@ -129,7 +129,7 @@ impl Base32 : MiscEncode {
 
         self.encode(dst, src);
 
-        vec::from_mut(dst)
+        move vec::from_mut(dst)
     }
 }
 
@@ -163,7 +163,7 @@ impl Base32 : MiscDecode {
 
         unsafe { vec::unsafe::set_len(dst, res.ndecoded); }
 
-        vec::from_mut(dst)
+        move vec::from_mut(dst)
     }
 }
 
@@ -179,7 +179,7 @@ impl Base32 : MiscDecode {
  * base32-encoded bytes
  */
 fn encode(src: &[u8]) -> ~[u8] {
-    BASE32_STD.encode_bytes(src)
+    move BASE32_STD.encode_bytes(src)
 }
 
 /**
@@ -194,7 +194,7 @@ fn encode(src: &[u8]) -> ~[u8] {
  * base32-encoded bytes (extended hex alphabet)
  */
 fn hex_encode(src: &[u8]) -> ~[u8] {
-    BASE32_HEX.encode_bytes(src)
+    move BASE32_HEX.encode_bytes(src)
 }
 
 /**
@@ -209,7 +209,7 @@ fn hex_encode(src: &[u8]) -> ~[u8] {
  * decoded bytes
  */
 fn decode(src: &[u8]) -> ~[u8] {
-    BASE32_STD.decode_bytes(src)
+    move BASE32_STD.decode_bytes(src)
 }
 
 /**
@@ -224,7 +224,7 @@ fn decode(src: &[u8]) -> ~[u8] {
  * decoded bytes
  */
 fn hex_decode(src: &[u8]) -> ~[u8] {
-    BASE32_HEX.decode_bytes(src)
+    move BASE32_HEX.decode_bytes(src)
 }
 
 struct Base32Writer {
@@ -389,7 +389,7 @@ impl Base32Reader {
 
         unsafe { vec::unsafe::set_len(buf, nread); }
 
-        vec::from_mut(buf)
+        move vec::from_mut(buf)
     }
     fn eof(&self) -> bool {
         self.noutbuf == 0 && (self.end || self.reader.eof())
