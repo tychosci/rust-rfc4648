@@ -18,6 +18,9 @@ b64: setup-bin libencoding
 b64-stream: setup-bin libencoding
 	rustc -O $(E)/b64-stream.rs -o $(BINDIR)/$@ -L $(LIBDIR)
 
+b64-tcp-server: setup-bin libencoding
+	rustc -O $(E)/b64-tcp-server.rs -o $(BINDIR)/$@ -L $(LIBDIR)
+
 setup-lib:
 	mkdir -p $(LIBDIR)
 
