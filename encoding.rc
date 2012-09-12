@@ -13,6 +13,7 @@ extern mod std;
 
 export misc;
 
+#[path = "encoding/misc"]
 mod misc {
     mod base16;
     mod base32;

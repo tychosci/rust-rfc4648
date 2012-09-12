@@ -1,15 +1,13 @@
 # makefile
 
 E       := examples
-SRCDIR  := .
 LIBDIR  := lib
 BINDIR  := bin
 TESTDIR := test
-SOURCES := $(wildcard $(SRCDIR)/*.rs)
 
 all: libencoding
 
-libencoding: setup-lib encoding.rc $(SOURCES)
+libencoding: setup-lib encoding.rc
 	rustc -O encoding.rc --out-dir $(LIBDIR)
 
 b64: setup-bin libencoding
