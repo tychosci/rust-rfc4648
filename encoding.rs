@@ -85,6 +85,7 @@ impl<T: Encode Decode> &[u8] : Codec<T> {
     fn encode(encoder: T) -> ~[u8] {
         move encoder.encode(self)
     }
+
     fn decode(decoder: T) -> ~[u8] {
         move decoder.decode(self)
     }
@@ -94,6 +95,7 @@ impl<T: Encode Decode> &str : Codec<T> {
     fn encode(encoder: T) -> ~[u8] {
         move str::byte_slice(self, |b| encoder.encode(b))
     }
+
     fn decode(decoder: T) -> ~[u8] {
         move str::byte_slice(self, |b| decoder.decode(b))
     }
@@ -110,6 +112,7 @@ mod tests {
 
         assert expect == actual;
     }
+
     #[test]
     fn test_codec_convert() {
         let string = "foobar";

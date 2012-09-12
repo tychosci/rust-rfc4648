@@ -113,6 +113,7 @@ impl Base64 : MiscEncode {
     fn encode(&self, dst: &[mut u8], src: &[u8]) {
         b64encode(self.table, dst, src);
     }
+
     fn encoded_len(&self, src_length: uint) -> uint {
         encoded_len(src_length)
     }
@@ -145,6 +146,7 @@ impl Base64 : MiscDecode {
     fn decode(&self, dst: &[mut u8], src: &[u8]) -> DecodeResult {
         b64decode(self.decode_map, dst, src)
     }
+
     fn decoded_len(&self, src_length: uint) -> uint {
         decoded_len(src_length)
     }
@@ -295,6 +297,7 @@ impl Base64Writer {
         }
         self.nbuf += buf.len();
     }
+
     // TODO call this method on dropping (or put these stmts to `drop {...}`)
     fn close(&self) {
         if self.nbuf > 0 {
@@ -388,6 +391,7 @@ impl Base64Reader {
 
         return ndecoded;
     }
+
     fn read_bytes(&self, len: uint) -> ~[u8] {
         let mut buf = ~[mut];
 
@@ -400,6 +404,7 @@ impl Base64Reader {
 
         move vec::from_mut(buf)
     }
+
     fn eof(&self) -> bool {
         self.noutbuf == 0 && (self.end || self.reader.eof())
     }
@@ -484,6 +489,7 @@ mod tests {
         debug!("expect: %?, actual: %?", expect, actual);
         assert expect == actual;
     }
+
     #[test]
     fn test_encode() {
         let source = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
@@ -491,6 +497,7 @@ mod tests {
 
         t(source, expect, encode);
     }
+
     #[test]
     fn test_urlsafe_encode() {
         let source = ["", "f", "fo", "fo>", "foob", "fooba", "fo?ba?"];
@@ -498,6 +505,7 @@ mod tests {
 
         t(source, expect, urlsafe_encode);
     }
+
     #[test]
     fn test_decode() {
         let source = ["", "Zg==", "Zm8=", "Zm8+", "Zm9v\r\nYg==", "\tZm9vYmE=", "Zm8/YmE/"];
@@ -505,6 +513,7 @@ mod tests {
 
         t(source, expect, decode);
     }
+
     #[test]
     fn test_urlsafe_decode() {
         let source = ["", "Zg==", "Zm8=", "Zm8-", "Zm9v\r\nYg==", "\tZm9vYmE=", "Zm8_YmE_"];
@@ -512,6 +521,7 @@ mod tests {
 
         t(source, expect, urlsafe_decode);
     }
+
     #[test]
     fn test_base64_writer() {
         let source1 = str::to_bytes("f");
@@ -528,6 +538,7 @@ mod tests {
 
         assert expect == actual;
     }
+
     #[test]
     fn test_base64_reader() {
         let source = ["Zg==", "Zm8=", "Zm8+", "Zm9vYg==", "Zm9vYmE=", "Zm8/YmE/"];

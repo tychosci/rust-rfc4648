@@ -105,6 +105,7 @@ impl Base32 : MiscEncode {
     fn encode(&self, dst: &[mut u8], src: &[u8]) {
         b32encode(self.table, dst, src);
     }
+
     fn encoded_len(&self, src_length: uint) -> uint {
         encoded_len(src_length)
     }
@@ -137,6 +138,7 @@ impl Base32 : MiscDecode {
     fn decode(&self, dst: &[mut u8], src: &[u8]) -> DecodeResult {
         b32decode(self.decode_map, dst, src)
     }
+
     fn decoded_len(&self, src_length: uint) -> uint {
         decoded_len(src_length)
     }
@@ -287,6 +289,7 @@ impl Base32Writer {
         }
         self.nbuf = buf.len();
     }
+
     fn close(&self) {
         if self.nbuf > 0 {
             let nbuf = self.nbuf;
@@ -379,6 +382,7 @@ impl Base32Reader {
 
         return ndecoded;
     }
+
     fn read_bytes(&self, len: uint) -> ~[u8] {
         let mut buf = ~[mut];
 
@@ -391,6 +395,7 @@ impl Base32Reader {
 
         move vec::from_mut(buf)
     }
+
     fn eof(&self) -> bool {
         self.noutbuf == 0 && (self.end || self.reader.eof())
     }
@@ -507,6 +512,7 @@ mod tests {
         debug!("expect: %?, actual: %?", expect, actual);
         assert expect == actual;
     }
+
     #[test]
     fn test_encode() {
         let source = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
@@ -515,6 +521,7 @@ mod tests {
 
         t(source, expect, encode);
     }
+
     #[test]
     fn test_hex_encode() {
         let source = ["", "f", "fo", "foo", "foob", "fooba", "foobar"];
@@ -523,6 +530,7 @@ mod tests {
 
         t(source, expect, hex_encode);
     }
+
     #[test]
     fn test_decode() {
         let source = ["", "MY======", "MZXQ====", "MZXW6===",
@@ -531,6 +539,7 @@ mod tests {
 
         t(source, expect, decode);
     }
+
     #[test]
     fn test_hex_decode() {
         let source = ["", "CO======", "CPNG====", "CPNMU===",
@@ -539,6 +548,7 @@ mod tests {
 
         t(source, expect, hex_decode);
     }
+
     #[test]
     fn test_base32_writer() {
         let source1 = str::to_bytes("f");
@@ -555,6 +565,7 @@ mod tests {
 
         assert expect == actual;
     }
+
     #[test]
     fn test_base32_reader() {
         let source = ["MY======", "MZXQ====", "MZXW6===",

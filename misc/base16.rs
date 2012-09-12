@@ -68,6 +68,7 @@ impl Base16 : MiscEncode {
     fn encode(&self, dst: &[mut u8], src: &[u8]) {
         b16encode(self.table, dst, src);
     }
+
     fn encoded_len(&self, src_length: uint) -> uint {
         encoded_len(src_length)
     }
@@ -100,6 +101,7 @@ impl Base16 : MiscDecode {
     fn decode(&self, dst: &[mut u8], src: &[u8]) -> DecodeResult {
         b16decode(self.decode_map, dst, src)
     }
+
     fn decoded_len(&self, src_length: uint) -> uint {
         decoded_len(src_length)
     }
@@ -269,6 +271,7 @@ impl Base16Reader {
 
         return ndecoded;
     }
+
     fn read_bytes(&self, len: uint) -> ~[u8] {
         let mut buf = ~[mut];
 
@@ -281,6 +284,7 @@ impl Base16Reader {
 
         move vec::from_mut(buf)
     }
+
     fn eof(&self) -> bool {
         self.noutbuf == 0 && self.reader.eof()
     }
@@ -331,6 +335,7 @@ mod tests {
 
         assert expect == actual;
     }
+
     #[test]
     fn test_decode() {
         let source = str::to_bytes("\t66 6f\r\n 6f");
@@ -340,6 +345,7 @@ mod tests {
 
         assert expect == actual;
     }
+
     #[test]
     fn test_base16_writer() {
         let source1 = str::to_bytes("fo");
@@ -354,6 +360,7 @@ mod tests {
 
         assert expect == actual;
     }
+
     #[test]
     fn test_base16_reader() {
         let source = str::to_bytes("666f6f");
