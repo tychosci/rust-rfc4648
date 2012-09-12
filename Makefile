@@ -34,6 +34,6 @@ test-encoding: encoding.rc
 	rustc -O $< --test --out-dir $(TESTDIR)
 
 clean:
-	if [ -d "$(LIBDIR)" ]; then rm -r $(LIBDIR); fi
-	if [ -d "$(TESTDIR)" ]; then rm -r $(TESTDIR); fi
-	if [ -d "$(BINDIR)" ]; then rm -r $(BINDIR); fi
+	@rm -rf "$(LIBDIR)"
+	@rm -rf "$(TESTDIR)"
+	@rm -rf "$(BINDIR)"
