@@ -103,7 +103,7 @@ pure fn decoded_len(src_length: uint) -> uint {
 
 impl Base32 : MiscEncode {
     fn encode(&self, dst: &[mut u8], src: &[u8]) {
-        b32encode(self.table, dst, src);
+        base32encode(self.table, dst, src);
     }
 
     fn encoded_len(&self, src_length: uint) -> uint {
@@ -126,7 +126,7 @@ impl Base32 : MiscEncode {
         let dst_length = self.encoded_len(src.len());
 
         vec::reserve(dst, dst_length);
-        unsafe { vec::unsafe::set_len(dst, dst_length); }
+        unsafe { vec::raw::set_len(dst, dst_length); }
 
         self.encode(dst, src);
 
@@ -136,7 +136,7 @@ impl Base32 : MiscEncode {
 
 impl Base32 : MiscDecode {
     fn decode(&self, dst: &[mut u8], src: &[u8]) -> DecodeResult {
-        b32decode(self.decode_map, dst, src)
+        base32decode(self.decode_map, dst, src)
     }
 
     fn decoded_len(&self, src_length: uint) -> uint {
@@ -159,11 +159,11 @@ impl Base32 : MiscDecode {
         let dst_length = self.decoded_len(src.len());
 
         vec::reserve(dst, dst_length);
-        unsafe { vec::unsafe::set_len(dst, dst_length); }
+        unsafe { vec::raw::set_len(dst, dst_length); }
 
         let res = self.decode(dst, src);
 
-        unsafe { vec::unsafe::set_len(dst, res.ndecoded); }
+        unsafe { vec::raw::set_len(dst, res.ndecoded); }
 
         move vec::from_mut(dst)
     }
@@ -387,11 +387,11 @@ impl Base32Reader {
         let mut buf = ~[mut];
 
         vec::reserve(buf, len);
-        unsafe { vec::unsafe::set_len(buf, len); }
+        unsafe { vec::raw::set_len(buf, len); }
 
         let nread = self.read(buf, len);
 
-        unsafe { vec::unsafe::set_len(buf, nread); }
+        unsafe { vec::raw::set_len(buf, nread); }
 
         move vec::from_mut(buf)
     }
@@ -401,7 +401,7 @@ impl Base32Reader {
     }
 }
 
-fn b32encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
+fn base32encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     let src_length = src.len();
     let dst_length = dst.len();
 
@@ -436,7 +436,7 @@ fn b32encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     }
 }
 
-fn b32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
+fn base32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
     let mut ndecoded = 0u;
     let mut dst = vec::mut_view(dst, 0, dst.len());
     let mut src = vec::view(src, 0, src.len());
