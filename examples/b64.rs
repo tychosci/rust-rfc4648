@@ -16,13 +16,13 @@ fn main(args: ~[~str]) {
     }
 
     match io::read_whole_file(&Path(args[2])) {
-        result::Ok(data) => match args[1] {
+        Ok(move data) => match args[1] {
             ~"encode" => stdout.write(data.encode(encoding::Base64)),
             ~"decode" => stdout.write(data.decode(encoding::Base64)),
             _         => return
         },
-        result::Err(msg) => {
-            stderr.write_line(fmt!("Error: %s", msg));
+        Err(ref msg) => {
+            stderr.write_line(fmt!("Error: %s", *msg));
         }
     }
 }
