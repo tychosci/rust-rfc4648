@@ -49,3 +49,11 @@ impl Misc : Decode {
         }
     }
 }
+
+impl Misc : Convert {
+    static fn convert(buf: &[u8], to: Misc, from: Misc) -> ~[u8] {
+        let buf = from.decode(buf);
+        let buf = to.encode(buf);
+        move buf
+    }
+}

@@ -47,11 +47,6 @@ export Encode;
 export Decode;
 export Codec;
 
-struct Convert<T: Encode Decode> {
-    from: T,
-    to: T,
-}
-
 trait Encode {
     fn encode(buf: &[u8]) -> ~[u8];
 }
@@ -60,28 +55,17 @@ trait Decode {
     fn decode(buf: &[u8]) -> ~[u8];
 }
 
-trait Codec<T: Encode Decode> {
+trait Convert {
+    static fn convert(buf: &[u8], to: self, from: self) -> ~[u8];
+}
+
+trait Codec<T: Encode Decode Convert> {
     fn encode(encoder: T) -> ~[u8];
     fn decode(decoder: T) -> ~[u8];
+    fn convert(to: T, from: T) -> ~[u8];
 }
 
-impl<T: Encode Decode> Convert<T> : Encode {
-    fn encode(buf: &[u8]) -> ~[u8] {
-        let buf = self.from.decode(buf);
-        let buf = self.to.encode(buf);
-        move buf
-    }
-}
-
-impl<T: Encode Decode> Convert<T> : Decode {
-    fn decode(buf: &[u8]) -> ~[u8] {
-        let buf = self.from.decode(buf);
-        let buf = self.to.encode(buf);
-        move buf
-    }
-}
-
-impl<T: Encode Decode> &[u8] : Codec<T> {
+impl<T: Encode Decode Convert> &[u8] : Codec<T> {
     fn encode(encoder: T) -> ~[u8] {
         move encoder.encode(self)
     }
@@ -89,15 +73,23 @@ impl<T: Encode Decode> &[u8] : Codec<T> {
     fn decode(decoder: T) -> ~[u8] {
         move decoder.decode(self)
     }
+
+    fn convert(to: T, from: T) -> ~[u8] {
+        move convert(self, to, from)
+    }
 }
 
-impl<T: Encode Decode> &str : Codec<T> {
+impl<T: Encode Decode Convert> &str : Codec<T> {
     fn encode(encoder: T) -> ~[u8] {
         move str::byte_slice(self, |b| encoder.encode(b))
     }
 
     fn decode(decoder: T) -> ~[u8] {
         move str::byte_slice(self, |b| decoder.decode(b))
+    }
+
+    fn convert(to: T, from: T) -> ~[u8] {
+        move str::byte_slice(self, |b| convert(b, to, from))
     }
 }
 
@@ -115,11 +107,11 @@ mod tests {
 
     #[test]
     fn test_codec_convert() {
-        let string = "foobar";
-        let source = string.encode(Base32);
-        let expect = string.encode(Base64);
+        let s = "foobar";
+        let source = s.encode(Base64);
+        let expect = s.encode(Base32);
 
-        let actual = source.encode(Convert{from: Base32, to: Base64});
+        let actual = source.convert(Base32, Base64);
 
         assert expect == actual;
     }
