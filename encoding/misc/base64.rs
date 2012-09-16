@@ -17,19 +17,16 @@
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-export BASE64_STD, BASE64_URL, Base64Writer, Base64Reader;
-export encode, urlsafe_encode, decode, urlsafe_decode;
-
 macro_rules! abort (
     { $s:expr } => { fail str::from_slice($s) }
 )
 
-const PAD: u8 = 61u8;
+priv const PAD: u8 = 61u8;
 
 // ABCDEFGHIJKLMNOPQRSTUVWXYZ
 // abcdefghijklmnopqrstuvwxyz
 // 0123456789+/
-const TABLE_STD: [u8*64] = [
+priv const TABLE_STD: [u8*64] = [
      65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,  78,  79,  80,
      81,  82,  83,  84,  85,  86,  87,  88,  89,  90,  97,  98,  99, 100, 101, 102,
     103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118,
@@ -39,14 +36,14 @@ const TABLE_STD: [u8*64] = [
 // ABCDEFGHIJKLMNOPQRSTUVWXYZ
 // abcdefghijklmnopqrstuvwxyz
 // 0123456789-_
-const TABLE_URL: [u8*64] = [
+priv const TABLE_URL: [u8*64] = [
      65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,  78,  79,  80,
      81,  82,  83,  84,  85,  86,  87,  88,  89,  90,  97,  98,  99, 100, 101, 102,
     103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118,
     119, 120, 121, 122,  48,  49,  50,  51,  52,  53,  54,  55,  56,  57,  45,  95,
 ];
 
-const DECODE_MAP_STD: [u8*256] = [
+priv const DECODE_MAP_STD: [u8*256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,  62, 255, 255, 255,  63,
@@ -65,7 +62,7 @@ const DECODE_MAP_STD: [u8*256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
 ];
 
-const DECODE_MAP_URL: [u8*256] = [
+priv const DECODE_MAP_URL: [u8*256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,  62, 255, 255,
@@ -100,12 +97,12 @@ struct Base64 {
 }
 
 #[inline(always)]
-pure fn encoded_len(src_length: uint) -> uint {
+priv pure fn encoded_len(src_length: uint) -> uint {
     (src_length + 2) / 3 * 4
 }
 
 #[inline(always)]
-pure fn decoded_len(src_length: uint) -> uint {
+priv pure fn decoded_len(src_length: uint) -> uint {
     src_length / 4 * 3
 }
 
@@ -410,7 +407,7 @@ impl Base64Reader {
     }
 }
 
-fn base64encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
+priv fn base64encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     let src_length = src.len();
     let dst_length = dst.len();
 
@@ -434,7 +431,7 @@ fn base64encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     }
 }
 
-fn base64decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
+priv fn base64decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
     let mut ndecoded = 0u;
     let mut dst = vec::mut_view(dst, 0, dst.len());
     let mut src = vec::view(src, 0, src.len());

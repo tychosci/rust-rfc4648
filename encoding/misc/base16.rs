@@ -17,20 +17,17 @@
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-export BASE16, Base16Writer;
-export encode, decode;
-
 macro_rules! abort (
     { $s:expr } => { fail str::from_slice($s) }
 )
 
 // 0123456789ABCDEF
-const TABLE: [u8*16] = [
+priv const TABLE: [u8*16] = [
     48, 49, 50, 51, 52, 53, 54, 55,
     56, 57, 65, 66, 67, 68, 69, 70,
 ];
 
-const DECODE_MAP: [u8*256] = [
+priv const DECODE_MAP: [u8*256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
@@ -60,9 +57,9 @@ struct Base16 {
 }
 
 #[inline(always)]
-pure fn encoded_len(src_length: uint) -> uint { src_length * 2 }
+priv pure fn encoded_len(src_length: uint) -> uint { src_length * 2 }
 #[inline(always)]
-pure fn decoded_len(src_length: uint) -> uint { src_length / 2 }
+priv pure fn decoded_len(src_length: uint) -> uint { src_length / 2 }
 
 impl Base16 : MiscEncode {
     fn encode(&self, dst: &[mut u8], src: &[u8]) {
@@ -290,14 +287,14 @@ impl Base16Reader {
     }
 }
 
-fn base16encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
+priv fn base16encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     for uint::range(0, src.len()) |j| {
         dst[j+1*j]     = table[src[j]>>4];
         dst[j+1*j + 1] = table[src[j] & 0x0f];
     }
 }
 
-fn base16decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
+priv fn base16decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
     let mut src_length = src.len();
     let mut i = 0u;
     let mut j = 0u;

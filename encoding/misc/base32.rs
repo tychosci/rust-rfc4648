@@ -17,28 +17,25 @@
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-export BASE32_STD, BASE32_HEX, Base32Writer, Base32Reader;
-export encode, hex_encode, decode, hex_decode;
-
 macro_rules! abort (
     { $s:expr } => { fail str::from_slice($s) }
 )
 
-const PAD: u8 = 61u8;
+priv const PAD: u8 = 61u8;
 
 // ABCDEFGHIJKLMNOPQRSTUVWXYZ234567
-const TABLE_STD: [u8*32] = [
+priv const TABLE_STD: [u8*32] = [
     65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80,
     81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 50, 51, 52, 53, 54, 55,
 ];
 
 // 0123456789ABCDEFGHIJKLMNOPQRSTUV
-const TABLE_HEX: [u8*32] = [
+priv const TABLE_HEX: [u8*32] = [
     48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70,
     71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86,
 ];
 
-const DECODE_MAP_STD: [u8*256] = [
+priv const DECODE_MAP_STD: [u8*256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
@@ -57,7 +54,7 @@ const DECODE_MAP_STD: [u8*256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
 ];
 
-const DECODE_MAP_HEX: [u8*256] = [
+priv const DECODE_MAP_HEX: [u8*256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
@@ -92,12 +89,12 @@ struct Base32 {
 }
 
 #[inline(always)]
-pure fn encoded_len(src_length: uint) -> uint {
+priv pure fn encoded_len(src_length: uint) -> uint {
     (src_length + 4) / 5 * 8
 }
 
 #[inline(always)]
-pure fn decoded_len(src_length: uint) -> uint {
+priv pure fn decoded_len(src_length: uint) -> uint {
     src_length / 8 * 5
 }
 
@@ -401,7 +398,7 @@ impl Base32Reader {
     }
 }
 
-fn base32encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
+priv fn base32encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     let src_length = src.len();
     let dst_length = dst.len();
 
@@ -436,7 +433,7 @@ fn base32encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     }
 }
 
-fn base32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
+priv fn base32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
     let mut ndecoded = 0u;
     let mut dst = vec::mut_view(dst, 0, dst.len());
     let mut src = vec::view(src, 0, src.len());
