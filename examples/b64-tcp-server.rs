@@ -60,7 +60,7 @@ fn encode(+socket: TcpSocket) {
     let socket = tcp::socket_buf(socket);
 
     let mut chunk = ~[];
-    let mut buf = [0, ..1024];
+    let mut buf = [mut 0, ..1024];
 
     loop {
         let nread = socket.read(buf, buf.len());
