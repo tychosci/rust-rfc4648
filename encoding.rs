@@ -59,13 +59,13 @@ trait Convert {
     static fn convert(buf: &[u8], to: self, from: self) -> ~[u8];
 }
 
-trait Codec<T: Encode Decode Convert> {
+trait Codec<T: Copy Encode Decode Convert> {
     fn encode(encoder: T) -> ~[u8];
     fn decode(decoder: T) -> ~[u8];
     fn convert(to: T, from: T) -> ~[u8];
 }
 
-impl<T: Encode Decode Convert> &[u8] : Codec<T> {
+impl<T: Copy Encode Decode Convert> &[u8] : Codec<T> {
     fn encode(encoder: T) -> ~[u8] {
         move encoder.encode(self)
     }
@@ -79,7 +79,7 @@ impl<T: Encode Decode Convert> &[u8] : Codec<T> {
     }
 }
 
-impl<T: Encode Decode Convert> &str : Codec<T> {
+impl<T: Copy Encode Decode Convert> &str : Codec<T> {
     fn encode(encoder: T) -> ~[u8] {
         move str::byte_slice(self, |b| encoder.encode(b))
     }

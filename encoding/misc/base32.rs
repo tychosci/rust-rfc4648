@@ -325,7 +325,7 @@ impl Base32Reader {
     fn read(&self, p: &[mut u8], len: uint) -> uint {
         // use leftover output (decoded bytes) if it exists
         if self.noutbuf > 0 {
-            vec::u8::memcpy(p, self.outbuf, len);
+            vec::bytes::memcpy(p, self.outbuf, len);
 
             let n = if len > self.noutbuf { self.noutbuf } else { len };
             self.noutbuf -= n;
@@ -358,7 +358,7 @@ impl Base32Reader {
         let ndecoded = if nw > len {
             let res = self.base32.decode(self.outbuf, buf);
             // copy self.outbuf[0:len] to p
-            vec::u8::memcpy(p, self.outbuf, len);
+            vec::bytes::memcpy(p, self.outbuf, len);
             // shift unread bytes to head
             for uint::range(0, res.ndecoded - len) |i| {
                 self.outbuf[i] = self.outbuf[i+len];
@@ -552,7 +552,7 @@ mod tests {
         let source2 = str::to_bytes("ooba");
         let expect  = str::to_bytes("MZXW6YTB");
 
-        let actual  = io::with_buf_writer(|writer| {
+        let actual  = io::with_bytes_writer(|writer| {
             let writer = &Base32Writer(BASE32_STD, writer);
             writer.write(source1);
             writer.write(source2);
@@ -576,7 +576,7 @@ mod tests {
             io::with_bytes_reader(e, |reader| {
                 let reader = &Base32Reader(BASE32_STD, reader);
 
-                io::with_buf_writer(|writer| {
+                io::with_bytes_writer(|writer| {
                     while !reader.eof() {
                         let buf = reader.read_bytes(1);
                         writer.write(buf);
