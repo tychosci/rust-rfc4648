@@ -24,8 +24,8 @@ fn main() {
     let ip_addr = copy result::unwrap(ip_addr)[0];
 
     tcp::listen(ip_addr, port, backlog, iotask,
-        on_established,
-        on_new_connection);
+        |kill_ch| on_established(kill_ch),
+        |conn, kill_ch| on_new_connection(conn, kill_ch));
 }
 
 fn on_established(_kill_ch: KillChan) {
