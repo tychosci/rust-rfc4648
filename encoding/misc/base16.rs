@@ -46,12 +46,12 @@ priv const DECODE_MAP: [u8*256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
 ];
 
-const BASE16: &Base16 = &Base16 {
+pub const BASE16: &Base16 = &Base16 {
     table: TABLE,
     decode_map: DECODE_MAP,
 };
 
-struct Base16 {
+pub struct Base16 {
     priv table: [u8*16],
     priv decode_map: [u8*256],
 }
@@ -61,7 +61,7 @@ priv pure fn encoded_len(src_length: uint) -> uint { src_length * 2 }
 #[inline(always)]
 priv pure fn decoded_len(src_length: uint) -> uint { src_length / 2 }
 
-impl Base16 : MiscEncode {
+pub impl Base16 : MiscEncode {
     fn encode(&self, dst: &[mut u8], src: &[u8]) {
         base16encode(self.table, dst, src);
     }
@@ -82,19 +82,18 @@ impl Base16 : MiscEncode {
      * hex-encoded bytes
      */
     fn encode_bytes(&self, src: &[u8]) -> ~[u8] {
-        let mut dst = ~[mut];
         let dst_length = self.encoded_len(src.len());
+        let mut dst = vec::with_capacity(dst_length);
 
-        vec::reserve(dst, dst_length);
         unsafe { vec::raw::set_len(dst, dst_length); }
 
         self.encode(dst, src);
 
-        move vec::from_mut(dst)
+        move dst
     }
 }
 
-impl Base16 : MiscDecode {
+pub impl Base16 : MiscDecode {
     fn decode(&self, dst: &[mut u8], src: &[u8]) -> DecodeResult {
         base16decode(self.decode_map, dst, src)
     }
@@ -115,17 +114,16 @@ impl Base16 : MiscDecode {
      * decoded bytes
      */
     fn decode_bytes(&self, src: &[u8]) -> ~[u8] {
-        let mut dst = ~[mut];
         let dst_length = self.decoded_len(src.len());
+        let mut dst = vec::with_capacity(dst_length);
 
-        vec::reserve(dst, dst_length);
         unsafe { vec::raw::set_len(dst, dst_length); }
 
         let res = self.decode(dst, src);
 
         unsafe { vec::raw::set_len(dst, res.ndecoded); }
 
-        move vec::from_mut(dst)
+        move dst
     }
 }
 
@@ -140,7 +138,7 @@ impl Base16 : MiscDecode {
  *
  * hex-encoded bytes
  */
-fn encode(src: &[u8]) -> ~[u8] {
+pub fn encode(src: &[u8]) -> ~[u8] {
     move BASE16.encode_bytes(src)
 }
 
@@ -155,17 +153,17 @@ fn encode(src: &[u8]) -> ~[u8] {
  *
  * decoded bytes
  */
-fn decode(src: &[u8]) -> ~[u8] {
+pub fn decode(src: &[u8]) -> ~[u8] {
     move BASE16.decode_bytes(src)
 }
 
-struct Base16Writer {
+pub struct Base16Writer {
     priv base16: &Base16,
     priv writer: io::Writer,
     priv outbuf: [mut u8*1024],
 }
 
-fn Base16Writer(base16: &a/Base16, writer: io::Writer) -> Base16Writer/&a {
+pub fn Base16Writer(base16: &a/Base16, writer: io::Writer) -> Base16Writer/&a {
     Base16Writer {
         base16: base16,
         writer: writer,
@@ -173,7 +171,7 @@ fn Base16Writer(base16: &a/Base16, writer: io::Writer) -> Base16Writer/&a {
     }
 }
 
-impl Base16Writer {
+pub impl Base16Writer {
     fn write(&self, buf: &[u8]) {
         let mut buf = vec::view(buf, 0, buf.len());
 
@@ -192,7 +190,7 @@ impl Base16Writer {
     }
 }
 
-struct Base16Reader {
+pub struct Base16Reader {
     priv base16: &Base16,
     priv reader: io::Reader,
     priv buf: [mut u8*1024],
@@ -201,7 +199,7 @@ struct Base16Reader {
     priv mut noutbuf: uint,
 }
 
-fn Base16Reader(base16: &a/Base16, reader: io::Reader) -> Base16Reader/&a {
+pub fn Base16Reader(base16: &a/Base16, reader: io::Reader) -> Base16Reader/&a {
     Base16Reader {
         base16: base16,
         reader: reader,
@@ -212,7 +210,7 @@ fn Base16Reader(base16: &a/Base16, reader: io::Reader) -> Base16Reader/&a {
     }
 }
 
-impl Base16Reader {
+pub impl Base16Reader {
     fn read(&self, p: &[mut u8], len: uint) -> uint {
         // use leftover output (decoded bytes) if it exists
         if self.noutbuf > 0 {
@@ -270,16 +268,15 @@ impl Base16Reader {
     }
 
     fn read_bytes(&self, len: uint) -> ~[u8] {
-        let mut buf = ~[mut];
+        let mut buf = vec::with_capacity(len);
 
-        vec::reserve(buf, len);
         unsafe { vec::raw::set_len(buf, len); }
 
         let nread = self.read(buf, len);
 
         unsafe { vec::raw::set_len(buf, nread); }
 
-        move vec::from_mut(buf)
+        move buf
     }
 
     fn eof(&self) -> bool {

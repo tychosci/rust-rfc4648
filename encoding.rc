@@ -9,13 +9,19 @@
 
 #[doc = "\"encoding\" modules for Rust"];
 
+#[legacy_exports];
+
 extern mod std;
 
 export misc;
 
 #[path = "encoding/misc"]
+#[legacy_exports]
 mod misc {
+    #[legacy_exports]
     mod base16;
+    #[legacy_exports]
     mod base32;
+    #[legacy_exports]
     mod base64;
 }

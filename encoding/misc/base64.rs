@@ -81,17 +81,17 @@ priv const DECODE_MAP_URL: [u8*256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
 ];
 
-const BASE64_STD: &Base64 = &Base64 {
+pub const BASE64_STD: &Base64 = &Base64 {
     table: TABLE_STD,
     decode_map: DECODE_MAP_STD,
 };
 
-const BASE64_URL: &Base64 = &Base64 {
+pub const BASE64_URL: &Base64 = &Base64 {
     table: TABLE_URL,
     decode_map: DECODE_MAP_URL,
 };
 
-struct Base64 {
+pub struct Base64 {
     priv table: [u8*64],
     priv decode_map: [u8*256],
 }
@@ -106,7 +106,7 @@ priv pure fn decoded_len(src_length: uint) -> uint {
     src_length / 4 * 3
 }
 
-impl Base64 : MiscEncode {
+pub impl Base64 : MiscEncode {
     fn encode(&self, dst: &[mut u8], src: &[u8]) {
         base64encode(self.table, dst, src);
     }
@@ -127,19 +127,18 @@ impl Base64 : MiscEncode {
      * base64-encoded bytes
      */
     fn encode_bytes(&self, src: &[u8]) -> ~[u8] {
-        let mut dst = ~[mut];
         let dst_length = self.encoded_len(src.len());
+        let mut dst = vec::with_capacity(dst_length);
 
-        vec::reserve(dst, dst_length);
         unsafe { vec::raw::set_len(dst, dst_length); }
 
         self.encode(dst, src);
 
-        move vec::from_mut(dst)
+        move dst
     }
 }
 
-impl Base64 : MiscDecode {
+pub impl Base64 : MiscDecode {
     fn decode(&self, dst: &[mut u8], src: &[u8]) -> DecodeResult {
         base64decode(self.decode_map, dst, src)
     }
@@ -160,17 +159,16 @@ impl Base64 : MiscDecode {
      * decoded bytes
      */
     fn decode_bytes(&self, src: &[u8]) -> ~[u8] {
-        let mut dst = ~[mut];
         let dst_length = self.decoded_len(src.len());
+        let mut dst = vec::with_capacity(dst_length);
 
-        vec::reserve(dst, dst_length);
         unsafe { vec::raw::set_len(dst, dst_length); }
 
         let res = self.decode(dst, src);
 
         unsafe { vec::raw::set_len(dst, res.ndecoded); }
 
-        move vec::from_mut(dst)
+        move dst
     }
 }
 
@@ -185,7 +183,7 @@ impl Base64 : MiscDecode {
  *
  * base64-encoded bytes
  */
-fn encode(src: &[u8]) -> ~[u8] {
+pub fn encode(src: &[u8]) -> ~[u8] {
     move BASE64_STD.encode_bytes(src)
 }
 
@@ -200,7 +198,7 @@ fn encode(src: &[u8]) -> ~[u8] {
  *
  * base64-encoded bytes (url and filename safe)
  */
-fn urlsafe_encode(src: &[u8]) -> ~[u8] {
+pub fn urlsafe_encode(src: &[u8]) -> ~[u8] {
     move BASE64_URL.encode_bytes(src)
 }
 
@@ -215,7 +213,7 @@ fn urlsafe_encode(src: &[u8]) -> ~[u8] {
  *
  * decoded bytes
  */
-fn decode(src: &[u8]) -> ~[u8] {
+pub fn decode(src: &[u8]) -> ~[u8] {
     move BASE64_STD.decode_bytes(src)
 }
 
@@ -230,11 +228,11 @@ fn decode(src: &[u8]) -> ~[u8] {
  *
  * decoded bytes
  */
-fn urlsafe_decode(src: &[u8]) -> ~[u8] {
+pub fn urlsafe_decode(src: &[u8]) -> ~[u8] {
     move BASE64_URL.decode_bytes(src)
 }
 
-struct Base64Writer {
+pub struct Base64Writer {
     priv base64: &Base64,
     priv writer: io::Writer,
     priv outbuf: [mut u8*1024],
@@ -242,7 +240,7 @@ struct Base64Writer {
     priv mut nbuf: uint,
 }
 
-fn Base64Writer(base64: &a/Base64, writer: io::Writer) -> Base64Writer/&a {
+pub fn Base64Writer(base64: &a/Base64, writer: io::Writer) -> Base64Writer/&a {
     Base64Writer {
         base64: base64,
         writer: writer,
@@ -252,7 +250,7 @@ fn Base64Writer(base64: &a/Base64, writer: io::Writer) -> Base64Writer/&a {
     }
 }
 
-impl Base64Writer {
+pub impl Base64Writer {
     fn write(&self, buf: &[u8]) {
         let buflen  = buf.len();
         let mut buf = vec::view(buf, 0, buflen);
@@ -308,7 +306,7 @@ impl Base64Writer {
     }
 }
 
-struct Base64Reader {
+pub struct Base64Reader {
     priv base64: &Base64,
     priv reader: io::Reader,
     priv buf: [mut u8*1024],
@@ -318,7 +316,7 @@ struct Base64Reader {
     priv mut end: bool,
 }
 
-fn Base64Reader(base64: &a/Base64, reader: io::Reader) -> Base64Reader/&a {
+pub fn Base64Reader(base64: &a/Base64, reader: io::Reader) -> Base64Reader/&a {
     Base64Reader {
         base64: base64,
         reader: reader,
@@ -330,7 +328,7 @@ fn Base64Reader(base64: &a/Base64, reader: io::Reader) -> Base64Reader/&a {
     }
 }
 
-impl Base64Reader {
+pub impl Base64Reader {
     fn read(&self, p: &[mut u8], len: uint) -> uint {
         // use leftover output (decoded bytes) if it exists
         if self.noutbuf > 0 {
@@ -390,16 +388,15 @@ impl Base64Reader {
     }
 
     fn read_bytes(&self, len: uint) -> ~[u8] {
-        let mut buf = ~[mut];
+        let mut buf = vec::with_capacity(len);
 
-        vec::reserve(buf, len);
         unsafe { vec::raw::set_len(buf, len); }
 
         let nread = self.read(buf, len);
 
         unsafe { vec::raw::set_len(buf, nread); }
 
-        move vec::from_mut(buf)
+        move buf
     }
 
     fn eof(&self) -> bool {
@@ -480,9 +477,9 @@ priv fn base64decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeRes
 #[cfg(test)]
 mod tests {
     fn t(source: &[&str], expect: &[&str], cb: fn((&[u8])) -> ~[u8]) {
-        let source = source.map(str::to_bytes);
-        let expect = expect.map(str::to_bytes);
-        let actual = source.map(|e| cb(e));
+        let source = source.map(|b| str::to_bytes(*b));
+        let expect = expect.map(|b| str::to_bytes(*b));
+        let actual = source.map(|e| cb(*e));
         debug!("expect: %?, actual: %?", expect, actual);
         assert expect == actual;
     }
@@ -540,11 +537,11 @@ mod tests {
     fn test_base64_reader() {
         let source = ["Zg==", "Zm8=", "Zm8+", "Zm9vYg==", "Zm9vYmE=", "Zm8/YmE/"];
         let expect = ["f", "fo", "fo>", "foob", "fooba", "fo?ba?"];
-        let source = source.map(str::to_bytes);
-        let expect = expect.map(str::to_bytes);
+        let source = source.map(|b| str::to_bytes(*b));
+        let expect = expect.map(|b| str::to_bytes(*b));
 
         let actual = source.map(|e| {
-            io::with_bytes_reader(e, |reader| {
+            io::with_bytes_reader(*e, |reader| {
                 let reader = &Base64Reader(BASE64_STD, reader);
 
                 io::with_bytes_writer(|writer| {

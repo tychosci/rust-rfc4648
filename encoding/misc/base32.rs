@@ -73,17 +73,17 @@ priv const DECODE_MAP_HEX: [u8*256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
 ];
 
-const BASE32_STD: &Base32 = &Base32 {
+pub const BASE32_STD: &Base32 = &Base32 {
     table: TABLE_STD,
     decode_map: DECODE_MAP_STD,
 };
 
-const BASE32_HEX: &Base32 = &Base32 {
+pub const BASE32_HEX: &Base32 = &Base32 {
     table: TABLE_HEX,
     decode_map: DECODE_MAP_HEX,
 };
 
-struct Base32 {
+pub struct Base32 {
     priv table: [u8*32],
     priv decode_map: [u8*256],
 }
@@ -98,7 +98,7 @@ priv pure fn decoded_len(src_length: uint) -> uint {
     src_length / 8 * 5
 }
 
-impl Base32 : MiscEncode {
+pub impl Base32 : MiscEncode {
     fn encode(&self, dst: &[mut u8], src: &[u8]) {
         base32encode(self.table, dst, src);
     }
@@ -119,19 +119,18 @@ impl Base32 : MiscEncode {
      * base32-encoded bytes
      */
     fn encode_bytes(&self, src: &[u8]) -> ~[u8] {
-        let mut dst = ~[mut];
         let dst_length = self.encoded_len(src.len());
+        let mut dst = vec::with_capacity(dst_length);
 
-        vec::reserve(dst, dst_length);
         unsafe { vec::raw::set_len(dst, dst_length); }
 
         self.encode(dst, src);
 
-        move vec::from_mut(dst)
+        move dst
     }
 }
 
-impl Base32 : MiscDecode {
+pub impl Base32 : MiscDecode {
     fn decode(&self, dst: &[mut u8], src: &[u8]) -> DecodeResult {
         base32decode(self.decode_map, dst, src)
     }
@@ -152,17 +151,16 @@ impl Base32 : MiscDecode {
      * decoded bytes
      */
     fn decode_bytes(&self, src: &[u8]) -> ~[u8] {
-        let mut dst = ~[mut];
         let dst_length = self.decoded_len(src.len());
+        let mut dst = vec::with_capacity(dst_length);
 
-        vec::reserve(dst, dst_length);
         unsafe { vec::raw::set_len(dst, dst_length); }
 
         let res = self.decode(dst, src);
 
         unsafe { vec::raw::set_len(dst, res.ndecoded); }
 
-        move vec::from_mut(dst)
+        move dst
     }
 }
 
@@ -177,7 +175,7 @@ impl Base32 : MiscDecode {
  *
  * base32-encoded bytes
  */
-fn encode(src: &[u8]) -> ~[u8] {
+pub fn encode(src: &[u8]) -> ~[u8] {
     move BASE32_STD.encode_bytes(src)
 }
 
@@ -192,7 +190,7 @@ fn encode(src: &[u8]) -> ~[u8] {
  *
  * base32-encoded bytes (extended hex alphabet)
  */
-fn hex_encode(src: &[u8]) -> ~[u8] {
+pub fn hex_encode(src: &[u8]) -> ~[u8] {
     move BASE32_HEX.encode_bytes(src)
 }
 
@@ -207,7 +205,7 @@ fn hex_encode(src: &[u8]) -> ~[u8] {
  *
  * decoded bytes
  */
-fn decode(src: &[u8]) -> ~[u8] {
+pub fn decode(src: &[u8]) -> ~[u8] {
     move BASE32_STD.decode_bytes(src)
 }
 
@@ -222,11 +220,11 @@ fn decode(src: &[u8]) -> ~[u8] {
  *
  * decoded bytes
  */
-fn hex_decode(src: &[u8]) -> ~[u8] {
+pub fn hex_decode(src: &[u8]) -> ~[u8] {
     move BASE32_HEX.decode_bytes(src)
 }
 
-struct Base32Writer {
+pub struct Base32Writer {
     priv base32: &Base32,
     priv writer: io::Writer,
     priv outbuf: [mut u8*1024],
@@ -234,7 +232,7 @@ struct Base32Writer {
     priv mut nbuf: uint,
 }
 
-fn Base32Writer(base32: &a/Base32, writer: io::Writer) -> Base32Writer/&a {
+pub fn Base32Writer(base32: &a/Base32, writer: io::Writer) -> Base32Writer/&a {
     Base32Writer {
         base32: base32,
         writer: writer,
@@ -244,7 +242,7 @@ fn Base32Writer(base32: &a/Base32, writer: io::Writer) -> Base32Writer/&a {
     }
 }
 
-impl Base32Writer {
+pub impl Base32Writer {
     fn write(&self, buf: &[u8]) {
         let buflen = buf.len();
         let mut buf = vec::view(buf, 0, buflen);
@@ -299,7 +297,7 @@ impl Base32Writer {
     }
 }
 
-struct Base32Reader {
+pub struct Base32Reader {
     priv base32: &Base32,
     priv reader: io::Reader,
     priv buf: [mut u8*1024],
@@ -309,7 +307,7 @@ struct Base32Reader {
     priv mut end: bool,
 }
 
-fn Base32Reader(base32: &a/Base32, reader: io::Reader) -> Base32Reader/&a {
+pub fn Base32Reader(base32: &a/Base32, reader: io::Reader) -> Base32Reader/&a {
     Base32Reader {
         base32: base32,
         reader: reader,
@@ -321,7 +319,7 @@ fn Base32Reader(base32: &a/Base32, reader: io::Reader) -> Base32Reader/&a {
     }
 }
 
-impl Base32Reader {
+pub impl Base32Reader {
     fn read(&self, p: &[mut u8], len: uint) -> uint {
         // use leftover output (decoded bytes) if it exists
         if self.noutbuf > 0 {
@@ -381,16 +379,15 @@ impl Base32Reader {
     }
 
     fn read_bytes(&self, len: uint) -> ~[u8] {
-        let mut buf = ~[mut];
+        let mut buf = vec::with_capacity(len);
 
-        vec::reserve(buf, len);
         unsafe { vec::raw::set_len(buf, len); }
 
         let nread = self.read(buf, len);
 
         unsafe { vec::raw::set_len(buf, nread); }
 
-        move vec::from_mut(buf)
+        move buf
     }
 
     fn eof(&self) -> bool {
@@ -503,9 +500,9 @@ priv fn base32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeRes
 #[cfg(test)]
 mod tests {
     fn t(source: &[&str], expect: &[&str], cb: fn&((&[u8])) -> ~[u8]) {
-        let source = source.map(str::to_bytes);
-        let expect = expect.map(str::to_bytes);
-        let actual = source.map(|e| cb(e));
+        let source = source.map(|b| str::to_bytes(*b));
+        let expect = expect.map(|b| str::to_bytes(*b));
+        let actual = source.map(|e| cb(*e));
         debug!("expect: %?, actual: %?", expect, actual);
         assert expect == actual;
     }
@@ -569,11 +566,11 @@ mod tests {
                       "MZXW6YQ=", "MZXW6YTB", "MZXW6YTBOI======"];
         let expect = ["f", "fo", "foo", "foob", "fooba", "foobar"];
 
-        let source = source.map(str::to_bytes);
-        let expect = expect.map(str::to_bytes);
+        let source = source.map(|b| str::to_bytes(*b));
+        let expect = expect.map(|b| str::to_bytes(*b));
 
         let actual = source.map(|e| {
-            io::with_bytes_reader(e, |reader| {
+            io::with_bytes_reader(*e, |reader| {
                 let reader = &Base32Reader(BASE32_STD, reader);
 
                 io::with_bytes_writer(|writer| {
