@@ -44,25 +44,25 @@ export Decode;
 export Convert;
 export Codec;
 
-trait Encode {
+pub trait Encode {
     fn encode(buf: &[u8]) -> ~[u8];
 }
 
-trait Decode {
+pub trait Decode {
     fn decode(buf: &[u8]) -> ~[u8];
 }
 
-trait Convert {
+pub trait Convert {
     static fn convert(buf: &[u8], to: self, from: self) -> ~[u8];
 }
 
-trait Codec<T: Copy Encode Decode Convert> {
+pub trait Codec<T: Copy Encode Decode Convert> {
     fn encode(encoder: T) -> ~[u8];
     fn decode(decoder: T) -> ~[u8];
     fn convert(to: T, from: T) -> ~[u8];
 }
 
-impl<T: Copy Encode Decode Convert> &[u8] : Codec<T> {
+pub impl<T: Copy Encode Decode Convert> &[u8] : Codec<T> {
     fn encode(encoder: T) -> ~[u8] {
         move encoder.encode(self)
     }
@@ -76,7 +76,7 @@ impl<T: Copy Encode Decode Convert> &[u8] : Codec<T> {
     }
 }
 
-impl<T: Copy Encode Decode Convert> &str : Codec<T> {
+pub impl<T: Copy Encode Decode Convert> &str : Codec<T> {
     fn encode(encoder: T) -> ~[u8] {
         move str::byte_slice(self, |b| encoder.encode(b))
     }

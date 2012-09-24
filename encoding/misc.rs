@@ -1,32 +1,32 @@
 // misc.rs
 
 // `end` indicates whether the Decode method have encountered paddings or not.
-struct DecodeResult {
+priv struct DecodeResult {
     end: bool,
     ndecoded: uint,
 }
 
-trait MiscEncode {
+priv trait MiscEncode {
     fn encode(&self, dst: &[mut u8], src: &[u8]);
     fn encoded_len(&self, src_length: uint) -> uint;
     fn encode_bytes(&self, src: &[u8]) -> ~[u8];
 }
 
-trait MiscDecode {
+priv trait MiscDecode {
     fn decode(&self, dst: &[mut u8], src: &[u8]) -> DecodeResult;
     fn decoded_len(&self, src_length: uint) -> uint;
     fn decode_bytes(&self, src: &[u8]) -> ~[u8];
 }
 
-enum Misc {
-    Base16,
-    Base32,
-    Base64,
-    Base32Hex,
-    Base64Url,
+pub enum Misc {
+    pub Base16,
+    pub Base32,
+    pub Base64,
+    pub Base32Hex,
+    pub Base64Url,
 }
 
-impl Misc : Encode {
+pub impl Misc : Encode {
     fn encode(buf: &[u8]) -> ~[u8] {
         move match self {
             Base16    => base16::encode(buf),
@@ -38,7 +38,7 @@ impl Misc : Encode {
     }
 }
 
-impl Misc : Decode {
+pub impl Misc : Decode {
     fn decode(buf: &[u8]) -> ~[u8] {
         move match self {
             Base16    => base16::decode(buf),
@@ -50,7 +50,7 @@ impl Misc : Decode {
     }
 }
 
-impl Misc : Convert {
+pub impl Misc : Convert {
     static fn convert(buf: &[u8], to: Misc, from: Misc) -> ~[u8] {
         let buf = from.decode(buf);
         let buf = to.encode(buf);
