@@ -64,12 +64,10 @@ fn encode(+socket: TcpSocket) {
 
     loop {
         let nread = socket.read(buf, buf.len());
-
         if nread == 0 {
             break;
         }
-
-        vec::push_all(chunk, vec::view(buf, 0, nread));
+        chunk.push_all(buf.view(0, nread));
     }
 
     let encoded_bytes = chunk.encode(encoding::Base64);
