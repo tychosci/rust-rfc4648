@@ -14,7 +14,7 @@ use encoding::BASE64;
 use encoding::Base64Writer;
 use encoding::Base64Reader;
 
-fn main(args: ~[~str]) {
+fn main(++args: ~[~str]) {
     let argc = args.len();
 
     if argc < 3 {
