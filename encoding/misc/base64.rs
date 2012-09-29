@@ -130,7 +130,7 @@ pub impl Base64 : MiscEncode {
         let dst_length = self.encoded_len(src.len());
         let mut dst = vec::with_capacity(dst_length);
 
-        unsafe { vec::raw::set_len(dst, dst_length); }
+        unsafe { vec::raw::set_len(&mut dst, dst_length); }
 
         self.encode(dst, src);
 
@@ -162,11 +162,11 @@ pub impl Base64 : MiscDecode {
         let dst_length = self.decoded_len(src.len());
         let mut dst = vec::with_capacity(dst_length);
 
-        unsafe { vec::raw::set_len(dst, dst_length); }
+        unsafe { vec::raw::set_len(&mut dst, dst_length); }
 
         let res = self.decode(dst, src);
 
-        unsafe { vec::raw::set_len(dst, res.ndecoded); }
+        unsafe { vec::raw::set_len(&mut dst, res.ndecoded); }
 
         move dst
     }
@@ -390,11 +390,11 @@ pub impl Base64Reader {
     fn read_bytes(&self, len: uint) -> ~[u8] {
         let mut buf = vec::with_capacity(len);
 
-        unsafe { vec::raw::set_len(buf, len); }
+        unsafe { vec::raw::set_len(&mut buf, len); }
 
         let nread = self.read(buf, len);
 
-        unsafe { vec::raw::set_len(buf, nread); }
+        unsafe { vec::raw::set_len(&mut buf, nread); }
 
         move buf
     }
