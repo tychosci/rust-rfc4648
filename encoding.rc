@@ -1,13 +1,13 @@
+//! Encoding modules for Rust
+
 #[link(name = "encoding",
        vers = "0.1",
        uuid = "5C488DDE-765F-4195-8694-3AE839B51793",
        url  = "https://github.com/tychosci/rust-encoding")];
 
-#[comment = "\"encoding\" modules for Rust"];
+#[comment = "Encoding modules for Rust"];
 #[license = "MIT license"];
 #[crate_type = "lib"];
-
-#[doc = "\"encoding\" modules for Rust"];
 
 extern mod std;
 

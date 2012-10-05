@@ -5,7 +5,9 @@ use io::WriterUtil;
 use encoding::Codec;
 use path::Path;
 
-fn main(++args: ~[~str]) {
+fn main() {
+    let args = os::args();
+
     let binary = copy args[0];
     let stdout = io::stdout();
     let stderr = io::stderr();

@@ -1,7 +1,7 @@
 rust-encoding
 =============
 
-"encoding" modules for Rust
+Encoding modules for Rust
 
 LICENSE
 -------
