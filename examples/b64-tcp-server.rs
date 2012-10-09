@@ -56,7 +56,7 @@ fn accept(conn: TcpNewConnection, kill_ch: KillChan, cont_ch: ContChan) {
     }
 }
 
-fn encode(+socket: TcpSocket) {
+fn encode(socket: TcpSocket) {
     let socket = tcp::socket_buf(socket);
 
     let mut chunk = ~[];
