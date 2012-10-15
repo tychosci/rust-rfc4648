@@ -39,9 +39,10 @@ fn encode(filename: &Path, writer: io::Writer) {
     let writer = &Base64Writer(BASE64, writer);
     let reader = io::file_reader(filename).get();
 
+    let mut buf = [mut 0, ..1024];
     while !reader.eof() {
-        let buf = reader.read_bytes(1024);
-        writer.write(buf);
+        let nread = reader.read(buf, buf.len());
+        writer.write(vec::mut_view(buf, 0, nread));
     }
 
     // FIXME Remove this line once we get drop intrinsics.
@@ -52,8 +53,9 @@ fn decode(filename: &Path, writer: io::Writer) {
     let reader = io::file_reader(filename).get();
     let reader = &Base64Reader(BASE64, reader);
 
+    let mut buf = [mut 0, ..1024];
     while !reader.eof() {
-        let buf = reader.read_bytes(1024);
-        writer.write(buf);
+        let nread = reader.read(buf, buf.len());
+        writer.write(vec::mut_view(buf, 0, nread));
     }
 }
