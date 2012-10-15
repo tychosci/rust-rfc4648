@@ -99,7 +99,7 @@ priv pure fn decoded_len(src_length: uint) -> uint {
 }
 
 pub impl Base32 : MiscEncode {
-    fn encode(&self, dst: &[mut u8], src: &[u8]) {
+    fn encode(&self, dst: &[mut u8], src: &[const u8]) {
         base32encode(self.table, dst, src);
     }
 
@@ -118,7 +118,7 @@ pub impl Base32 : MiscEncode {
      *
      * base32-encoded bytes
      */
-    fn encode_bytes(&self, src: &[u8]) -> ~[u8] {
+    fn encode_bytes(&self, src: &[const u8]) -> ~[u8] {
         let dst_length = self.encoded_len(src.len());
         let mut dst = vec::with_capacity(dst_length);
 
@@ -131,7 +131,7 @@ pub impl Base32 : MiscEncode {
 }
 
 pub impl Base32 : MiscDecode {
-    fn decode(&self, dst: &[mut u8], src: &[u8]) -> DecodeResult {
+    fn decode(&self, dst: &[mut u8], src: &[const u8]) -> DecodeResult {
         base32decode(self.decode_map, dst, src)
     }
 
@@ -150,7 +150,7 @@ pub impl Base32 : MiscDecode {
      *
      * decoded bytes
      */
-    fn decode_bytes(&self, src: &[u8]) -> ~[u8] {
+    fn decode_bytes(&self, src: &[const u8]) -> ~[u8] {
         let dst_length = self.decoded_len(src.len());
         let mut dst = vec::with_capacity(dst_length);
 
@@ -175,7 +175,7 @@ pub impl Base32 : MiscDecode {
  *
  * base32-encoded bytes
  */
-pub fn encode(src: &[u8]) -> ~[u8] {
+pub fn encode(src: &[const u8]) -> ~[u8] {
     move BASE32_STD.encode_bytes(src)
 }
 
@@ -190,7 +190,7 @@ pub fn encode(src: &[u8]) -> ~[u8] {
  *
  * base32-encoded bytes (extended hex alphabet)
  */
-pub fn hex_encode(src: &[u8]) -> ~[u8] {
+pub fn hex_encode(src: &[const u8]) -> ~[u8] {
     move BASE32_HEX.encode_bytes(src)
 }
 
@@ -205,7 +205,7 @@ pub fn hex_encode(src: &[u8]) -> ~[u8] {
  *
  * decoded bytes
  */
-pub fn decode(src: &[u8]) -> ~[u8] {
+pub fn decode(src: &[const u8]) -> ~[u8] {
     move BASE32_STD.decode_bytes(src)
 }
 
@@ -220,7 +220,7 @@ pub fn decode(src: &[u8]) -> ~[u8] {
  *
  * decoded bytes
  */
-pub fn hex_decode(src: &[u8]) -> ~[u8] {
+pub fn hex_decode(src: &[const u8]) -> ~[u8] {
     move BASE32_HEX.decode_bytes(src)
 }
 
@@ -243,9 +243,9 @@ pub fn Base32Writer(base32: &a/Base32, writer: io::Writer) -> Base32Writer/&a {
 }
 
 pub impl Base32Writer {
-    fn write(&self, buf: &[u8]) {
+    fn write(&self, buf: &[const u8]) {
         let buflen = buf.len();
-        let mut buf = vec::view(buf, 0, buflen);
+        let mut buf = vec::const_view(buf, 0, buflen);
 
         if self.nbuf > 0 {
             let mut i = 0;
@@ -255,12 +255,12 @@ pub impl Base32Writer {
                 i += 1;
             }
 
-            buf = vec::view(buf, i, buflen);
+            buf = vec::const_view(buf, i, buflen);
             if self.nbuf < 5 {
                 return;
             }
 
-            self.base32.encode(self.outbuf, vec::slice(self.buf, 0, 5));
+            self.base32.encode(self.outbuf, vec::mut_view(self.buf, 0, 5));
             self.writer.write(vec::mut_view(self.outbuf, 0, 8));
             self.nbuf = 0;
         }
@@ -272,11 +272,11 @@ pub impl Base32Writer {
             let nn = nn - nn % 8;
 
             if nn > 0 {
-                self.base32.encode(self.outbuf, vec::view(buf, 0, nn));
+                self.base32.encode(self.outbuf, vec::const_view(buf, 0, nn));
                 self.writer.write(vec::mut_view(self.outbuf, 0, nn / 8 * 5));
             }
 
-            buf = vec::view(buf, nn, buflen);
+            buf = vec::const_view(buf, nn, buflen);
         }
 
         for uint::range(0, buf.len()) |i| {
@@ -290,7 +290,7 @@ pub impl Base32Writer {
             let nbuf = self.nbuf;
             self.nbuf = 0;
 
-            let buf = vec::slice(self.buf, 0, nbuf);
+            let buf = vec::mut_view(self.buf, 0, nbuf);
             self.base32.encode(self.outbuf, buf);
             self.writer.write(vec::mut_view(self.outbuf, 0, 8));
         }
@@ -350,8 +350,7 @@ pub impl Base32Reader {
         let nr = self.nbuf / 8 * 8; // total read bytes (except fringe bytes)
         let nw = self.nbuf / 8 * 5; // size of decoded bytes
 
-        // FIXME this copy is unfortunate
-        let buf = vec::slice(self.buf, 0, nr);
+        let buf = vec::mut_view(self.buf, 0, nr);
 
         let ndecoded = if nw > len {
             let res = self.base32.decode(self.outbuf, buf);
@@ -395,7 +394,7 @@ pub impl Base32Reader {
     }
 }
 
-priv fn base32encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
+priv fn base32encode(table: &[u8], dst: &[mut u8], src: &[const u8]) {
     let src_length = src.len();
     let dst_length = dst.len();
 
@@ -430,10 +429,10 @@ priv fn base32encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
     }
 }
 
-priv fn base32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
+priv fn base32decode(decode_map: &[u8], dst: &[mut u8], src: &[const u8]) -> DecodeResult {
     let mut ndecoded = 0u;
     let mut dst = vec::mut_view(dst, 0, dst.len());
-    let mut src = vec::view(src, 0, src.len());
+    let mut src = vec::const_view(src, 0, src.len());
     let mut end = false;
 
     while src.len() > 0 && !end {
@@ -446,7 +445,7 @@ priv fn base32decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeRes
                 abort!("malformed base32 string");
             }
             let chr = src[0];
-            src = vec::view(src, 1, src.len());
+            src = vec::const_view(src, 1, src.len());
             if char::is_whitespace(chr as char) {
                 loop;
             }

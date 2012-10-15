@@ -22,15 +22,15 @@ pub use Base32Reader = misc::base32::Base32Reader;
 pub use Base64Reader = misc::base64::Base64Reader;
 
 pub trait Encode {
-    fn encode(buf: &[u8]) -> ~[u8];
+    fn encode(buf: &[const u8]) -> ~[u8];
 }
 
 pub trait Decode {
-    fn decode(buf: &[u8]) -> ~[u8];
+    fn decode(buf: &[const u8]) -> ~[u8];
 }
 
 pub trait Convert {
-    static fn convert(buf: &[u8], to: self, from: self) -> ~[u8];
+    static fn convert(buf: &[const u8], to: self, from: self) -> ~[u8];
 }
 
 pub trait Codec<T: Copy Encode Decode Convert> {
@@ -39,7 +39,7 @@ pub trait Codec<T: Copy Encode Decode Convert> {
     fn convert(to: T, from: T) -> ~[u8];
 }
 
-pub impl<T: Copy Encode Decode Convert> &[u8] : Codec<T> {
+pub impl<T: Copy Encode Decode Convert> &[const u8] : Codec<T> {
     fn encode(encoder: T) -> ~[u8] {
         move encoder.encode(self)
     }

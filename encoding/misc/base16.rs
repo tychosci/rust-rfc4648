@@ -62,7 +62,7 @@ priv pure fn encoded_len(src_length: uint) -> uint { src_length * 2 }
 priv pure fn decoded_len(src_length: uint) -> uint { src_length / 2 }
 
 pub impl Base16 : MiscEncode {
-    fn encode(&self, dst: &[mut u8], src: &[u8]) {
+    fn encode(&self, dst: &[mut u8], src: &[const u8]) {
         base16encode(self.table, dst, src);
     }
 
@@ -81,7 +81,7 @@ pub impl Base16 : MiscEncode {
      *
      * hex-encoded bytes
      */
-    fn encode_bytes(&self, src: &[u8]) -> ~[u8] {
+    fn encode_bytes(&self, src: &[const u8]) -> ~[u8] {
         let dst_length = self.encoded_len(src.len());
         let mut dst = vec::with_capacity(dst_length);
 
@@ -94,7 +94,7 @@ pub impl Base16 : MiscEncode {
 }
 
 pub impl Base16 : MiscDecode {
-    fn decode(&self, dst: &[mut u8], src: &[u8]) -> DecodeResult {
+    fn decode(&self, dst: &[mut u8], src: &[const u8]) -> DecodeResult {
         base16decode(self.decode_map, dst, src)
     }
 
@@ -113,7 +113,7 @@ pub impl Base16 : MiscDecode {
      *
      * decoded bytes
      */
-    fn decode_bytes(&self, src: &[u8]) -> ~[u8] {
+    fn decode_bytes(&self, src: &[const u8]) -> ~[u8] {
         let dst_length = self.decoded_len(src.len());
         let mut dst = vec::with_capacity(dst_length);
 
@@ -138,7 +138,7 @@ pub impl Base16 : MiscDecode {
  *
  * hex-encoded bytes
  */
-pub fn encode(src: &[u8]) -> ~[u8] {
+pub fn encode(src: &[const u8]) -> ~[u8] {
     move BASE16.encode_bytes(src)
 }
 
@@ -153,7 +153,7 @@ pub fn encode(src: &[u8]) -> ~[u8] {
  *
  * decoded bytes
  */
-pub fn decode(src: &[u8]) -> ~[u8] {
+pub fn decode(src: &[const u8]) -> ~[u8] {
     move BASE16.decode_bytes(src)
 }
 
@@ -172,8 +172,8 @@ pub fn Base16Writer(base16: &a/Base16, writer: io::Writer) -> Base16Writer/&a {
 }
 
 pub impl Base16Writer {
-    fn write(&self, buf: &[u8]) {
-        let mut buf = vec::view(buf, 0, buf.len());
+    fn write(&self, buf: &[const u8]) {
+        let mut buf = vec::const_view(buf, 0, buf.len());
 
         while buf.len() > 0 {
             let buflen = buf.len();
@@ -181,11 +181,11 @@ pub impl Base16Writer {
             let nn = if nn > buflen { buflen } else { nn };
 
             if nn > 0 {
-                self.base16.encode(self.outbuf, vec::view(buf, 0, nn));
+                self.base16.encode(self.outbuf, vec::const_view(buf, 0, nn));
                 self.writer.write(vec::mut_view(self.outbuf, 0, nn * 2));
             }
 
-            buf = vec::view(buf, nn, buflen);
+            buf = vec::const_view(buf, nn, buflen);
         }
     }
 }
@@ -241,8 +241,7 @@ pub impl Base16Reader {
         let nr = self.nbuf / 2 * 2; // total read bytes (except fringe bytes)
         let nw = self.nbuf / 2;     // size of decoded bytes
 
-        // FIXME this copy is unfortunate
-        let buf = vec::slice(self.buf, 0, nr);
+        let buf = vec::mut_view(self.buf, 0, nr);
 
         let ndecoded = if nw > len {
             let res = self.base16.decode(self.outbuf, buf);
@@ -284,14 +283,14 @@ pub impl Base16Reader {
     }
 }
 
-priv fn base16encode(table: &[u8], dst: &[mut u8], src: &[u8]) {
+priv fn base16encode(table: &[u8], dst: &[mut u8], src: &[const u8]) {
     for uint::range(0, src.len()) |j| {
         dst[j+1*j]     = table[src[j]>>4];
         dst[j+1*j + 1] = table[src[j] & 0x0f];
     }
 }
 
-priv fn base16decode(decode_map: &[u8], dst: &[mut u8], src: &[u8]) -> DecodeResult {
+priv fn base16decode(decode_map: &[u8], dst: &[mut u8], src: &[const u8]) -> DecodeResult {
     let mut src_length = src.len();
     let mut i = 0u;
     let mut j = 0u;
