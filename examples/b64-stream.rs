@@ -45,7 +45,7 @@ fn encode(filename: &Path, writer: io::Writer) {
         writer.write(vec::mut_view(buf, 0, nread));
     }
 
-    // FIXME Remove this line once we get drop intrinsics.
+    // FIXME Remove this line once we get Drop trait.
     writer.close();
 }
 

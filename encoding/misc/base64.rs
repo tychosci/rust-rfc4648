@@ -525,7 +525,7 @@ mod tests {
             let writer = &Base64Writer(BASE64_STD, writer);
             writer.write(source1);
             writer.write(source2);
-            // FIXME Remove this line once we get drop intrinsics.
+            // FIXME Remove this line once we get Drop trait.
             writer.close();
         });
 
