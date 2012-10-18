@@ -5,7 +5,7 @@ use std::net::ip;
 use std::net::tcp;
 use std::uv_global_loop;
 
-use encoding::{Codec};
+use encoding::{BASE64, Base64Writer};
 use io::{ReaderUtil, WriterUtil};
 use tcp::{TcpErrData, TcpNewConnection, TcpSocket};
 use task::{SingleThreaded, task};
@@ -59,18 +59,17 @@ fn accept(conn: TcpNewConnection, kill_ch: KillChan, cont_ch: ContChan) {
 fn encode(socket: TcpSocket) {
     let socket = tcp::socket_buf(move socket);
 
-    let mut chunk = ~[];
-    let mut buf = [mut 0, ..1024];
-
-    loop {
-        let nread = socket.read(buf, buf.len());
-        if nread == 0 {
-            break;
+    let encoded_bytes = io::with_bytes_writer(|writer| {
+        let writer = Base64Writer(BASE64, move writer);
+        let mut buf = [mut 0, ..1024];
+        loop {
+            let nread = socket.read(buf, buf.len());
+            if nread == 0 { break; }
+            writer.write(buf.view(0, nread));
         }
-        chunk.push_all(buf.view(0, nread));
-    }
-
-    let encoded_bytes = chunk.encode(encoding::Base64);
+        // FIXME: Remove this line once we get Drop trait.
+        writer.close();
+    });
 
     socket.write(encoded_bytes);
 }
