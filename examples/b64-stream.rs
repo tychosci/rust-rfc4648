@@ -36,7 +36,7 @@ fn main() {
 }
 
 fn encode(filename: &Path, writer: io::Writer) {
-    let writer = &Base64Writer(BASE64, writer);
+    let writer = Base64Writer(BASE64, &writer);
     let reader = io::file_reader(filename).get();
 
     let mut buf = [mut 0, ..1024];
@@ -51,7 +51,7 @@ fn encode(filename: &Path, writer: io::Writer) {
 
 fn decode(filename: &Path, writer: io::Writer) {
     let reader = io::file_reader(filename).get();
-    let reader = &Base64Reader(BASE64, reader);
+    let reader = Base64Reader(BASE64, &reader);
 
     let mut buf = [mut 0, ..1024];
     while !reader.eof() {

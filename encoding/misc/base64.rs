@@ -232,15 +232,17 @@ pub fn urlsafe_decode(src: &[const u8]) -> ~[u8] {
     move BASE64_URL.decode_bytes(src)
 }
 
-pub struct Base64Writer {
+pub struct Base64Writer<T: io::Writer> {
     priv base64: &Base64,
-    priv writer: io::Writer,
+    priv writer: &T,
     priv outbuf: [mut u8*1024],
     priv buf: [mut u8*3],
     priv mut nbuf: uint,
 }
 
-pub fn Base64Writer(base64: &a/Base64, writer: io::Writer) -> Base64Writer/&a {
+pub fn Base64Writer<T: io::Writer>(base64: &a/Base64, writer: &a/T)
+    -> Base64Writer/&a<T> {
+
     Base64Writer {
         base64: base64,
         writer: writer,
@@ -250,7 +252,7 @@ pub fn Base64Writer(base64: &a/Base64, writer: io::Writer) -> Base64Writer/&a {
     }
 }
 
-pub impl Base64Writer {
+pub impl<T: io::Writer> Base64Writer<T> {
     fn write(&self, buf: &[const u8]) {
         let buflen  = buf.len();
         let mut buf = vec::const_view(buf, 0, buflen);
@@ -306,9 +308,9 @@ pub impl Base64Writer {
     }
 }
 
-pub struct Base64Reader {
+pub struct Base64Reader<T: io::Reader> {
     priv base64: &Base64,
-    priv reader: io::Reader,
+    priv reader: &T,
     priv buf: [mut u8*1024],
     priv outbuf: [mut u8*768],
     priv mut nbuf: uint,
@@ -316,7 +318,9 @@ pub struct Base64Reader {
     priv mut end: bool,
 }
 
-pub fn Base64Reader(base64: &a/Base64, reader: io::Reader) -> Base64Reader/&a {
+pub fn Base64Reader<T: io::Reader>(base64: &a/Base64, reader: &a/T)
+    -> Base64Reader/&a<T> {
+
     Base64Reader {
         base64: base64,
         reader: reader,
@@ -328,7 +332,7 @@ pub fn Base64Reader(base64: &a/Base64, reader: io::Reader) -> Base64Reader/&a {
     }
 }
 
-pub impl Base64Reader {
+pub impl<T: io::Reader> Base64Reader<T> {
     fn read(&self, p: &[mut u8], len: uint) -> uint {
         // use leftover output (decoded bytes) if it exists
         if self.noutbuf > 0 {
@@ -522,7 +526,7 @@ mod tests {
         let expect  = str::to_bytes("Zm9vYmFy");
 
         let actual  = io::with_bytes_writer(|writer| {
-            let writer = &Base64Writer(BASE64_STD, writer);
+            let writer = Base64Writer(BASE64_STD, &writer);
             writer.write(source1);
             writer.write(source2);
             // FIXME Remove this line once we get Drop trait.
@@ -541,7 +545,7 @@ mod tests {
 
         let actual = source.map(|e| {
             io::with_bytes_reader(*e, |reader| {
-                let reader = &Base64Reader(BASE64_STD, reader);
+                let reader = Base64Reader(BASE64_STD, &reader);
 
                 io::with_bytes_writer(|writer| {
                     while !reader.eof() {

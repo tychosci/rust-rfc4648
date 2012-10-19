@@ -59,17 +59,13 @@ fn accept(conn: TcpNewConnection, kill_ch: KillChan, cont_ch: ContChan) {
 fn encode(socket: TcpSocket) {
     let socket = tcp::socket_buf(move socket);
 
-    let encoded_bytes = io::with_bytes_writer(|writer| {
-        let writer = Base64Writer(BASE64, move writer);
-        let mut buf = [mut 0, ..1024];
-        loop {
-            let nread = socket.read(buf, buf.len());
-            if nread == 0 { break; }
-            writer.write(buf.view(0, nread));
-        }
-        // FIXME: Remove this line once we get Drop trait.
-        writer.close();
-    });
-
-    socket.write(encoded_bytes);
+    let writer = Base64Writer(BASE64, &socket);
+    let mut buf = [mut 0, ..1024];
+    loop {
+        let nread = socket.read(buf, buf.len());
+        if nread == 0 { break; }
+        writer.write(buf.view(0, nread));
+    }
+    // FIXME: Remove this line once we get Drop trait.
+    writer.close();
 }

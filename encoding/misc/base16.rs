@@ -157,13 +157,15 @@ pub fn decode(src: &[const u8]) -> ~[u8] {
     move BASE16.decode_bytes(src)
 }
 
-pub struct Base16Writer {
+pub struct Base16Writer<T: io::Writer> {
     priv base16: &Base16,
-    priv writer: io::Writer,
+    priv writer: &T,
     priv outbuf: [mut u8*1024],
 }
 
-pub fn Base16Writer(base16: &a/Base16, writer: io::Writer) -> Base16Writer/&a {
+pub fn Base16Writer<T: io::Writer>(base16: &a/Base16, writer: &a/T)
+    -> Base16Writer/&a<T> {
+
     Base16Writer {
         base16: base16,
         writer: writer,
@@ -171,7 +173,7 @@ pub fn Base16Writer(base16: &a/Base16, writer: io::Writer) -> Base16Writer/&a {
     }
 }
 
-pub impl Base16Writer {
+pub impl<T: io::Writer> Base16Writer<T> {
     fn write(&self, buf: &[const u8]) {
         let mut buf = vec::const_view(buf, 0, buf.len());
 
@@ -190,16 +192,18 @@ pub impl Base16Writer {
     }
 }
 
-pub struct Base16Reader {
+pub struct Base16Reader<T: io::Reader> {
     priv base16: &Base16,
-    priv reader: io::Reader,
+    priv reader: &T,
     priv buf: [mut u8*1024],
     priv outbuf: [mut u8*512],
     priv mut nbuf: uint,
     priv mut noutbuf: uint,
 }
 
-pub fn Base16Reader(base16: &a/Base16, reader: io::Reader) -> Base16Reader/&a {
+pub fn Base16Reader<T: io::Reader>(base16: &a/Base16, reader: &a/T)
+    -> Base16Reader/&a<T> {
+
     Base16Reader {
         base16: base16,
         reader: reader,
@@ -210,7 +214,7 @@ pub fn Base16Reader(base16: &a/Base16, reader: io::Reader) -> Base16Reader/&a {
     }
 }
 
-pub impl Base16Reader {
+pub impl<T: io::Reader> Base16Reader<T> {
     fn read(&self, p: &[mut u8], len: uint) -> uint {
         // use leftover output (decoded bytes) if it exists
         if self.noutbuf > 0 {
@@ -346,7 +350,7 @@ mod tests {
         let expect  = str::to_bytes("666F6F");
 
         let actual  = io::with_bytes_writer(|writer| {
-            let writer = &Base16Writer(BASE16, writer);
+            let writer = Base16Writer(BASE16, &writer);
             writer.write(source1);
             writer.write(source2);
         });
@@ -360,7 +364,7 @@ mod tests {
         let expect = str::to_bytes("foo");
 
         let actual = io::with_bytes_reader(source, |reader| {
-            let reader = &Base16Reader(BASE16, reader);
+            let reader = Base16Reader(BASE16, &reader);
 
             io::with_bytes_writer(|writer| {
                 while !reader.eof() {

@@ -224,15 +224,17 @@ pub fn hex_decode(src: &[const u8]) -> ~[u8] {
     move BASE32_HEX.decode_bytes(src)
 }
 
-pub struct Base32Writer {
+pub struct Base32Writer<T: io::Writer> {
     priv base32: &Base32,
-    priv writer: io::Writer,
+    priv writer: &T,
     priv outbuf: [mut u8*1024],
     priv buf: [mut u8*5],
     priv mut nbuf: uint,
 }
 
-pub fn Base32Writer(base32: &a/Base32, writer: io::Writer) -> Base32Writer/&a {
+pub fn Base32Writer<T: io::Writer>(base32: &a/Base32, writer: &a/T)
+    -> Base32Writer/&a<T> {
+
     Base32Writer {
         base32: base32,
         writer: writer,
@@ -242,7 +244,7 @@ pub fn Base32Writer(base32: &a/Base32, writer: io::Writer) -> Base32Writer/&a {
     }
 }
 
-pub impl Base32Writer {
+pub impl<T: io::Writer> Base32Writer<T> {
     fn write(&self, buf: &[const u8]) {
         let buflen = buf.len();
         let mut buf = vec::const_view(buf, 0, buflen);
@@ -297,9 +299,9 @@ pub impl Base32Writer {
     }
 }
 
-pub struct Base32Reader {
+pub struct Base32Reader<T: io::Reader> {
     priv base32: &Base32,
-    priv reader: io::Reader,
+    priv reader: &T,
     priv buf: [mut u8*1024],
     priv outbuf: [mut u8*640],
     priv mut nbuf: uint,
@@ -307,7 +309,9 @@ pub struct Base32Reader {
     priv mut end: bool,
 }
 
-pub fn Base32Reader(base32: &a/Base32, reader: io::Reader) -> Base32Reader/&a {
+pub fn Base32Reader<T: io::Reader>(base32: &a/Base32, reader: &a/T)
+    -> Base32Reader/&a<T> {
+
     Base32Reader {
         base32: base32,
         reader: reader,
@@ -319,7 +323,7 @@ pub fn Base32Reader(base32: &a/Base32, reader: io::Reader) -> Base32Reader/&a {
     }
 }
 
-pub impl Base32Reader {
+pub impl<T: io::Reader> Base32Reader<T> {
     fn read(&self, p: &[mut u8], len: uint) -> uint {
         // use leftover output (decoded bytes) if it exists
         if self.noutbuf > 0 {
@@ -549,7 +553,7 @@ mod tests {
         let expect  = str::to_bytes("MZXW6YTB");
 
         let actual  = io::with_bytes_writer(|writer| {
-            let writer = &Base32Writer(BASE32_STD, writer);
+            let writer = Base32Writer(BASE32_STD, &writer);
             writer.write(source1);
             writer.write(source2);
             // FIXME Remove this line once we get Drop trait.
@@ -570,7 +574,7 @@ mod tests {
 
         let actual = source.map(|e| {
             io::with_bytes_reader(*e, |reader| {
-                let reader = &Base32Reader(BASE32_STD, reader);
+                let reader = Base32Reader(BASE32_STD, &reader);
 
                 io::with_bytes_writer(|writer| {
                     while !reader.eof() {
