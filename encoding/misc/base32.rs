@@ -6,8 +6,8 @@
  * # Example
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * use encoding;
- * import encoding::Codec;
+ * extern mod encoding;
+ * use encoding::Codec;
  *
  * let src = "base32";
  * let res = src.encode(encoding::Base32);
