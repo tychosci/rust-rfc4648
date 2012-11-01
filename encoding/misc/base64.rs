@@ -184,7 +184,7 @@ pub impl Base64 : MiscDecode {
  * base64-encoded bytes
  */
 pub fn encode(src: &[const u8]) -> ~[u8] {
-    move BASE64_STD.encode_bytes(src)
+    BASE64_STD.encode_bytes(src)
 }
 
 /**
@@ -199,7 +199,7 @@ pub fn encode(src: &[const u8]) -> ~[u8] {
  * base64-encoded bytes (url and filename safe)
  */
 pub fn urlsafe_encode(src: &[const u8]) -> ~[u8] {
-    move BASE64_URL.encode_bytes(src)
+    BASE64_URL.encode_bytes(src)
 }
 
 /**
@@ -214,7 +214,7 @@ pub fn urlsafe_encode(src: &[const u8]) -> ~[u8] {
  * decoded bytes
  */
 pub fn decode(src: &[const u8]) -> ~[u8] {
-    move BASE64_STD.decode_bytes(src)
+    BASE64_STD.decode_bytes(src)
 }
 
 /**
@@ -229,7 +229,7 @@ pub fn decode(src: &[const u8]) -> ~[u8] {
  * decoded bytes
  */
 pub fn urlsafe_decode(src: &[const u8]) -> ~[u8] {
-    move BASE64_URL.decode_bytes(src)
+    BASE64_URL.decode_bytes(src)
 }
 
 pub struct Base64Writer<T: io::Writer> {

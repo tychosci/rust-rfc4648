@@ -139,7 +139,7 @@ pub impl Base16 : MiscDecode {
  * hex-encoded bytes
  */
 pub fn encode(src: &[const u8]) -> ~[u8] {
-    move BASE16.encode_bytes(src)
+    BASE16.encode_bytes(src)
 }
 
 /**
@@ -154,7 +154,7 @@ pub fn encode(src: &[const u8]) -> ~[u8] {
  * decoded bytes
  */
 pub fn decode(src: &[const u8]) -> ~[u8] {
-    move BASE16.decode_bytes(src)
+    BASE16.decode_bytes(src)
 }
 
 pub struct Base16Writer<T: io::Writer> {

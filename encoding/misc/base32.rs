@@ -176,7 +176,7 @@ pub impl Base32 : MiscDecode {
  * base32-encoded bytes
  */
 pub fn encode(src: &[const u8]) -> ~[u8] {
-    move BASE32_STD.encode_bytes(src)
+    BASE32_STD.encode_bytes(src)
 }
 
 /**
@@ -191,7 +191,7 @@ pub fn encode(src: &[const u8]) -> ~[u8] {
  * base32-encoded bytes (extended hex alphabet)
  */
 pub fn hex_encode(src: &[const u8]) -> ~[u8] {
-    move BASE32_HEX.encode_bytes(src)
+    BASE32_HEX.encode_bytes(src)
 }
 
 /**
@@ -206,7 +206,7 @@ pub fn hex_encode(src: &[const u8]) -> ~[u8] {
  * decoded bytes
  */
 pub fn decode(src: &[const u8]) -> ~[u8] {
-    move BASE32_STD.decode_bytes(src)
+    BASE32_STD.decode_bytes(src)
 }
 
 /**
@@ -221,7 +221,7 @@ pub fn decode(src: &[const u8]) -> ~[u8] {
  * decoded bytes
  */
 pub fn hex_decode(src: &[const u8]) -> ~[u8] {
-    move BASE32_HEX.decode_bytes(src)
+    BASE32_HEX.decode_bytes(src)
 }
 
 pub struct Base32Writer<T: io::Writer> {

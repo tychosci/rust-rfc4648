@@ -41,29 +41,29 @@ pub trait Codec<T: Copy Encode Decode Convert> {
 
 pub impl<T: Copy Encode Decode Convert> &[const u8] : Codec<T> {
     fn encode(encoder: T) -> ~[u8] {
-        move encoder.encode(self)
+        encoder.encode(self)
     }
 
     fn decode(decoder: T) -> ~[u8] {
-        move decoder.decode(self)
+        decoder.decode(self)
     }
 
     fn convert(to: T, from: T) -> ~[u8] {
-        move convert(self, to, from)
+        convert(self, to, from)
     }
 }
 
 pub impl<T: Copy Encode Decode Convert> &str : Codec<T> {
     fn encode(encoder: T) -> ~[u8] {
-        move str::byte_slice(self, |b| encoder.encode(b))
+        str::byte_slice(self, |b| encoder.encode(b))
     }
 
     fn decode(decoder: T) -> ~[u8] {
-        move str::byte_slice(self, |b| decoder.decode(b))
+        str::byte_slice(self, |b| decoder.decode(b))
     }
 
     fn convert(to: T, from: T) -> ~[u8] {
-        move str::byte_slice(self, |b| convert(b, to, from))
+        str::byte_slice(self, |b| convert(b, to, from))
     }
 }
 

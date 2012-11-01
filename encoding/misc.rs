@@ -28,7 +28,7 @@ pub enum Misc {
 
 pub impl Misc : Encode {
     fn encode(buf: &[const u8]) -> ~[u8] {
-        move match self {
+        match self {
             Base16    => base16::encode(buf),
             Base32    => base32::encode(buf),
             Base64    => base64::encode(buf),
@@ -40,7 +40,7 @@ pub impl Misc : Encode {
 
 pub impl Misc : Decode {
     fn decode(buf: &[const u8]) -> ~[u8] {
-        move match self {
+        match self {
             Base16    => base16::decode(buf),
             Base32    => base32::decode(buf),
             Base64    => base64::decode(buf),
