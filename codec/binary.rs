@@ -1,5 +1,16 @@
 // binary.rs
 
+pub use BASE16       = base16::BASE16;
+pub use BASE32       = base32::BASE32_STD;
+pub use BASE64       = base64::BASE64_STD;
+pub use BASE32_HEX   = base32::BASE32_HEX;
+pub use BASE64_URL   = base64::BASE64_URL;
+pub use Base16Writer = base16::Base16Writer;
+pub use Base32Writer = base32::Base32Writer;
+pub use Base64Writer = base64::Base64Writer;
+pub use Base32Reader = base32::Base32Reader;
+pub use Base64Reader = base64::Base64Reader;
+
 pub trait Encode {
     fn encode(&self, buf: &[const u8]) -> ~[u8];
 }

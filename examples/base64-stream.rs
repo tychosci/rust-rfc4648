@@ -1,8 +1,8 @@
 //
 // Usage:
 //
-//     b64-stream encode <infile> [outfile]
-//     b64-stream decode <infile> [outfile]
+//     base64-stream encode <infile> [outfile]
+//     base64-stream decode <infile> [outfile]
 //
 
 extern mod codec;
@@ -10,9 +10,9 @@ extern mod codec;
 use io::Reader;
 use io::ReaderUtil;
 use path::Path;
-use codec::BASE64;
-use codec::Base64Writer;
-use codec::Base64Reader;
+use codec::binary::BASE64;
+use codec::binary::Base64Writer;
+use codec::binary::Base64Reader;
 
 fn main() {
     let args = os::args();

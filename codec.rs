@@ -1,20 +1,11 @@
 // codec.rs
 
-pub use Base16       = binary::Base16;
-pub use Base32       = binary::Base32;
-pub use Base64       = binary::Base64;
-pub use Base32Hex    = binary::Base32Hex;
-pub use Base64Url    = binary::Base64Url;
-pub use BASE16       = binary::base16::BASE16;
-pub use BASE32       = binary::base32::BASE32_STD;
-pub use BASE64       = binary::base64::BASE64_STD;
-pub use BASE32_HEX   = binary::base32::BASE32_HEX;
-pub use BASE64_URL   = binary::base64::BASE64_URL;
-pub use Base16Writer = binary::base16::Base16Writer;
-pub use Base32Writer = binary::base32::Base32Writer;
-pub use Base64Writer = binary::base64::Base64Writer;
-pub use Base32Reader = binary::base32::Base32Reader;
-pub use Base64Reader = binary::base64::Base64Reader;
+pub use binary::Binary;
+pub use binary::Base16;
+pub use binary::Base32;
+pub use binary::Base64;
+pub use binary::Base32Hex;
+pub use binary::Base64Url;
 
 pub trait BinaryCodec<T: Copy binary::Codec> {
     fn encode(encoder: T) -> ~[u8];

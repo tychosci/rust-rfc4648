@@ -5,10 +5,10 @@ use std::net::ip;
 use std::net::tcp;
 use std::uv_global_loop;
 
-use codec::{BASE64, Base64Writer};
 use io::{ReaderUtil, WriterUtil};
 use tcp::{TcpErrData, TcpNewConnection, TcpSocket};
 use task::{SingleThreaded, task};
+use codec::binary::{BASE64, Base64Writer};
 
 type KillChan = comm::Chan<Option<TcpErrData>>;
 type ContChan = comm::Chan<()>;
