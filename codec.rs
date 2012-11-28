@@ -1,4 +1,4 @@
-// encoding.rs
+// codec.rs
 
 pub use Base16       = binary::Base16;
 pub use Base32       = binary::Base32;

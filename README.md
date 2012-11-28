@@ -8,4 +8,4 @@ LICENSE
 
 (MIT License)
 
-See LICENSE for details.
+See the LICENSE file for details.

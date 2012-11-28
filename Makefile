@@ -10,14 +10,14 @@ all: libcodec
 libcodec: setup-lib codec.rc
 	rustc -O codec.rc --out-dir $(LIBDIR)
 
-b64: setup-bin libcodec
-	rustc -O $(E)/b64.rs -o $(BINDIR)/$@ -L $(LIBDIR)
+base64: setup-bin libcodec
+	rustc -O $(E)/base64.rs -o $(BINDIR)/$@ -L $(LIBDIR)
 
-b64-stream: setup-bin libcodec
-	rustc -O $(E)/b64-stream.rs -o $(BINDIR)/$@ -L $(LIBDIR)
+base64-stream: setup-bin libcodec
+	rustc -O $(E)/base64-stream.rs -o $(BINDIR)/$@ -L $(LIBDIR)
 
-b64-tcp-server: setup-bin libcodec
-	rustc -O $(E)/b64-tcp-server.rs -o $(BINDIR)/$@ -L $(LIBDIR)
+base64-tcp-server: setup-bin libcodec
+	rustc -O $(E)/base64-tcp-server.rs -o $(BINDIR)/$@ -L $(LIBDIR)
 
 setup-lib:
 	mkdir -p $(LIBDIR)
