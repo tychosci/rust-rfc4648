@@ -5,18 +5,18 @@ LIBDIR  := lib
 BINDIR  := bin
 TESTDIR := test
 
-all: libencoding
+all: libcodec
 
-libencoding: setup-lib encoding.rc
-	rustc -O encoding.rc --out-dir $(LIBDIR)
+libcodec: setup-lib codec.rc
+	rustc -O codec.rc --out-dir $(LIBDIR)
 
-b64: setup-bin libencoding
+b64: setup-bin libcodec
 	rustc -O $(E)/b64.rs -o $(BINDIR)/$@ -L $(LIBDIR)
 
-b64-stream: setup-bin libencoding
+b64-stream: setup-bin libcodec
 	rustc -O $(E)/b64-stream.rs -o $(BINDIR)/$@ -L $(LIBDIR)
 
-b64-tcp-server: setup-bin libencoding
+b64-tcp-server: setup-bin libcodec
 	rustc -O $(E)/b64-tcp-server.rs -o $(BINDIR)/$@ -L $(LIBDIR)
 
 setup-lib:
@@ -28,9 +28,9 @@ setup-bin:
 setup-test:
 	mkdir -p $(TESTDIR)
 
-test: setup-test test-encoding
+test: setup-test test-codec
 
-test-encoding: encoding.rc
+test-codec: codec.rc
 	rustc -O $< --test --out-dir $(TESTDIR)
 
 clean:

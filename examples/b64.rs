@@ -1,8 +1,8 @@
-extern mod encoding;
+extern mod codec;
 
 use io::Writer;
 use io::WriterUtil;
-use encoding::Codec;
+use codec::BinaryCodec;
 use path::Path;
 
 fn main() {
@@ -19,8 +19,8 @@ fn main() {
 
     match io::read_whole_file(&Path(args[2])) {
         Ok(move data) => match args[1] {
-            ~"encode" => stdout.write(data.encode(encoding::Base64)),
-            ~"decode" => stdout.write(data.decode(encoding::Base64)),
+            ~"encode" => stdout.write(data.encode(codec::Base64)),
+            ~"decode" => stdout.write(data.decode(codec::Base64)),
             _         => return
         },
         Err(ref msg) => {

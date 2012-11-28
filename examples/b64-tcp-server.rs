@@ -1,11 +1,11 @@
 extern mod std;
-extern mod encoding;
+extern mod codec;
 
 use std::net::ip;
 use std::net::tcp;
 use std::uv_global_loop;
 
-use encoding::{BASE64, Base64Writer};
+use codec::{BASE64, Base64Writer};
 use io::{ReaderUtil, WriterUtil};
 use tcp::{TcpErrData, TcpNewConnection, TcpSocket};
 use task::{SingleThreaded, task};
@@ -58,14 +58,10 @@ fn accept(conn: TcpNewConnection, kill_ch: KillChan, cont_ch: ContChan) {
 
 fn encode(socket: TcpSocket) {
     let socket = tcp::socket_buf(move socket);
-
-    let writer = Base64Writer(BASE64, &socket);
-    let mut buf = [mut 0, ..1024];
-    loop {
+    let writer = Base64Writer::new(BASE64, &socket);
+    let mut buf = [0, ..1024];
+    while !socket.eof() {
         let nread = socket.read(buf, buf.len());
-        if nread == 0 { break; }
         writer.write(buf.view(0, nread));
     }
-    // FIXME: Remove this line once we get Drop trait.
-    writer.close();
 }

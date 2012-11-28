@@ -1,7 +1,7 @@
-rust-encoding
-=============
+rust-codec
+==========
 
-Encoding modules for Rust
+Implementations of common encoders/decoders for Rust
 
 LICENSE
 -------

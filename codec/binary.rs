@@ -1,32 +1,47 @@
-// misc.rs
+// binary.rs
+
+pub trait Encode {
+    fn encode(buf: &[const u8]) -> ~[u8];
+}
+
+pub trait Decode {
+    fn decode(buf: &[const u8]) -> ~[u8];
+}
+
+pub trait Convert {
+    static fn convert(buf: &[const u8], to: self, from: self) -> ~[u8];
+}
+
+pub trait Codec : Encode, Decode, Convert {
+}
 
 // `end` indicates whether the Decode method have encountered paddings or not.
-priv struct DecodeResult {
+struct DecodeResult {
     end: bool,
     ndecoded: uint,
 }
 
-priv trait MiscEncode {
+trait BinaryEncoder {
     fn encode(&self, dst: &[mut u8], src: &[const u8]);
     fn encoded_len(&self, src_length: uint) -> uint;
     fn encode_bytes(&self, src: &[const u8]) -> ~[u8];
 }
 
-priv trait MiscDecode {
+trait BinaryDecoder {
     fn decode(&self, dst: &[mut u8], src: &[const u8]) -> DecodeResult;
     fn decoded_len(&self, src_length: uint) -> uint;
     fn decode_bytes(&self, src: &[const u8]) -> ~[u8];
 }
 
-pub enum Misc {
-    pub Base16,
-    pub Base32,
-    pub Base64,
-    pub Base32Hex,
-    pub Base64Url,
+pub enum Binary {
+    Base16,
+    Base32,
+    Base64,
+    Base32Hex,
+    Base64Url,
 }
 
-pub impl Misc : Encode {
+pub impl Binary : Codec {
     fn encode(buf: &[const u8]) -> ~[u8] {
         match self {
             Base16    => base16::encode(buf),
@@ -36,9 +51,7 @@ pub impl Misc : Encode {
             Base64Url => base64::urlsafe_encode(buf)
         }
     }
-}
 
-pub impl Misc : Decode {
     fn decode(buf: &[const u8]) -> ~[u8] {
         match self {
             Base16    => base16::decode(buf),
@@ -48,10 +61,8 @@ pub impl Misc : Decode {
             Base64Url => base64::urlsafe_decode(buf)
         }
     }
-}
 
-pub impl Misc : Convert {
-    static fn convert(buf: &[const u8], to: Misc, from: Misc) -> ~[u8] {
+    static fn convert(buf: &[const u8], to: Binary, from: Binary) -> ~[u8] {
         let buf = from.decode(buf);
         let buf = to.encode(buf);
         move buf

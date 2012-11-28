@@ -6,11 +6,11 @@
  * # Example
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * extern mod encoding;
- * use encoding::Codec;
+ * extern mod codec;
+ * use codec::BinaryCodec;
  *
  * let src = "base32";
- * let res = src.encode(encoding::Base32);
+ * let res = src.encode(codec::Base32);
  * let res = str::from_bytes(res);
  *
  * io::println(fmt!("%s", res));
@@ -21,21 +21,21 @@ macro_rules! abort (
     { $s:expr } => { fail str::from_slice($s) }
 )
 
-priv const PAD: u8 = 61u8;
+const PAD: u8 = 61u8;
 
 // ABCDEFGHIJKLMNOPQRSTUVWXYZ234567
-priv const TABLE_STD: [u8*32] = [
+const TABLE_STD: [u8*32] = [
     65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80,
     81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 50, 51, 52, 53, 54, 55,
 ];
 
 // 0123456789ABCDEFGHIJKLMNOPQRSTUV
-priv const TABLE_HEX: [u8*32] = [
+const TABLE_HEX: [u8*32] = [
     48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70,
     71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86,
 ];
 
-priv const DECODE_MAP_STD: [u8*256] = [
+const DECODE_MAP_STD: [u8*256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
@@ -54,7 +54,7 @@ priv const DECODE_MAP_STD: [u8*256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
 ];
 
-priv const DECODE_MAP_HEX: [u8*256] = [
+const DECODE_MAP_HEX: [u8*256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
@@ -89,16 +89,16 @@ pub struct Base32 {
 }
 
 #[inline(always)]
-priv pure fn encoded_len(src_length: uint) -> uint {
+pure fn encoded_len(src_length: uint) -> uint {
     (src_length + 4) / 5 * 8
 }
 
 #[inline(always)]
-priv pure fn decoded_len(src_length: uint) -> uint {
+pure fn decoded_len(src_length: uint) -> uint {
     src_length / 8 * 5
 }
 
-pub impl Base32 : MiscEncode {
+pub impl Base32 : BinaryEncoder {
     fn encode(&self, dst: &[mut u8], src: &[const u8]) {
         base32encode(self.table, dst, src);
     }
@@ -130,7 +130,7 @@ pub impl Base32 : MiscEncode {
     }
 }
 
-pub impl Base32 : MiscDecode {
+pub impl Base32 : BinaryDecoder {
     fn decode(&self, dst: &[mut u8], src: &[const u8]) -> DecodeResult {
         base32decode(self.decode_map, dst, src)
     }
@@ -232,19 +232,17 @@ pub struct Base32Writer<T: io::Writer> {
     priv mut nbuf: uint,
 }
 
-pub fn Base32Writer<T: io::Writer>(base32: &a/Base32, writer: &a/T)
-    -> Base32Writer/&a<T> {
-
-    Base32Writer {
-        base32: base32,
-        writer: writer,
-        outbuf: [mut 0, ..1024],
-        buf: [mut 0, ..5],
-        nbuf: 0,
-    }
-}
-
 pub impl<T: io::Writer> Base32Writer<T> {
+    static fn new(base32: &a/Base32, writer: &a/T) -> Base32Writer/&a<T> {
+        Base32Writer {
+            base32: base32,
+            writer: writer,
+            outbuf: [mut 0, ..1024],
+            buf: [mut 0, ..5],
+            nbuf: 0,
+        }
+    }
+
     fn write(&self, buf: &[const u8]) {
         let buflen = buf.len();
         let mut buf = vec::const_view(buf, 0, buflen);
@@ -286,8 +284,10 @@ pub impl<T: io::Writer> Base32Writer<T> {
         }
         self.nbuf = buf.len();
     }
+}
 
-    fn close(&self) {
+pub impl<T: io::Writer> Base32Writer<T> : Drop {
+    fn finalize() {
         if self.nbuf > 0 {
             let nbuf = self.nbuf;
             self.nbuf = 0;
@@ -309,21 +309,19 @@ pub struct Base32Reader<T: io::Reader> {
     priv mut end: bool,
 }
 
-pub fn Base32Reader<T: io::Reader>(base32: &a/Base32, reader: &a/T)
-    -> Base32Reader/&a<T> {
-
-    Base32Reader {
-        base32: base32,
-        reader: reader,
-        buf: [mut 0, ..1024],
-        outbuf: [mut 0, ..640],
-        nbuf: 0,
-        noutbuf: 0,
-        end: false,
-    }
-}
-
 pub impl<T: io::Reader> Base32Reader<T> {
+    static fn new(base32: &a/Base32, reader: &a/T) -> Base32Reader/&a<T> {
+        Base32Reader {
+            base32: base32,
+            reader: reader,
+            buf: [mut 0, ..1024],
+            outbuf: [mut 0, ..640],
+            nbuf: 0,
+            noutbuf: 0,
+            end: false,
+        }
+    }
+
     fn read(&self, p: &[mut u8], len: uint) -> uint {
         // use leftover output (decoded bytes) if it exists
         if self.noutbuf > 0 {
@@ -398,7 +396,7 @@ pub impl<T: io::Reader> Base32Reader<T> {
     }
 }
 
-priv fn base32encode(table: &[u8], dst: &[mut u8], src: &[const u8]) {
+fn base32encode(table: &[u8], dst: &[mut u8], src: &[const u8]) {
     let src_length = src.len();
     let dst_length = dst.len();
 
@@ -433,7 +431,7 @@ priv fn base32encode(table: &[u8], dst: &[mut u8], src: &[const u8]) {
     }
 }
 
-priv fn base32decode(decode_map: &[u8], dst: &[mut u8], src: &[const u8]) -> DecodeResult {
+fn base32decode(decode_map: &[u8], dst: &[mut u8], src: &[const u8]) -> DecodeResult {
     let mut ndecoded = 0u;
     let mut dst = vec::mut_view(dst, 0, dst.len());
     let mut src = vec::const_view(src, 0, src.len());
@@ -553,11 +551,9 @@ mod tests {
         let expect  = str::to_bytes("MZXW6YTB");
 
         let actual  = io::with_bytes_writer(|writer| {
-            let writer = Base32Writer(BASE32_STD, &writer);
+            let writer = Base32Writer::new(BASE32_STD, &writer);
             writer.write(source1);
             writer.write(source2);
-            // FIXME Remove this line once we get Drop trait.
-            writer.close();
         });
 
         assert expect == actual;
@@ -574,7 +570,7 @@ mod tests {
 
         let actual = source.map(|e| {
             io::with_bytes_reader(*e, |reader| {
-                let reader = Base32Reader(BASE32_STD, &reader);
+                let reader = Base32Reader::new(BASE32_STD, &reader);
 
                 io::with_bytes_writer(|writer| {
                     while !reader.eof() {

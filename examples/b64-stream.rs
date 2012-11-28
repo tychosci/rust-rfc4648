@@ -5,14 +5,14 @@
 //     b64-stream decode <infile> [outfile]
 //
 
-extern mod encoding;
+extern mod codec;
 
 use io::Reader;
 use io::ReaderUtil;
 use path::Path;
-use encoding::BASE64;
-use encoding::Base64Writer;
-use encoding::Base64Reader;
+use codec::BASE64;
+use codec::Base64Writer;
+use codec::Base64Reader;
 
 fn main() {
     let args = os::args();
@@ -36,24 +36,21 @@ fn main() {
 }
 
 fn encode(filename: &Path, writer: io::Writer) {
-    let writer = Base64Writer(BASE64, &writer);
+    let writer = Base64Writer::new(BASE64, &writer);
     let reader = io::file_reader(filename).get();
 
-    let mut buf = [mut 0, ..1024];
+    let mut buf = [0, ..1024];
     while !reader.eof() {
         let nread = reader.read(buf, buf.len());
         writer.write(vec::mut_view(buf, 0, nread));
     }
-
-    // FIXME Remove this line once we get Drop trait.
-    writer.close();
 }
 
 fn decode(filename: &Path, writer: io::Writer) {
     let reader = io::file_reader(filename).get();
-    let reader = Base64Reader(BASE64, &reader);
+    let reader = Base64Reader::new(BASE64, &reader);
 
-    let mut buf = [mut 0, ..1024];
+    let mut buf = [0, ..1024];
     while !reader.eof() {
         let nread = reader.read(buf, buf.len());
         writer.write(vec::mut_view(buf, 0, nread));

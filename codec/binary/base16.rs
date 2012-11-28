@@ -6,11 +6,11 @@
  * # Example
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * extern mod encoding;
- * use encoding::Codec;
+ * extern mod codec;
+ * use codec::BinaryCodec;
  *
  * let src = "base16";
- * let res = src.encode(encoding::Base16);
+ * let res = src.encode(codec::Base16);
  * let res = str::from_bytes(res);
  *
  * io::println(fmt!("%s", res));
@@ -22,12 +22,12 @@ macro_rules! abort (
 )
 
 // 0123456789ABCDEF
-priv const TABLE: [u8*16] = [
+const TABLE: [u8*16] = [
     48, 49, 50, 51, 52, 53, 54, 55,
     56, 57, 65, 66, 67, 68, 69, 70,
 ];
 
-priv const DECODE_MAP: [u8*256] = [
+const DECODE_MAP: [u8*256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
@@ -57,11 +57,11 @@ pub struct Base16 {
 }
 
 #[inline(always)]
-priv pure fn encoded_len(src_length: uint) -> uint { src_length * 2 }
+pure fn encoded_len(src_length: uint) -> uint { src_length * 2 }
 #[inline(always)]
-priv pure fn decoded_len(src_length: uint) -> uint { src_length / 2 }
+pure fn decoded_len(src_length: uint) -> uint { src_length / 2 }
 
-pub impl Base16 : MiscEncode {
+pub impl Base16 : BinaryEncoder {
     fn encode(&self, dst: &[mut u8], src: &[const u8]) {
         base16encode(self.table, dst, src);
     }
@@ -93,7 +93,7 @@ pub impl Base16 : MiscEncode {
     }
 }
 
-pub impl Base16 : MiscDecode {
+pub impl Base16 : BinaryDecoder {
     fn decode(&self, dst: &[mut u8], src: &[const u8]) -> DecodeResult {
         base16decode(self.decode_map, dst, src)
     }
@@ -163,17 +163,15 @@ pub struct Base16Writer<T: io::Writer> {
     priv outbuf: [mut u8*1024],
 }
 
-pub fn Base16Writer<T: io::Writer>(base16: &a/Base16, writer: &a/T)
-    -> Base16Writer/&a<T> {
-
-    Base16Writer {
-        base16: base16,
-        writer: writer,
-        outbuf: [mut 0, ..1024],
-    }
-}
-
 pub impl<T: io::Writer> Base16Writer<T> {
+    static fn new(base16: &a/Base16, writer: &a/T) -> Base16Writer/&a<T> {
+        Base16Writer {
+            base16: base16,
+            writer: writer,
+            outbuf: [mut 0, ..1024],
+        }
+    }
+
     fn write(&self, buf: &[const u8]) {
         let mut buf = vec::const_view(buf, 0, buf.len());
 
@@ -201,20 +199,18 @@ pub struct Base16Reader<T: io::Reader> {
     priv mut noutbuf: uint,
 }
 
-pub fn Base16Reader<T: io::Reader>(base16: &a/Base16, reader: &a/T)
-    -> Base16Reader/&a<T> {
-
-    Base16Reader {
-        base16: base16,
-        reader: reader,
-        buf: [mut 0, ..1024],
-        outbuf: [mut 0, ..512],
-        nbuf: 0,
-        noutbuf: 0,
-    }
-}
-
 pub impl<T: io::Reader> Base16Reader<T> {
+    static fn new(base16: &a/Base16, reader: &a/T) -> Base16Reader/&a<T> {
+        Base16Reader {
+            base16: base16,
+            reader: reader,
+            buf: [mut 0, ..1024],
+            outbuf: [mut 0, ..512],
+            nbuf: 0,
+            noutbuf: 0,
+        }
+    }
+
     fn read(&self, p: &[mut u8], len: uint) -> uint {
         // use leftover output (decoded bytes) if it exists
         if self.noutbuf > 0 {
@@ -287,14 +283,14 @@ pub impl<T: io::Reader> Base16Reader<T> {
     }
 }
 
-priv fn base16encode(table: &[u8], dst: &[mut u8], src: &[const u8]) {
+fn base16encode(table: &[u8], dst: &[mut u8], src: &[const u8]) {
     for uint::range(0, src.len()) |j| {
         dst[j+1*j]     = table[src[j]>>4];
         dst[j+1*j + 1] = table[src[j] & 0x0f];
     }
 }
 
-priv fn base16decode(decode_map: &[u8], dst: &[mut u8], src: &[const u8]) -> DecodeResult {
+fn base16decode(decode_map: &[u8], dst: &[mut u8], src: &[const u8]) -> DecodeResult {
     let mut src_length = src.len();
     let mut i = 0u;
     let mut j = 0u;
@@ -350,7 +346,7 @@ mod tests {
         let expect  = str::to_bytes("666F6F");
 
         let actual  = io::with_bytes_writer(|writer| {
-            let writer = Base16Writer(BASE16, &writer);
+            let writer = Base16Writer::new(BASE16, &writer);
             writer.write(source1);
             writer.write(source2);
         });
@@ -364,7 +360,7 @@ mod tests {
         let expect = str::to_bytes("foo");
 
         let actual = io::with_bytes_reader(source, |reader| {
-            let reader = Base16Reader(BASE16, &reader);
+            let reader = Base16Reader::new(BASE16, &reader);
 
             io::with_bytes_writer(|writer| {
                 while !reader.eof() {
