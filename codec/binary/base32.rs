@@ -287,7 +287,7 @@ pub impl<T: io::Writer> Base32Writer<T> {
 }
 
 pub impl<T: io::Writer> Base32Writer<T> : Drop {
-    fn finalize() {
+    fn finalize(&self) {
         if self.nbuf > 0 {
             let nbuf = self.nbuf;
             self.nbuf = 0;
