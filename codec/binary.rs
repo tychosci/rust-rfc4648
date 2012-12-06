@@ -52,7 +52,7 @@ pub enum Binary {
     Base64Url,
 }
 
-pub impl Binary : Codec {
+pub impl Binary : Encode {
     fn encode(&self, buf: &[const u8]) -> ~[u8] {
         match *self {
             Base16    => base16::encode(buf),
@@ -62,7 +62,9 @@ pub impl Binary : Codec {
             Base64Url => base64::urlsafe_encode(buf)
         }
     }
+}
 
+pub impl Binary : Decode {
     fn decode(&self, buf: &[const u8]) -> ~[u8] {
         match *self {
             Base16    => base16::decode(buf),
@@ -72,7 +74,9 @@ pub impl Binary : Codec {
             Base64Url => base64::urlsafe_decode(buf)
         }
     }
+}
 
+pub impl Binary : Convert {
     static fn convert(buf: &[const u8], to: Binary, from: Binary) -> ~[u8] {
         let buf = from.decode(buf);
         let buf = to.encode(buf);
