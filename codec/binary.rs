@@ -83,3 +83,5 @@ pub impl Binary : Convert {
         move buf
     }
 }
+
+pub impl Binary : Codec;
