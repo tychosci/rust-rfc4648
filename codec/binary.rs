@@ -23,7 +23,7 @@ pub trait Convert {
     static fn convert(buf: &[const u8], to: self, from: self) -> ~[u8];
 }
 
-pub trait Codec : Encode, Decode, Convert {
+pub trait Codec : Encode Decode Convert {
 }
 
 // `end` indicates whether the Decode method have encountered paddings or not.
