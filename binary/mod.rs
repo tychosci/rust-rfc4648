@@ -11,6 +11,10 @@ pub use Base64Writer = base64::Base64Writer;
 pub use Base32Reader = base32::Base32Reader;
 pub use Base64Reader = base64::Base64Reader;
 
+pub mod base16;
+pub mod base32;
+pub mod base64;
+
 pub trait Encode {
     fn encode(&self, buf: &[const u8]) -> ~[u8];
 }

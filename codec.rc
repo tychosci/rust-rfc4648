@@ -54,15 +54,8 @@ pub impl<T: Copy binary::Codec> &str : BinaryCodec<T> {
     }
 }
 
-#[merge = "codec/binary.rs"]
-pub mod binary {
-    #[path = "codec/binary/base16.rs"]
-    pub mod base16;
-    #[path = "codec/binary/base32.rs"]
-    pub mod base32;
-    #[path = "codec/binary/base64.rs"]
-    pub mod base64;
-}
+#[path = "binary/mod.rs"]
+pub mod binary;
 
 #[cfg(test)]
 mod tests {
