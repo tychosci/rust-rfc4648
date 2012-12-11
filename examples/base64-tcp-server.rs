@@ -21,9 +21,9 @@ fn main() {
 
     let backlog = 128;
     let ip_addr = ip::get_addr(addr, iotask);
-    let ip_addr = copy result::unwrap(move ip_addr)[0];
+    let ip_addr = copy result::unwrap(ip_addr)[0];
 
-    tcp::listen(move ip_addr, port, backlog, iotask,
+    tcp::listen(ip_addr, port, backlog, iotask,
         |kill_ch| on_established(kill_ch),
         |conn, kill_ch| on_new_connection(conn, kill_ch));
 }
@@ -45,19 +45,19 @@ fn on_new_connection(conn: TcpNewConnection, kill_ch: KillChan) {
 
 fn accept(conn: TcpNewConnection, kill_ch: KillChan, cont_ch: ContChan) {
     match tcp::accept(conn) {
-        Ok(move socket) => {
+        Ok(socket) => {
             cont_ch.send(());
-            encode(move socket);
+            encode(socket);
         }
-        Err(move err_data) => {
-            kill_ch.send(Some(move err_data));
+        Err(err_data) => {
+            kill_ch.send(Some(err_data));
             cont_ch.send(());
         }
     }
 }
 
 fn encode(socket: TcpSocket) {
-    let socket = tcp::socket_buf(move socket);
+    let socket = tcp::socket_buf(socket);
     let writer = Base64Writer::new(BASE64, &socket);
     let mut buf = [0, ..1024];
     while !socket.eof() {

@@ -84,7 +84,7 @@ pub impl Binary : Convert {
     static fn convert(buf: &[const u8], to: Binary, from: Binary) -> ~[u8] {
         let buf = from.decode(buf);
         let buf = to.encode(buf);
-        move buf
+        buf
     }
 }
 

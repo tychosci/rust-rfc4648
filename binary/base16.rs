@@ -89,7 +89,7 @@ pub impl Base16 : BinaryEncoder {
 
         self.encode(dst, src);
 
-        move dst
+        dst
     }
 }
 
@@ -123,7 +123,7 @@ pub impl Base16 : BinaryDecoder {
 
         unsafe { vec::raw::set_len(&mut dst, res.ndecoded); }
 
-        move dst
+        dst
     }
 }
 
@@ -275,7 +275,7 @@ pub impl<T: io::Reader> Base16Reader<T> {
 
         unsafe { vec::raw::set_len(&mut buf, nread); }
 
-        move buf
+        buf
     }
 
     fn eof(&self) -> bool {
