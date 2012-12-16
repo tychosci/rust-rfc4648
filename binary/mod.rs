@@ -1,15 +1,15 @@
 // binary.rs
 
-pub use BASE16       = base16::BASE16;
-pub use BASE32       = base32::BASE32_STD;
-pub use BASE64       = base64::BASE64_STD;
-pub use BASE32_HEX   = base32::BASE32_HEX;
-pub use BASE64_URL   = base64::BASE64_URL;
-pub use Base16Writer = base16::Base16Writer;
-pub use Base32Writer = base32::Base32Writer;
-pub use Base64Writer = base64::Base64Writer;
-pub use Base32Reader = base32::Base32Reader;
-pub use Base64Reader = base64::Base64Reader;
+pub use BASE16       = binary::base16::BASE16;
+pub use BASE32       = binary::base32::BASE32_STD;
+pub use BASE64       = binary::base64::BASE64_STD;
+pub use BASE32_HEX   = binary::base32::BASE32_HEX;
+pub use BASE64_URL   = binary::base64::BASE64_URL;
+pub use Base16Writer = binary::base16::Base16Writer;
+pub use Base32Writer = binary::base32::Base32Writer;
+pub use Base64Writer = binary::base64::Base64Writer;
+pub use Base32Reader = binary::base32::Base32Reader;
+pub use Base64Reader = binary::base64::Base64Reader;
 
 pub mod base16;
 pub mod base32;
