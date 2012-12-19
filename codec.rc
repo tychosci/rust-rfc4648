@@ -36,7 +36,8 @@ pub impl<T: Copy binary::Codec> &[const u8] : BinaryCodec<T> {
     }
 
     fn convert(to: T, from: T) -> ~[u8] {
-        binary::convert(self, to, from)
+        use binary::Convert;
+        Convert::convert(self, to, from)
     }
 }
 
@@ -50,7 +51,8 @@ pub impl<T: Copy binary::Codec> &str : BinaryCodec<T> {
     }
 
     fn convert(to: T, from: T) -> ~[u8] {
-        str::byte_slice(self, |b| binary::convert(b, to, from))
+        use binary::Convert;
+        str::byte_slice(self, |b| Convert::convert(b, to, from))
     }
 }
 
