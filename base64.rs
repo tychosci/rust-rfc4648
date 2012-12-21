@@ -17,10 +17,6 @@
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-macro_rules! abort (
-    { $s:expr } => { fail str::from_slice($s) }
-)
-
 const PAD: u8 = 61u8;
 
 // ABCDEFGHIJKLMNOPQRSTUVWXYZ
@@ -354,7 +350,7 @@ pub impl<T: io::Reader> Base64Reader<T> {
 
         self.nbuf += nn;
         if self.nbuf < 4 {
-            abort!("malformed base64 input");
+            fail ~"malformed base64 input";
         }
 
         let nr = self.nbuf / 4 * 4; // total read bytes (except fringe bytes)
@@ -409,7 +405,7 @@ fn base64encode(table: &[u8], dst: &[mut u8], src: &[const u8]) {
     let dst_length = dst.len();
 
     if dst_length % 4 != 0 {
-        abort!("dst's length should be divisible by 4");
+        fail ~"dst's length should be divisible by 4";
     }
 
     for uint::range(0, (src_length + 2) / 3) |i| {
@@ -441,7 +437,7 @@ fn base64decode(decode_map: &[u8], dst: &[mut u8], src: &[const u8]) -> DecodeRe
         let mut i = 0u;
         while i < 4 {
             if src.len() == 0 {
-                abort!("malformed base64 string");
+                fail ~"malformed base64 string";
             }
             let chr = src[0];
             src = vec::const_view(src, 1, src.len());
@@ -450,7 +446,7 @@ fn base64decode(decode_map: &[u8], dst: &[mut u8], src: &[const u8]) -> DecodeRe
             }
             if chr == PAD && i >= 2 && src.len() < 4 {
                 if src.len() > 0 && src[0] != PAD {
-                    abort!("malformed base64 string");
+                    fail ~"malformed base64 string";
                 }
                 buf_len = i;
                 end = true;
@@ -458,7 +454,7 @@ fn base64decode(decode_map: &[u8], dst: &[mut u8], src: &[const u8]) -> DecodeRe
             }
             buf[i] = decode_map[chr];
             if buf[i] == 0xff {
-                abort!("malformed base64 string");
+                fail ~"malformed base64 string";
             }
             i += 1;
         }
