@@ -6,11 +6,11 @@
  * # Example
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * extern mod codec;
- * use codec::BinaryCodec;
+ * extern mod rfc4648;
+ * use rfc4648::ToBase64;
  *
  * let src = "base64";
- * let res = src.encode(codec::Base64);
+ * let res = src.to_base64();
  * let res = str::from_bytes(res);
  *
  * io::println(fmt!("%s", res));
