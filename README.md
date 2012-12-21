@@ -1,7 +1,7 @@
-rust-codec
-==========
+rust-rfc4648
+============
 
-Implementations of common encoders/decoders for Rust
+RFC 4648: Base16, Base32, Base64 Data Encodings
 
 LICENSE
 -------
