@@ -1,0 +1,167 @@
+/*!
+rfc4648 - RFC 4648: Base16, Base32, Base64 Data Encodings
+*/
+#[link(name = "rfc4648",
+       vers = "0.1",
+       uuid = "7F7C9B2E-84D6-484F-BBD5-96A2076BDC32",
+       url  = "https://github.com/tychosci/rust-rfc4648")];
+
+#[comment = "RFC 4648: Base16, Base32, Base64 Data Encodings"];
+#[license = "MIT license"];
+#[crate_type = "lib"];
+
+extern mod std;
+
+use core::*;
+
+pub mod base16;
+pub mod base32;
+pub mod base64;
+
+pub trait ToBase16 {
+    fn to_base16(&self) -> ~[u8];
+}
+
+pub trait ToBase32 {
+    fn to_base32(&self) -> ~[u8];
+    fn to_base32_hex(&self) -> ~[u8];
+}
+
+pub trait ToBase64 {
+    fn to_base64(&self) -> ~[u8];
+    fn to_base64_urlsafe(&self) -> ~[u8];
+}
+
+pub trait FromBase16 {
+    fn from_base16(&self) -> ~[u8];
+}
+
+pub trait FromBase32 {
+    fn from_base32(&self) -> ~[u8];
+    fn from_base32_hex(&self) -> ~[u8];
+}
+
+pub trait FromBase64 {
+    fn from_base64(&self) -> ~[u8];
+    fn from_base64_urlsafe(&self) -> ~[u8];
+}
+
+pub trait Rfc4648: FromBase16 FromBase32 FromBase64 ToBase16 ToBase32 ToBase64 {
+}
+
+pub impl &[const u8]: Rfc4648;
+pub impl &str: Rfc4648;
+
+pub impl &[const u8]: ToBase16 {
+    fn to_base16(&self) -> ~[u8] {
+        base16::encode(*self)
+    }
+}
+
+pub impl &[const u8]: ToBase32 {
+    fn to_base32(&self) -> ~[u8] {
+        base32::encode(*self)
+    }
+    fn to_base32_hex(&self) -> ~[u8] {
+        base32::hex_encode(*self)
+    }
+}
+
+pub impl &[const u8]: ToBase64 {
+    fn to_base64(&self) -> ~[u8] {
+        base64::encode(*self)
+    }
+    fn to_base64_urlsafe(&self) -> ~[u8] {
+        base64::urlsafe_encode(*self)
+    }
+}
+
+pub impl &str: ToBase16 {
+    fn to_base16(&self) -> ~[u8] {
+        str::byte_slice(*self, |b| b.to_base16())
+    }
+}
+
+pub impl &str: ToBase32 {
+    fn to_base32(&self) -> ~[u8] {
+        str::byte_slice(*self, |b| b.to_base32())
+    }
+    fn to_base32_hex(&self) -> ~[u8] {
+        str::byte_slice(*self, |b| b.to_base32_hex())
+    }
+}
+
+pub impl &str: ToBase64 {
+    fn to_base64(&self) -> ~[u8] {
+        str::byte_slice(*self, |b| b.to_base64())
+    }
+    fn to_base64_urlsafe(&self) -> ~[u8] {
+        str::byte_slice(*self, |b| b.to_base64_urlsafe())
+    }
+}
+
+pub impl &[const u8]: FromBase16 {
+    fn from_base16(&self) -> ~[u8] {
+        base16::decode(*self)
+    }
+}
+
+pub impl &[const u8]: FromBase32 {
+    fn from_base32(&self) -> ~[u8] {
+        base32::decode(*self)
+    }
+    fn from_base32_hex(&self) -> ~[u8] {
+        base32::hex_decode(*self)
+    }
+}
+
+pub impl &[const u8]: FromBase64 {
+    fn from_base64(&self) -> ~[u8] {
+        base64::decode(*self)
+    }
+    fn from_base64_urlsafe(&self) -> ~[u8] {
+        base64::urlsafe_decode(*self)
+    }
+}
+
+pub impl &str: FromBase16 {
+    fn from_base16(&self) -> ~[u8] {
+        str::byte_slice(*self, |b| b.from_base16())
+    }
+}
+
+pub impl &str: FromBase32 {
+    fn from_base32(&self) -> ~[u8] {
+        str::byte_slice(*self, |b| b.from_base32())
+    }
+    fn from_base32_hex(&self) -> ~[u8] {
+        str::byte_slice(*self, |b| b.from_base32_hex())
+    }
+}
+
+pub impl &str: FromBase64 {
+    fn from_base64(&self) -> ~[u8] {
+        str::byte_slice(*self, |b| b.from_base64())
+    }
+    fn from_base64_urlsafe(&self) -> ~[u8] {
+        str::byte_slice(*self, |b| b.from_base64_urlsafe())
+    }
+}
+
+// `end` indicates whether the Decode method have encountered paddings or not.
+struct DecodeResult {
+    end: bool,
+    ndecoded: uint,
+}
+
+trait BinaryEncoder {
+    fn encode(&self, dst: &[mut u8], src: &[const u8]);
+    fn encoded_len(&self, src_length: uint) -> uint;
+    fn encode_bytes(&self, src: &[const u8]) -> ~[u8];
+}
+
+trait BinaryDecoder {
+    fn decode(&self, dst: &[mut u8], src: &[const u8]) -> DecodeResult;
+    fn decoded_len(&self, src_length: uint) -> uint;
+    fn decode_bytes(&self, src: &[const u8]) -> ~[u8];
+}

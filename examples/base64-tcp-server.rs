@@ -1,14 +1,14 @@
 extern mod std;
-extern mod codec;
+extern mod rfc4648;
 
 use std::net::ip;
 use std::net::tcp;
 use std::uv_global_loop;
 
 use io::{ReaderUtil, WriterUtil};
-use tcp::{TcpErrData, TcpNewConnection, TcpSocket};
+use std::net::tcp::{TcpErrData, TcpNewConnection, TcpSocket};
 use task::{SingleThreaded, task};
-use codec::binary::{BASE64, Base64Writer};
+use rfc4648::base64::{BASE64_STD, Base64Writer};
 
 type KillChan = comm::Chan<Option<TcpErrData>>;
 type ContChan = comm::Chan<()>;
@@ -58,7 +58,7 @@ fn accept(conn: TcpNewConnection, kill_ch: KillChan, cont_ch: ContChan) {
 
 fn encode(socket: TcpSocket) {
     let socket = tcp::socket_buf(socket);
-    let writer = Base64Writer::new(BASE64, &socket);
+    let writer = Base64Writer::new(BASE64_STD, &socket);
     let mut buf = [0, ..1024];
     while !socket.eof() {
         let nread = socket.read(buf, buf.len());

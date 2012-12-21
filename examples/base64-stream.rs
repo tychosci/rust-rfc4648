@@ -5,14 +5,14 @@
 //     base64-stream decode <infile> [outfile]
 //
 
-extern mod codec;
+extern mod rfc4648;
 
 use io::Reader;
 use io::ReaderUtil;
 use path::Path;
-use codec::binary::BASE64;
-use codec::binary::Base64Writer;
-use codec::binary::Base64Reader;
+use rfc4648::base64::BASE64_STD;
+use rfc4648::base64::Base64Writer;
+use rfc4648::base64::Base64Reader;
 
 fn main() {
     let args = os::args();
@@ -36,7 +36,7 @@ fn main() {
 }
 
 fn encode(filename: &Path, writer: io::Writer) {
-    let writer = Base64Writer::new(BASE64, &writer);
+    let writer = Base64Writer::new(BASE64_STD, &writer);
     let reader = io::file_reader(filename).get();
 
     let mut buf = [0, ..1024];
@@ -48,7 +48,7 @@ fn encode(filename: &Path, writer: io::Writer) {
 
 fn decode(filename: &Path, writer: io::Writer) {
     let reader = io::file_reader(filename).get();
-    let reader = Base64Reader::new(BASE64, &reader);
+    let reader = Base64Reader::new(BASE64_STD, &reader);
 
     let mut buf = [0, ..1024];
     while !reader.eof() {

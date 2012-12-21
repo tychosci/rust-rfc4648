@@ -5,18 +5,18 @@ LIBDIR  := lib
 BINDIR  := bin
 TESTDIR := test
 
-all: libcodec
+all: librfc4648
 
-libcodec: setup-lib codec.rc
-	rustc -O codec.rc --out-dir $(LIBDIR)
+librfc4648: setup-lib rfc4648.rc
+	rustc -O rfc4648.rc --out-dir $(LIBDIR)
 
-base64: setup-bin libcodec
+base64: setup-bin librfc4648
 	rustc -O $(E)/base64.rs -o $(BINDIR)/$@ -L $(LIBDIR)
 
-base64-stream: setup-bin libcodec
+base64-stream: setup-bin librfc4648
 	rustc -O $(E)/base64-stream.rs -o $(BINDIR)/$@ -L $(LIBDIR)
 
-base64-tcp-server: setup-bin libcodec
+base64-tcp-server: setup-bin librfc4648
 	rustc -O $(E)/base64-tcp-server.rs -o $(BINDIR)/$@ -L $(LIBDIR)
 
 setup-lib:
@@ -28,9 +28,9 @@ setup-bin:
 setup-test:
 	mkdir -p $(TESTDIR)
 
-test: setup-test test-codec
+test: setup-test test-rfc4648
 
-test-codec: codec.rc
+test-rfc4648: rfc4648.rc
 	rustc -O $< --test --out-dir $(TESTDIR)
 
 clean:
