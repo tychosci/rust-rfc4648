@@ -32,25 +32,27 @@ pub trait ToBase64 {
     fn to_base64_urlsafe(&self) -> ~[u8];
 }
 
-pub trait FromBase16 {
-    fn from_base16(&self) -> ~[u8];
+pub trait FromBase16<T> {
+    fn from_base16(&self) -> T;
 }
 
-pub trait FromBase32 {
-    fn from_base32(&self) -> ~[u8];
-    fn from_base32_hex(&self) -> ~[u8];
+pub trait FromBase32<T> {
+    fn from_base32(&self) -> T;
+    fn from_base32_hex(&self) -> T;
 }
 
-pub trait FromBase64 {
-    fn from_base64(&self) -> ~[u8];
-    fn from_base64_urlsafe(&self) -> ~[u8];
+pub trait FromBase64<T> {
+    fn from_base64(&self) -> T;
+    fn from_base64_urlsafe(&self) -> T;
 }
 
-pub trait Rfc4648: FromBase16 FromBase32 FromBase64 ToBase16 ToBase32 ToBase64 {
+pub trait Rfc4648<T>:
+    FromBase16<T> FromBase32<T> FromBase64<T>
+    ToBase16 ToBase32 ToBase64 {
 }
 
-pub impl &[const u8]: Rfc4648;
-pub impl &str: Rfc4648;
+pub impl &[const u8]: Rfc4648<~[u8]>;
+pub impl &str: Rfc4648<~[u8]>;
 
 pub impl &[const u8]: ToBase16 {
     fn to_base16(&self) -> ~[u8] {
@@ -100,13 +102,13 @@ pub impl &str: ToBase64 {
     }
 }
 
-pub impl &[const u8]: FromBase16 {
+pub impl &[const u8]: FromBase16<~[u8]> {
     fn from_base16(&self) -> ~[u8] {
         base16::decode(*self)
     }
 }
 
-pub impl &[const u8]: FromBase32 {
+pub impl &[const u8]: FromBase32<~[u8]> {
     fn from_base32(&self) -> ~[u8] {
         base32::decode(*self)
     }
@@ -115,7 +117,7 @@ pub impl &[const u8]: FromBase32 {
     }
 }
 
-pub impl &[const u8]: FromBase64 {
+pub impl &[const u8]: FromBase64<~[u8]> {
     fn from_base64(&self) -> ~[u8] {
         base64::decode(*self)
     }
@@ -124,13 +126,13 @@ pub impl &[const u8]: FromBase64 {
     }
 }
 
-pub impl &str: FromBase16 {
+pub impl &str: FromBase16<~[u8]> {
     fn from_base16(&self) -> ~[u8] {
         str::byte_slice(*self, |b| b.from_base16())
     }
 }
 
-pub impl &str: FromBase32 {
+pub impl &str: FromBase32<~[u8]> {
     fn from_base32(&self) -> ~[u8] {
         str::byte_slice(*self, |b| b.from_base32())
     }
@@ -139,7 +141,7 @@ pub impl &str: FromBase32 {
     }
 }
 
-pub impl &str: FromBase64 {
+pub impl &str: FromBase64<~[u8]> {
     fn from_base64(&self) -> ~[u8] {
         str::byte_slice(*self, |b| b.from_base64())
     }

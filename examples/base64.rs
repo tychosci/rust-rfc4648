@@ -21,7 +21,7 @@ fn main() {
     match io::read_whole_file(&Path(args[2])) {
         Ok(data) => match args[1] {
             ~"encode" => stdout.write(data.to_base64()),
-            ~"decode" => stdout.write(data.to_base64()),
+            ~"decode" => stdout.write(data.from_base64()),
             _         => return
         },
         Err(msg) => {
