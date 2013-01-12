@@ -514,6 +514,8 @@ mod tests {
 
     #[test]
     fn test_base64_writer() {
+        use super::Base64Writer;
+
         let source1 = str::to_bytes("f");
         let source2 = str::to_bytes("oobar");
         let expect  = str::to_bytes("Zm9vYmFy");
@@ -529,6 +531,8 @@ mod tests {
 
     #[test]
     fn test_base64_reader() {
+        use super::Base64Reader;
+
         let source = ["Zg==", "Zm8=", "Zm8+", "Zm9vYg==", "Zm9vYmE=", "Zm8/YmE/"];
         let expect = ["f", "fo", "fo>", "foob", "fooba", "fo?ba?"];
         let source = source.map(|b| str::to_bytes(*b));

@@ -1,9 +1,8 @@
 extern mod rfc4648;
 
-use core::*;
-use io::Writer;
-use io::WriterUtil;
-use path::Path;
+use core::io::Writer;
+use core::io::WriterUtil;
+use core::path::Path;
 use rfc4648::*;
 
 fn main() {

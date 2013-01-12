@@ -337,6 +337,8 @@ mod tests {
 
     #[test]
     fn test_base16_writer() {
+        use super::Base16Writer;
+
         let source1 = str::to_bytes("fo");
         let source2 = str::to_bytes("o");
         let expect  = str::to_bytes("666F6F");
@@ -352,6 +354,8 @@ mod tests {
 
     #[test]
     fn test_base16_reader() {
+        use super::Base16Reader;
+
         let source = str::to_bytes("666f6f");
         let expect = str::to_bytes("foo");
 

@@ -5,9 +5,9 @@ use std::net::ip;
 use std::net::tcp;
 use std::uv_global_loop;
 
-use io::{ReaderUtil, WriterUtil};
+use core::io::{ReaderUtil, WriterUtil};
+use core::task::{SingleThreaded, task};
 use std::net::tcp::{TcpErrData, TcpNewConnection, TcpSocket};
-use task::{SingleThreaded, task};
 use rfc4648::base64::{BASE64_STD, Base64Writer};
 
 type KillChan = comm::Chan<Option<TcpErrData>>;
@@ -24,8 +24,7 @@ fn main() {
     let ip_addr = copy result::unwrap(ip_addr)[0];
 
     tcp::listen(ip_addr, port, backlog, iotask,
-        |kill_ch| on_established(kill_ch),
-        |conn, kill_ch| on_new_connection(conn, kill_ch));
+                on_established, on_new_connection);
 }
 
 fn on_established(_kill_ch: KillChan) {
@@ -60,6 +59,7 @@ fn encode(socket: TcpSocket) {
     let socket = tcp::socket_buf(socket);
     let writer = Base64Writer::new(BASE64_STD, &socket);
     let mut buf = [0, ..1024];
+
     while !socket.eof() {
         let nread = socket.read(buf, buf.len());
         writer.write(buf.view(0, nread));

@@ -12,8 +12,6 @@ rfc4648 - RFC 4648: Base16, Base32, Base64 Data Encodings
 
 extern mod std;
 
-use core::*;
-
 pub mod base16;
 pub mod base32;
 pub mod base64;

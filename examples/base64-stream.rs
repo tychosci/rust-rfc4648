@@ -7,9 +7,9 @@
 
 extern mod rfc4648;
 
-use io::Reader;
-use io::ReaderUtil;
-use path::Path;
+use core::io::Reader;
+use core::io::ReaderUtil;
+use core::path::Path;
 use rfc4648::base64::BASE64_STD;
 use rfc4648::base64::Base64Writer;
 use rfc4648::base64::Base64Reader;
