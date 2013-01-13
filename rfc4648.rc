@@ -15,6 +15,7 @@ extern mod std;
 pub mod base16;
 pub mod base32;
 pub mod base64;
+mod util;
 
 pub trait ToBase16 {
     fn to_base16(&self) -> ~[u8];
@@ -146,22 +147,4 @@ pub impl &str: FromBase64<~[u8]> {
     fn from_base64_urlsafe(&self) -> ~[u8] {
         str::byte_slice(*self, |b| b.from_base64_urlsafe())
     }
-}
-
-// `end` indicates whether the Decode method have encountered paddings or not.
-struct DecodeResult {
-    end: bool,
-    ndecoded: uint,
-}
-
-trait BinaryEncoder {
-    fn encode(&self, dst: &[mut u8], src: &[const u8]);
-    fn encoded_len(&self, src_length: uint) -> uint;
-    fn encode_bytes(&self, src: &[const u8]) -> ~[u8];
-}
-
-trait BinaryDecoder {
-    fn decode(&self, dst: &[mut u8], src: &[const u8]) -> DecodeResult;
-    fn decoded_len(&self, src_length: uint) -> uint;
-    fn decode_bytes(&self, src: &[const u8]) -> ~[u8];
 }

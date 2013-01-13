@@ -17,6 +17,10 @@
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
+use super::util::DecodeResult;
+use super::util::BinaryEncoder;
+use super::util::BinaryDecoder;
+
 // 0123456789ABCDEF
 const TABLE: [u8*16] = [
     48, 49, 50, 51, 52, 53, 54, 55,
@@ -315,6 +319,8 @@ fn base16decode(decode_map: &[u8], dst: &[mut u8], src: &[const u8]) -> DecodeRe
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[test]
     fn test_encode() {
         let source = str::to_bytes("foo");

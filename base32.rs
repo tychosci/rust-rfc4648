@@ -17,6 +17,10 @@
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
+use super::util::DecodeResult;
+use super::util::BinaryEncoder;
+use super::util::BinaryDecoder;
+
 const PAD: u8 = 61u8;
 
 // ABCDEFGHIJKLMNOPQRSTUVWXYZ234567
@@ -496,6 +500,8 @@ fn base32decode(decode_map: &[u8], dst: &[mut u8], src: &[const u8]) -> DecodeRe
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     fn t(source: &[&str], expect: &[&str], cb: fn&((&[u8])) -> ~[u8]) {
         let source = source.map(|b| str::to_bytes(*b));
         let expect = expect.map(|b| str::to_bytes(*b));
