@@ -17,6 +17,7 @@
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
+use core::vec::bytes;
 use super::util::DecodeResult;
 use super::util::BinaryEncoder;
 use super::util::BinaryDecoder;
@@ -214,7 +215,7 @@ pub impl<T: io::Reader> Base16Reader<T> {
     fn read(&self, p: &[mut u8], len: uint) -> uint {
         // use leftover output (decoded bytes) if it exists
         if self.noutbuf > 0 {
-            vec::bytes::memcpy(p, self.outbuf, len);
+            bytes::copy_memory(p, self.outbuf, len);
 
             let n = if len > self.noutbuf { self.noutbuf } else { len };
             self.noutbuf -= n;
@@ -246,7 +247,7 @@ pub impl<T: io::Reader> Base16Reader<T> {
         let ndecoded = if nw > len {
             let res = self.base16.decode(self.outbuf, buf);
             // copy self.outbuf[0:len] to p
-            vec::bytes::memcpy(p, self.outbuf, len);
+            bytes::copy_memory(p, self.outbuf, len);
             // shift unread bytes to head
             for uint::range(0, res.ndecoded - len) |i| {
                 self.outbuf[i] = self.outbuf[i+len];
