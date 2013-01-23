@@ -10,6 +10,8 @@ use core::task::{SingleThreaded, task};
 use std::net::tcp::{TcpErrData, TcpNewConnection, TcpSocket};
 use rfc4648::base64::{BASE64_STD, Base64Writer};
 
+use comm = core::oldcomm;
+
 type KillChan = comm::Chan<Option<TcpErrData>>;
 type ContChan = comm::Chan<()>;
 
