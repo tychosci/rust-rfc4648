@@ -293,10 +293,8 @@ pub impl<T: io::Writer> Base64Writer<T> {
         }
         self.nbuf += buf.len();
     }
-}
 
-pub impl<T: io::Writer> Base64Writer<T> : Drop {
-    fn finalize(&self) {
+    fn close(self) {
         if self.nbuf > 0 {
             let nbuf = self.nbuf;
             self.nbuf = 0;
@@ -306,6 +304,10 @@ pub impl<T: io::Writer> Base64Writer<T> : Drop {
             self.writer.write(vec::mut_view(self.outbuf, 0, 4));
         }
     }
+}
+
+pub impl<T: io::Writer> Base64Writer<T>: Drop {
+    fn finalize(&self) {}
 }
 
 pub struct Base64Reader<T: io::Reader> {
@@ -527,10 +529,11 @@ mod tests {
         let source2 = str::to_bytes("oobar");
         let expect  = str::to_bytes("Zm9vYmFy");
 
-        let actual  = io::with_bytes_writer(|writer| {
+        let actual = io::with_bytes_writer(|writer| {
             let writer = Base64Writer::new(BASE64_STD, &writer);
             writer.write(source1);
             writer.write(source2);
+            writer.close();
         });
 
         assert expect == actual;

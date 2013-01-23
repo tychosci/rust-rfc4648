@@ -64,4 +64,5 @@ fn encode(socket: TcpSocket) {
         let nread = socket.read(buf, buf.len());
         writer.write(buf.view(0, nread));
     }
+    writer.close();
 }
