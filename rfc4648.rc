@@ -77,30 +77,6 @@ pub impl &[const u8]: ToBase64 {
     }
 }
 
-pub impl &str: ToBase16 {
-    fn to_base16(&self) -> ~[u8] {
-        str::byte_slice(*self, |b| b.to_base16())
-    }
-}
-
-pub impl &str: ToBase32 {
-    fn to_base32(&self) -> ~[u8] {
-        str::byte_slice(*self, |b| b.to_base32())
-    }
-    fn to_base32_hex(&self) -> ~[u8] {
-        str::byte_slice(*self, |b| b.to_base32_hex())
-    }
-}
-
-pub impl &str: ToBase64 {
-    fn to_base64(&self) -> ~[u8] {
-        str::byte_slice(*self, |b| b.to_base64())
-    }
-    fn to_base64_urlsafe(&self) -> ~[u8] {
-        str::byte_slice(*self, |b| b.to_base64_urlsafe())
-    }
-}
-
 pub impl &[const u8]: FromBase16<~[u8]> {
     fn from_base16(&self) -> ~[u8] {
         base16::decode(*self)
@@ -125,26 +101,27 @@ pub impl &[const u8]: FromBase64<~[u8]> {
     }
 }
 
-pub impl &str: FromBase16<~[u8]> {
-    fn from_base16(&self) -> ~[u8] {
-        str::byte_slice(*self, |b| b.from_base16())
-    }
-}
-
-pub impl &str: FromBase32<~[u8]> {
-    fn from_base32(&self) -> ~[u8] {
-        str::byte_slice(*self, |b| b.from_base32())
-    }
-    fn from_base32_hex(&self) -> ~[u8] {
-        str::byte_slice(*self, |b| b.from_base32_hex())
-    }
-}
-
-pub impl &str: FromBase64<~[u8]> {
-    fn from_base64(&self) -> ~[u8] {
-        str::byte_slice(*self, |b| b.from_base64())
-    }
-    fn from_base64_urlsafe(&self) -> ~[u8] {
-        str::byte_slice(*self, |b| b.from_base64_urlsafe())
-    }
-}
+macro_rules! mk_impl_for_str_to(
+    ($trait_name:ident, [$($method_name:ident),+]) => (
+        pub impl &str: $trait_name {
+            $(fn $method_name(&self) -> ~[u8] {
+                str::byte_slice(*self, |b| b.$method_name())
+            })+
+        }
+    )
+)
+macro_rules! mk_impl_for_str_from(
+    ($trait_name:ident, [$($method_name:ident),+]) => (
+        pub impl &str: $trait_name<~[u8]> {
+            $(fn $method_name(&self) -> ~[u8] {
+                str::byte_slice(*self, |b| b.$method_name())
+            })+
+        }
+    )
+)
+mk_impl_for_str_to!(ToBase16, [to_base16])
+mk_impl_for_str_to!(ToBase32, [to_base32, to_base32_hex])
+mk_impl_for_str_to!(ToBase64, [to_base64, to_base64_urlsafe])
+mk_impl_for_str_from!(FromBase16, [from_base16])
+mk_impl_for_str_from!(FromBase32, [from_base32, from_base32_hex])
+mk_impl_for_str_from!(FromBase64, [from_base64, from_base64_urlsafe])
