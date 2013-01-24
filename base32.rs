@@ -99,7 +99,7 @@ pure fn decoded_len(src_length: uint) -> uint {
     src_length / 8 * 5
 }
 
-pub impl Base32 : BinaryEncoder {
+impl Base32 : BinaryEncoder {
     fn encode(&self, dst: &[mut u8], src: &[const u8]) {
         base32encode(self.table, dst, src);
     }
@@ -108,17 +108,6 @@ pub impl Base32 : BinaryEncoder {
         encoded_len(src_length)
     }
 
-    /**
-     * Encode input bytes to base32-encoded bytes.
-     *
-     * # Arguments
-     *
-     * * src - bytes for encoding
-     *
-     * # Return
-     *
-     * base32-encoded bytes
-     */
     fn encode_bytes(&self, src: &[const u8]) -> ~[u8] {
         let dst_length = self.encoded_len(src.len());
         let mut dst = vec::with_capacity(dst_length);
@@ -131,7 +120,7 @@ pub impl Base32 : BinaryEncoder {
     }
 }
 
-pub impl Base32 : BinaryDecoder {
+impl Base32 : BinaryDecoder {
     fn decode(&self, dst: &[mut u8], src: &[const u8]) -> DecodeResult {
         base32decode(self.decode_map, dst, src)
     }
@@ -140,17 +129,6 @@ pub impl Base32 : BinaryDecoder {
         decoded_len(src_length)
     }
 
-    /**
-     * Decode base32-encoded bytes to its original bytes.
-     *
-     * # Arguments
-     *
-     * * src - base32-encoded bytes
-     *
-     * # Return
-     *
-     * decoded bytes
-     */
     fn decode_bytes(&self, src: &[const u8]) -> ~[u8] {
         let dst_length = self.decoded_len(src.len());
         let mut dst = vec::with_capacity(dst_length);
@@ -166,7 +144,7 @@ pub impl Base32 : BinaryDecoder {
 }
 
 /**
- * Shortcut for base32#encode_bytes
+ * Encode input bytes to base32-encoded bytes.
  *
  * # Arguments
  *
@@ -181,7 +159,7 @@ pub fn encode(src: &[const u8]) -> ~[u8] {
 }
 
 /**
- * Shortcut for base32#encode_bytes
+ * Encode input bytes to base32-hex-encoded bytes.
  *
  * # Arguments
  *
@@ -189,14 +167,14 @@ pub fn encode(src: &[const u8]) -> ~[u8] {
  *
  * # Return
  *
- * base32-encoded bytes (extended hex alphabet)
+ * base32-hex-encoded bytes
  */
 pub fn hex_encode(src: &[const u8]) -> ~[u8] {
     BASE32_HEX.encode_bytes(src)
 }
 
 /**
- * Shortcut for base32#decode_bytes
+ * Decode base32-encoded bytes to its original bytes.
  *
  * # Arguments
  *
@@ -211,11 +189,11 @@ pub fn decode(src: &[const u8]) -> ~[u8] {
 }
 
 /**
- * Shortcut for base32#decode_bytes
+ * Decode base32-hex-encoded bytes to its original bytes.
  *
  * # Arguments
  *
- * * src - base32-encoded bytes (extended hex alphabent)
+ * * src - base32-hex-encoded bytes
  *
  * # Return
  *

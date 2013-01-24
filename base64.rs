@@ -107,7 +107,7 @@ pure fn decoded_len(src_length: uint) -> uint {
     src_length / 4 * 3
 }
 
-pub impl Base64 : BinaryEncoder {
+impl Base64 : BinaryEncoder {
     fn encode(&self, dst: &[mut u8], src: &[const u8]) {
         base64encode(self.table, dst, src);
     }
@@ -116,17 +116,6 @@ pub impl Base64 : BinaryEncoder {
         encoded_len(src_length)
     }
 
-    /**
-     * Encode input bytes to base64-encoded bytes.
-     *
-     * # Arguments
-     *
-     * * src - bytes for encoding
-     *
-     * # Return
-     *
-     * base64-encoded bytes
-     */
     fn encode_bytes(&self, src: &[const u8]) -> ~[u8] {
         let dst_length = self.encoded_len(src.len());
         let mut dst = vec::with_capacity(dst_length);
@@ -139,7 +128,7 @@ pub impl Base64 : BinaryEncoder {
     }
 }
 
-pub impl Base64 : BinaryDecoder {
+impl Base64 : BinaryDecoder {
     fn decode(&self, dst: &[mut u8], src: &[const u8]) -> DecodeResult {
         base64decode(self.decode_map, dst, src)
     }
@@ -148,17 +137,6 @@ pub impl Base64 : BinaryDecoder {
         decoded_len(src_length)
     }
 
-    /**
-     * Decode base64-encoded bytes to its original bytes.
-     *
-     * # Arguments
-     *
-     * * src - base64-encoded bytes
-     *
-     * # Return
-     *
-     * decoded bytes
-     */
     fn decode_bytes(&self, src: &[const u8]) -> ~[u8] {
         let dst_length = self.decoded_len(src.len());
         let mut dst = vec::with_capacity(dst_length);
@@ -174,7 +152,7 @@ pub impl Base64 : BinaryDecoder {
 }
 
 /**
- * Shortcut for base64#encode_bytes
+ * Encode input bytes to base64-encoded bytes.
  *
  * # Arguments
  *
@@ -189,7 +167,7 @@ pub fn encode(src: &[const u8]) -> ~[u8] {
 }
 
 /**
- * Shortcut for base64#encode_bytes
+ * Encode input bytes to base64-urlsafe-encoded bytes.
  *
  * # Arguments
  *
@@ -197,14 +175,14 @@ pub fn encode(src: &[const u8]) -> ~[u8] {
  *
  * # Return
  *
- * base64-encoded bytes (url and filename safe)
+ * base64-urlsafe-encoded bytes
  */
 pub fn urlsafe_encode(src: &[const u8]) -> ~[u8] {
     BASE64_URL.encode_bytes(src)
 }
 
 /**
- * Shortcut for base64#decode_bytes
+ * Decode base64-encoded bytes to its original bytes.
  *
  * # Arguments
  *
@@ -219,11 +197,11 @@ pub fn decode(src: &[const u8]) -> ~[u8] {
 }
 
 /**
- * Shortcut for base64#decode_bytes
+ * Decode base64-urlsafe-encoded bytes to original bytes.
  *
  * # Arguments
  *
- * * src - base64-encoded bytes
+ * * src - base64-urlsafe-encoded bytes
  *
  * # Return
  *
