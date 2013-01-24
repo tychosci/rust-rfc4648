@@ -529,8 +529,6 @@ mod tests {
 
     #[test]
     fn test_base32_writer() {
-        use super::Base32Writer;
-
         let source1 = str::to_bytes("f");
         let source2 = str::to_bytes("ooba");
         let expect  = str::to_bytes("MZXW6YTB");
@@ -547,8 +545,6 @@ mod tests {
 
     #[test]
     fn test_base32_reader() {
-        use super::Base32Reader;
-
         let source = ["MY======", "MZXQ====", "MZXW6===",
                       "MZXW6YQ=", "MZXW6YTB", "MZXW6YTBOI======"];
         let expect = ["f", "fo", "foo", "foob", "fooba", "foobar"];
