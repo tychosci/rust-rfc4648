@@ -31,27 +31,27 @@ pub trait ToBase64 {
     fn to_base64_urlsafe(&self) -> ~[u8];
 }
 
-pub trait FromBase16<T> {
-    fn from_base16(&self) -> T;
+pub trait FromBase16 {
+    fn from_base16(&self) -> ~[u8];
 }
 
-pub trait FromBase32<T> {
-    fn from_base32(&self) -> T;
-    fn from_base32_hex(&self) -> T;
+pub trait FromBase32 {
+    fn from_base32(&self) -> ~[u8];
+    fn from_base32_hex(&self) -> ~[u8];
 }
 
-pub trait FromBase64<T> {
-    fn from_base64(&self) -> T;
-    fn from_base64_urlsafe(&self) -> T;
+pub trait FromBase64 {
+    fn from_base64(&self) -> ~[u8];
+    fn from_base64_urlsafe(&self) -> ~[u8];
 }
 
-pub trait Rfc4648<T>:
-    FromBase16<T> FromBase32<T> FromBase64<T>
+pub trait Rfc4648:
+    FromBase16 FromBase32 FromBase64
     ToBase16 ToBase32 ToBase64 {
 }
 
-pub impl &[const u8]: Rfc4648<~[u8]>;
-pub impl &str: Rfc4648<~[u8]>;
+pub impl &[const u8]: Rfc4648;
+pub impl &str: Rfc4648;
 
 pub impl &[const u8]: ToBase16 {
     fn to_base16(&self) -> ~[u8] {
@@ -77,13 +77,13 @@ pub impl &[const u8]: ToBase64 {
     }
 }
 
-pub impl &[const u8]: FromBase16<~[u8]> {
+pub impl &[const u8]: FromBase16 {
     fn from_base16(&self) -> ~[u8] {
         base16::decode(*self)
     }
 }
 
-pub impl &[const u8]: FromBase32<~[u8]> {
+pub impl &[const u8]: FromBase32 {
     fn from_base32(&self) -> ~[u8] {
         base32::decode(*self)
     }
@@ -92,7 +92,7 @@ pub impl &[const u8]: FromBase32<~[u8]> {
     }
 }
 
-pub impl &[const u8]: FromBase64<~[u8]> {
+pub impl &[const u8]: FromBase64 {
     fn from_base64(&self) -> ~[u8] {
         base64::decode(*self)
     }
@@ -101,7 +101,7 @@ pub impl &[const u8]: FromBase64<~[u8]> {
     }
 }
 
-macro_rules! mk_impl_for_str_to(
+macro_rules! mk_impl_for_str(
     ($trait_name:ident, [$($method_name:ident),+]) => (
         pub impl &str: $trait_name {
             $(fn $method_name(&self) -> ~[u8] {
@@ -110,18 +110,9 @@ macro_rules! mk_impl_for_str_to(
         }
     )
 )
-macro_rules! mk_impl_for_str_from(
-    ($trait_name:ident, [$($method_name:ident),+]) => (
-        pub impl &str: $trait_name<~[u8]> {
-            $(fn $method_name(&self) -> ~[u8] {
-                str::byte_slice(*self, |b| b.$method_name())
-            })+
-        }
-    )
-)
-mk_impl_for_str_to!(ToBase16, [to_base16])
-mk_impl_for_str_to!(ToBase32, [to_base32, to_base32_hex])
-mk_impl_for_str_to!(ToBase64, [to_base64, to_base64_urlsafe])
-mk_impl_for_str_from!(FromBase16, [from_base16])
-mk_impl_for_str_from!(FromBase32, [from_base32, from_base32_hex])
-mk_impl_for_str_from!(FromBase64, [from_base64, from_base64_urlsafe])
+mk_impl_for_str!(ToBase16, [to_base16])
+mk_impl_for_str!(ToBase32, [to_base32, to_base32_hex])
+mk_impl_for_str!(ToBase64, [to_base64, to_base64_urlsafe])
+mk_impl_for_str!(FromBase16, [from_base16])
+mk_impl_for_str!(FromBase32, [from_base32, from_base32_hex])
+mk_impl_for_str!(FromBase64, [from_base64, from_base64_urlsafe])
