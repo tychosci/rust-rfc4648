@@ -53,54 +53,16 @@ pub trait Rfc4648:
 pub impl &[const u8]: Rfc4648;
 pub impl &str: Rfc4648;
 
-pub impl &[const u8]: ToBase16 {
-    fn to_base16(&self) -> ~[u8] {
-        base16::encode(*self)
-    }
-}
-
-pub impl &[const u8]: ToBase32 {
-    fn to_base32(&self) -> ~[u8] {
-        base32::encode(*self)
-    }
-    fn to_base32_hex(&self) -> ~[u8] {
-        base32::hex_encode(*self)
-    }
-}
-
-pub impl &[const u8]: ToBase64 {
-    fn to_base64(&self) -> ~[u8] {
-        base64::encode(*self)
-    }
-    fn to_base64_urlsafe(&self) -> ~[u8] {
-        base64::urlsafe_encode(*self)
-    }
-}
-
-pub impl &[const u8]: FromBase16 {
-    fn from_base16(&self) -> ~[u8] {
-        base16::decode(*self)
-    }
-}
-
-pub impl &[const u8]: FromBase32 {
-    fn from_base32(&self) -> ~[u8] {
-        base32::decode(*self)
-    }
-    fn from_base32_hex(&self) -> ~[u8] {
-        base32::hex_decode(*self)
-    }
-}
-
-pub impl &[const u8]: FromBase64 {
-    fn from_base64(&self) -> ~[u8] {
-        base64::decode(*self)
-    }
-    fn from_base64_urlsafe(&self) -> ~[u8] {
-        base64::urlsafe_decode(*self)
-    }
-}
-
+macro_rules! mk_impl_for_bytes(
+    ($trait_name:ident =>
+    $( $method_name:ident -> $fn_name:path ;)+) => (
+        pub impl &[const u8]: $trait_name {
+            $(fn $method_name(&self) -> ~[u8] {
+                $fn_name(*self)
+            })+
+        }
+    )
+)
 macro_rules! mk_impl_for_str(
     ($trait_name:ident, [$($method_name:ident),+]) => (
         pub impl &str: $trait_name {
@@ -110,6 +72,30 @@ macro_rules! mk_impl_for_str(
         }
     )
 )
+
+mk_impl_for_bytes! { ToBase16 =>
+    to_base16 -> base16::encode;
+}
+mk_impl_for_bytes! { ToBase32 =>
+    to_base32 -> base32::encode;
+    to_base32_hex -> base32::hex_encode;
+}
+mk_impl_for_bytes! { ToBase64 =>
+    to_base64 -> base64::encode;
+    to_base64_urlsafe -> base64::urlsafe_encode;
+}
+mk_impl_for_bytes! { FromBase16 =>
+    from_base16 -> base16::decode;
+}
+mk_impl_for_bytes! { FromBase32 =>
+    from_base32 -> base32::decode;
+    from_base32_hex -> base32::hex_decode;
+}
+mk_impl_for_bytes! { FromBase64 =>
+    from_base64 -> base64::decode;
+    from_base64_urlsafe -> base64::urlsafe_decode;
+}
+
 mk_impl_for_str!(ToBase16, [to_base16])
 mk_impl_for_str!(ToBase32, [to_base32, to_base32_hex])
 mk_impl_for_str!(ToBase64, [to_base64, to_base64_urlsafe])
