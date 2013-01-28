@@ -5,7 +5,7 @@ LIBDIR  := lib
 BINDIR  := bin
 TESTDIR := test
 DUMMY   := $(LIBDIR)/librfc4648.dummy
-CRATE   := rfc4648.rc
+CRATE   := rfc4648.rs
 SOURCE  := $(shell find . -name '*.rs')
 
 all: $(DUMMY)
