@@ -99,7 +99,7 @@ pure fn decoded_len(src_length: uint) -> uint {
     src_length / 8 * 5
 }
 
-impl Base32 : BinaryEncoder {
+impl BinaryEncoder for Base32 {
     fn encode(&self, dst: &[mut u8], src: &[const u8]) {
         base32encode(self.table, dst, src);
     }
@@ -120,7 +120,7 @@ impl Base32 : BinaryEncoder {
     }
 }
 
-impl Base32 : BinaryDecoder {
+impl BinaryDecoder for Base32 {
     fn decode(&self, dst: &[mut u8], src: &[const u8]) -> DecodeResult {
         base32decode(self.decode_map, dst, src)
     }
@@ -203,7 +203,7 @@ pub fn hex_decode(src: &[const u8]) -> ~[u8] {
     BASE32_HEX.decode_bytes(src)
 }
 
-pub struct Base32Writer<T: io::Writer> {
+pub struct Base32Writer<T> {
     priv base32: &Base32,
     priv writer: &T,
     priv outbuf: [mut u8*1024],
@@ -276,11 +276,11 @@ pub impl<T: io::Writer> Base32Writer<T> {
     }
 }
 
-pub impl<T: io::Writer> Base32Writer<T>: Drop {
+pub impl<T: io::Writer> Drop for Base32Writer<T> {
     fn finalize(&self) {}
 }
 
-pub struct Base32Reader<T: io::Reader> {
+pub struct Base32Reader<T> {
     priv base32: &Base32,
     priv reader: &T,
     priv buf: [mut u8*1024],

@@ -50,13 +50,13 @@ pub trait Rfc4648:
     ToBase16 ToBase32 ToBase64 {
 }
 
-pub impl &[const u8]: Rfc4648;
-pub impl &str: Rfc4648;
+pub impl Rfc4648 for &[const u8];
+pub impl Rfc4648 for &str;
 
 macro_rules! mk_impl_for_bytes(
     ($trait_name:ident =>
     $( $method_name:ident -> $fn_name:path ;)+) => (
-        pub impl &[const u8]: $trait_name {
+        pub impl $trait_name for &[const u8] {
             $(fn $method_name(&self) -> ~[u8] {
                 $fn_name(*self)
             })+
@@ -65,7 +65,7 @@ macro_rules! mk_impl_for_bytes(
 )
 macro_rules! mk_impl_for_str(
     ($trait_name:ident, [$($method_name:ident),+]) => (
-        pub impl &str: $trait_name {
+        pub impl $trait_name for &str {
             $(fn $method_name(&self) -> ~[u8] {
                 str::byte_slice(*self, |b| b.$method_name())
             })+

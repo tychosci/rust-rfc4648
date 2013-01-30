@@ -107,7 +107,7 @@ pure fn decoded_len(src_length: uint) -> uint {
     src_length / 4 * 3
 }
 
-impl Base64 : BinaryEncoder {
+impl BinaryEncoder for Base64 {
     fn encode(&self, dst: &[mut u8], src: &[const u8]) {
         base64encode(self.table, dst, src);
     }
@@ -128,7 +128,7 @@ impl Base64 : BinaryEncoder {
     }
 }
 
-impl Base64 : BinaryDecoder {
+impl BinaryDecoder for Base64 {
     fn decode(&self, dst: &[mut u8], src: &[const u8]) -> DecodeResult {
         base64decode(self.decode_map, dst, src)
     }
@@ -211,7 +211,7 @@ pub fn urlsafe_decode(src: &[const u8]) -> ~[u8] {
     BASE64_URL.decode_bytes(src)
 }
 
-pub struct Base64Writer<T: io::Writer> {
+pub struct Base64Writer<T> {
     priv base64: &Base64,
     priv writer: &T,
     priv outbuf: [mut u8*1024],
@@ -284,11 +284,11 @@ pub impl<T: io::Writer> Base64Writer<T> {
     }
 }
 
-pub impl<T: io::Writer> Base64Writer<T>: Drop {
+pub impl<T: io::Writer> Drop for Base64Writer<T> {
     fn finalize(&self) {}
 }
 
-pub struct Base64Reader<T: io::Reader> {
+pub struct Base64Reader<T> {
     priv base64: &Base64,
     priv reader: &T,
     priv buf: [mut u8*1024],
