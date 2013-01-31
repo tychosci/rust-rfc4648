@@ -139,7 +139,7 @@ pub fn decode(src: &[const u8]) -> ~[u8] {
 pub struct Base16Writer<T> {
     priv base16: &Base16,
     priv writer: &T,
-    priv outbuf: [mut u8*1024],
+    priv mut outbuf: [u8 * 1024]
 }
 
 pub impl<T: io::Writer> Base16Writer<T> {
@@ -147,7 +147,7 @@ pub impl<T: io::Writer> Base16Writer<T> {
         Base16Writer {
             base16: base16,
             writer: writer,
-            outbuf: [mut 0, ..1024],
+            outbuf: [0, ..1024]
         }
     }
 
@@ -176,10 +176,10 @@ pub impl<T: io::Writer> Drop for Base16Writer<T> {
 pub struct Base16Reader<T> {
     priv base16: &Base16,
     priv reader: &T,
-    priv buf: [mut u8*1024],
-    priv outbuf: [mut u8*512],
+    priv mut buf: [u8 * 1024],
+    priv mut outbuf: [u8 * 512],
     priv mut nbuf: uint,
-    priv mut noutbuf: uint,
+    priv mut noutbuf: uint
 }
 
 pub impl<T: io::Reader> Base16Reader<T> {
@@ -187,10 +187,10 @@ pub impl<T: io::Reader> Base16Reader<T> {
         Base16Reader {
             base16: base16,
             reader: reader,
-            buf: [mut 0, ..1024],
-            outbuf: [mut 0, ..512],
+            buf: [0, ..1024],
+            outbuf: [0, ..512],
             nbuf: 0,
-            noutbuf: 0,
+            noutbuf: 0
         }
     }
 

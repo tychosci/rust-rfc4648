@@ -214,9 +214,9 @@ pub fn urlsafe_decode(src: &[const u8]) -> ~[u8] {
 pub struct Base64Writer<T> {
     priv base64: &Base64,
     priv writer: &T,
-    priv outbuf: [mut u8*1024],
-    priv buf: [mut u8*3],
-    priv mut nbuf: uint,
+    priv mut outbuf: [u8 * 1024],
+    priv mut buf: [u8 * 3],
+    priv mut nbuf: uint
 }
 
 pub impl<T: io::Writer> Base64Writer<T> {
@@ -224,9 +224,9 @@ pub impl<T: io::Writer> Base64Writer<T> {
         Base64Writer {
             base64: base64,
             writer: writer,
-            outbuf: [mut 0, ..1024],
-            buf: [mut 0, ..3],
-            nbuf: 0,
+            outbuf: [0, ..1024],
+            buf: [0, ..3],
+            nbuf: 0
         }
     }
 
@@ -291,11 +291,11 @@ pub impl<T: io::Writer> Drop for Base64Writer<T> {
 pub struct Base64Reader<T> {
     priv base64: &Base64,
     priv reader: &T,
-    priv buf: [mut u8*1024],
-    priv outbuf: [mut u8*768],
+    priv mut buf: [u8 * 1024],
+    priv mut outbuf: [u8 * 768],
     priv mut nbuf: uint,
     priv mut noutbuf: uint,
-    priv mut end: bool,
+    priv mut end: bool
 }
 
 pub impl<T: io::Reader> Base64Reader<T> {
@@ -303,11 +303,11 @@ pub impl<T: io::Reader> Base64Reader<T> {
         Base64Reader {
             base64: base64,
             reader: reader,
-            buf: [mut 0, ..1024],
-            outbuf: [mut 0, ..768],
+            buf: [0, ..1024],
+            outbuf: [0, ..768],
             nbuf: 0,
             noutbuf: 0,
-            end: false,
+            end: false
         }
     }
 
@@ -416,7 +416,7 @@ fn base64decode(decode_map: &[u8], dst: &[mut u8], src: &[const u8]) -> DecodeRe
     let mut end = false;
 
     while src.len() > 0 && !end {
-        let buf = [mut 0xff_u8, ..4];
+        let mut buf = [0xff_u8, ..4];
         let mut buf_len = 4u;
 
         let mut i = 0u;

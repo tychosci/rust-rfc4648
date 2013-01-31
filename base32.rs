@@ -206,9 +206,9 @@ pub fn hex_decode(src: &[const u8]) -> ~[u8] {
 pub struct Base32Writer<T> {
     priv base32: &Base32,
     priv writer: &T,
-    priv outbuf: [mut u8*1024],
-    priv buf: [mut u8*5],
-    priv mut nbuf: uint,
+    priv mut outbuf: [u8 * 1024],
+    priv mut buf: [u8 * 5],
+    priv mut nbuf: uint
 }
 
 pub impl<T: io::Writer> Base32Writer<T> {
@@ -216,9 +216,9 @@ pub impl<T: io::Writer> Base32Writer<T> {
         Base32Writer {
             base32: base32,
             writer: writer,
-            outbuf: [mut 0, ..1024],
-            buf: [mut 0, ..5],
-            nbuf: 0,
+            outbuf: [0, ..1024],
+            buf: [0, ..5],
+            nbuf: 0
         }
     }
 
@@ -283,11 +283,11 @@ pub impl<T: io::Writer> Drop for Base32Writer<T> {
 pub struct Base32Reader<T> {
     priv base32: &Base32,
     priv reader: &T,
-    priv buf: [mut u8*1024],
-    priv outbuf: [mut u8*640],
+    priv mut buf: [u8 * 1024],
+    priv mut outbuf: [u8 * 640],
     priv mut nbuf: uint,
     priv mut noutbuf: uint,
-    priv mut end: bool,
+    priv mut end: bool
 }
 
 pub impl<T: io::Reader> Base32Reader<T> {
@@ -295,11 +295,11 @@ pub impl<T: io::Reader> Base32Reader<T> {
         Base32Reader {
             base32: base32,
             reader: reader,
-            buf: [mut 0, ..1024],
-            outbuf: [mut 0, ..640],
+            buf: [0, ..1024],
+            outbuf: [0, ..640],
             nbuf: 0,
             noutbuf: 0,
-            end: false,
+            end: false
         }
     }
 
@@ -419,7 +419,7 @@ fn base32decode(decode_map: &[u8], dst: &[mut u8], src: &[const u8]) -> DecodeRe
     let mut end = false;
 
     while src.len() > 0 && !end {
-        let buf = [mut 0xff_u8, ..8];
+        let mut buf = [0xff_u8, ..8];
         let mut buf_len = 8u;
 
         let mut i = 0u;
