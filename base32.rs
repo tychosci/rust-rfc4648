@@ -327,7 +327,7 @@ pub impl<T: io::Reader> Base32Reader<T> {
 
         self.nbuf += nn;
         if self.nbuf < 8 {
-            fail ~"malformed base32 input";
+            die!(~"malformed base32 input");
         }
 
         let nr = self.nbuf / 8 * 8; // total read bytes (except fringe bytes)
@@ -382,7 +382,7 @@ fn base32encode(table: &[u8], dst: &[mut u8], src: &[const u8]) {
     let dst_length = dst.len();
 
     if dst_length % 8 != 0 {
-        fail ~"dst's length should be divisible by 8";
+        die!(~"dst's length should be divisible by 8");
     }
 
     for uint::range(0, (src_length + 4) / 5) |i| {
@@ -425,7 +425,7 @@ fn base32decode(decode_map: &[u8], dst: &[mut u8], src: &[const u8]) -> DecodeRe
         let mut i = 0u;
         while i < 8 {
             if src.len() == 0 {
-                fail ~"malformed base32 string";
+                die!(~"malformed base32 string");
             }
             let chr = src[0];
             src = vec::const_view(src, 1, src.len());
@@ -435,7 +435,7 @@ fn base32decode(decode_map: &[u8], dst: &[mut u8], src: &[const u8]) -> DecodeRe
             if chr == PAD && i >= 2 && src.len() < 8 {
                 for uint::range(0, (8-i-1)) |j| {
                     if src.len() > j && src[j] != PAD {
-                        fail ~"malformed base32 string";
+                        die!(~"malformed base32 string");
                     }
                 }
                 buf_len = i;
@@ -444,7 +444,7 @@ fn base32decode(decode_map: &[u8], dst: &[mut u8], src: &[const u8]) -> DecodeRe
             }
             buf[i] = decode_map[chr];
             if buf[i] == 0xff {
-                fail ~"malformed base32 string";
+                die!(~"malformed base32 string");
             }
             i += 1;
         }
@@ -453,7 +453,7 @@ fn base32decode(decode_map: &[u8], dst: &[mut u8], src: &[const u8]) -> DecodeRe
         dst[3] = 0; dst[4] = 0;
 
         if buf_len < 2 || 8 < buf_len {
-            fail ~"malformed base32 string";
+            die!(~"malformed base32 string");
         }
 
         dst[0] |= buf[0]<<3 | buf[1]>>2;
@@ -472,7 +472,7 @@ fn base32decode(decode_map: &[u8], dst: &[mut u8], src: &[const u8]) -> DecodeRe
             5     => ndecoded += 3,
             6 | 7 => ndecoded += 4,
             8     => ndecoded += 5,
-            _     => fail ~"malformed base32 string"
+            _     => die!(~"malformed base32 string")
         }
     }
 
