@@ -4,16 +4,15 @@ extern mod rfc4648;
 use std::net::ip;
 use std::net::tcp;
 use std::uv_global_loop;
+use std::cell::Cell;
 
 use core::io::{ReaderUtil, WriterUtil};
 use core::task::{SingleThreaded, task};
 use std::net::tcp::{TcpErrData, TcpNewConnection, TcpSocket};
 use rfc4648::base64::{BASE64_STD, Base64Writer};
 
-use comm = core::oldcomm;
-
-type KillChan = comm::Chan<Option<TcpErrData>>;
-type ContChan = comm::Chan<()>;
+type KillChan = pipes::SharedChan<Option<TcpErrData>>;
+type ContChan = pipes::ChanOne<()>;
 
 fn main() {
     let iotask = uv_global_loop::get();
@@ -22,10 +21,10 @@ fn main() {
     let port = 1337;
 
     let backlog = 128;
-    let ip_addr = ip::get_addr(addr, iotask);
+    let ip_addr = ip::get_addr(addr, &iotask);
     let ip_addr = copy result::unwrap(ip_addr)[0];
 
-    tcp::listen(ip_addr, port, backlog, iotask,
+    tcp::listen(ip_addr, port, backlog, &iotask,
                 on_established, on_new_connection);
 }
 
@@ -34,14 +33,18 @@ fn on_established(_kill_ch: KillChan) {
 }
 
 fn on_new_connection(conn: TcpNewConnection, kill_ch: KillChan) {
-    do comm::listen |cont_ch| {
-        // Spawn new child which doesn't propagate errors to parent.
-        do task().unlinked().sched_mode(SingleThreaded).spawn {
-            accept(conn, kill_ch, cont_ch);
-        }
-        // Wait `tcp::accept(conn)' complete.
-        cont_ch.recv();
+    let (cont_po, cont_ch) = pipes::oneshot();
+    // NB: These cells can be removed once one-shot closure is landed.
+    let kill_ch_cell = Cell(kill_ch);
+    let cont_ch_cell = Cell(cont_ch);
+    // Spawn new child which doesn't propagate errors to parent.
+    do task().unlinked().sched_mode(SingleThreaded).spawn {
+        let kill_ch = kill_ch_cell.take();
+        let cont_ch = cont_ch_cell.take();
+        accept(conn, kill_ch, cont_ch);
     }
+    // Wait `tcp::accept(conn)' complete.
+    cont_po.recv();
 }
 
 fn accept(conn: TcpNewConnection, kill_ch: KillChan, cont_ch: ContChan) {
