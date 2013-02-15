@@ -218,7 +218,7 @@ pub impl<T: io::Reader> Base16Reader<T> {
 
         self.nbuf += nn;
         if self.nbuf < 2 {
-            die!(~"malformed base64 input");
+            fail!(~"malformed base64 input");
         }
 
         let nr = self.nbuf / 2 * 2; // total read bytes (except fringe bytes)
@@ -288,7 +288,7 @@ fn base16decode(decode_map: &[u8], dst: &[mut u8], src: &[const u8]) -> DecodeRe
         let chr1 = decode_map[src[i]];
         let chr2 = decode_map[src[i+1]];
         if chr1 == 0xff_u8 || chr2 == 0xff_u8 {
-            die!(~"malformed base16 string");
+            fail!(~"malformed base16 string");
         }
         dst[j] = chr1<<4 | chr2;
 
