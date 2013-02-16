@@ -42,7 +42,7 @@ fn encode(filename: &Path, writer: io::Writer) {
     let mut buf = [0, ..1024];
     while !reader.eof() {
         let nread = reader.read(buf, buf.len());
-        writer.write(vec::mut_view(buf, 0, nread));
+        writer.write(vec::mut_slice(buf, 0, nread));
     }
     writer.close();
 }
@@ -54,6 +54,6 @@ fn decode(filename: &Path, writer: io::Writer) {
     let mut buf = [0, ..1024];
     while !reader.eof() {
         let nread = reader.read(buf, buf.len());
-        writer.write(vec::mut_view(buf, 0, nread));
+        writer.write(vec::mut_slice(buf, 0, nread));
     }
 }

@@ -224,7 +224,7 @@ pub impl<T: io::Writer> Base32Writer<T> {
 
     fn write(&self, buf: &[const u8]) {
         let buflen = buf.len();
-        let mut buf = vec::const_view(buf, 0, buflen);
+        let mut buf = vec::const_slice(buf, 0, buflen);
 
         if self.nbuf > 0 {
             let mut i = 0;
@@ -234,13 +234,13 @@ pub impl<T: io::Writer> Base32Writer<T> {
                 i += 1;
             }
 
-            buf = vec::const_view(buf, i, buflen);
+            buf = vec::const_slice(buf, i, buflen);
             if self.nbuf < 5 {
                 return;
             }
 
-            self.base32.encode(self.outbuf, vec::mut_view(self.buf, 0, 5));
-            self.writer.write(vec::mut_view(self.outbuf, 0, 8));
+            self.base32.encode(self.outbuf, vec::mut_slice(self.buf, 0, 5));
+            self.writer.write(vec::mut_slice(self.outbuf, 0, 8));
             self.nbuf = 0;
         }
 
@@ -251,11 +251,11 @@ pub impl<T: io::Writer> Base32Writer<T> {
             let nn = nn - nn % 8;
 
             if nn > 0 {
-                self.base32.encode(self.outbuf, vec::const_view(buf, 0, nn));
-                self.writer.write(vec::mut_view(self.outbuf, 0, nn / 8 * 5));
+                self.base32.encode(self.outbuf, vec::const_slice(buf, 0, nn));
+                self.writer.write(vec::mut_slice(self.outbuf, 0, nn / 8 * 5));
             }
 
-            buf = vec::const_view(buf, nn, buflen);
+            buf = vec::const_slice(buf, nn, buflen);
         }
 
         for uint::range(0, buf.len()) |i| {
@@ -269,9 +269,9 @@ pub impl<T: io::Writer> Base32Writer<T> {
             let nbuf = self.nbuf;
             self.nbuf = 0;
 
-            let buf = vec::mut_view(self.buf, 0, nbuf);
+            let buf = vec::mut_slice(self.buf, 0, nbuf);
             self.base32.encode(self.outbuf, buf);
-            self.writer.write(vec::mut_view(self.outbuf, 0, 8));
+            self.writer.write(vec::mut_slice(self.outbuf, 0, 8));
         }
     }
 }
@@ -322,7 +322,7 @@ pub impl<T: io::Reader> Base32Reader<T> {
         let nn = if nn < 8 { 8 } else { nn };
         let nn = if nn > self.buf.len() { self.buf.len() } else { nn };
 
-        let buf = vec::mut_view(self.buf, self.nbuf, nn);
+        let buf = vec::mut_slice(self.buf, self.nbuf, nn);
         let nn  = self.reader.read(buf, buf.len());
 
         self.nbuf += nn;
@@ -333,7 +333,7 @@ pub impl<T: io::Reader> Base32Reader<T> {
         let nr = self.nbuf / 8 * 8; // total read bytes (except fringe bytes)
         let nw = self.nbuf / 8 * 5; // size of decoded bytes
 
-        let buf = vec::mut_view(self.buf, 0, nr);
+        let buf = vec::mut_slice(self.buf, 0, nr);
 
         let ndecoded = if nw > len {
             let res = self.base32.decode(self.outbuf, buf);
@@ -414,8 +414,8 @@ fn base32encode(table: &[u8], dst: &[mut u8], src: &[const u8]) {
 
 fn base32decode(decode_map: &[u8], dst: &[mut u8], src: &[const u8]) -> DecodeResult {
     let mut ndecoded = 0u;
-    let mut dst = vec::mut_view(dst, 0, dst.len());
-    let mut src = vec::const_view(src, 0, src.len());
+    let mut dst = vec::mut_slice(dst, 0, dst.len());
+    let mut src = vec::const_slice(src, 0, src.len());
     let mut end = false;
 
     while src.len() > 0 && !end {
@@ -428,7 +428,7 @@ fn base32decode(decode_map: &[u8], dst: &[mut u8], src: &[const u8]) -> DecodeRe
                 fail!(~"malformed base32 string");
             }
             let chr = src[0];
-            src = vec::const_view(src, 1, src.len());
+            src = vec::const_slice(src, 1, src.len());
             if char::is_whitespace(chr as char) {
                 loop;
             }
@@ -465,7 +465,7 @@ fn base32decode(decode_map: &[u8], dst: &[mut u8], src: &[const u8]) -> DecodeRe
         dst[3] |= if buf_len > 6 { buf[6]>>3             } else { 0 };
         dst[4] |= if buf_len > 6 { buf[6]<<5 | buf[7]    } else { 0 };
 
-        dst = vec::mut_view(dst, 5, dst.len());
+        dst = vec::mut_slice(dst, 5, dst.len());
         match buf_len {
             2     => ndecoded += 1,
             3 | 4 => ndecoded += 2,

@@ -232,7 +232,7 @@ pub impl<T: io::Writer> Base64Writer<T> {
 
     fn write(&self, buf: &[const u8]) {
         let buflen  = buf.len();
-        let mut buf = vec::const_view(buf, 0, buflen);
+        let mut buf = vec::const_slice(buf, 0, buflen);
 
         if self.nbuf > 0 {
             let mut i = 0;
@@ -242,13 +242,13 @@ pub impl<T: io::Writer> Base64Writer<T> {
                 i += 1;
             }
 
-            buf = vec::const_view(buf, i, buflen);
+            buf = vec::const_slice(buf, i, buflen);
             if self.nbuf < 3 {
                 return;
             }
 
-            self.base64.encode(self.outbuf, vec::mut_view(self.buf, 0, 3));
-            self.writer.write(vec::mut_view(self.outbuf, 0, 4));
+            self.base64.encode(self.outbuf, vec::mut_slice(self.buf, 0, 3));
+            self.writer.write(vec::mut_slice(self.outbuf, 0, 4));
             self.nbuf = 0;
         }
 
@@ -259,11 +259,11 @@ pub impl<T: io::Writer> Base64Writer<T> {
             let nn = nn - nn % 3;
 
             if nn > 0 {
-                self.base64.encode(self.outbuf, vec::const_view(buf, 0, nn));
-                self.writer.write(vec::mut_view(self.outbuf, 0, nn / 3 * 4));
+                self.base64.encode(self.outbuf, vec::const_slice(buf, 0, nn));
+                self.writer.write(vec::mut_slice(self.outbuf, 0, nn / 3 * 4));
             }
 
-            buf = vec::const_view(buf, nn, nleft);
+            buf = vec::const_slice(buf, nn, nleft);
         }
 
         for uint::range(0, buf.len()) |i| {
@@ -277,9 +277,9 @@ pub impl<T: io::Writer> Base64Writer<T> {
             let nbuf = self.nbuf;
             self.nbuf = 0;
 
-            let buf = vec::mut_view(self.buf, 0, nbuf);
+            let buf = vec::mut_slice(self.buf, 0, nbuf);
             self.base64.encode(self.outbuf, buf);
-            self.writer.write(vec::mut_view(self.outbuf, 0, 4));
+            self.writer.write(vec::mut_slice(self.outbuf, 0, 4));
         }
     }
 }
@@ -330,7 +330,7 @@ pub impl<T: io::Reader> Base64Reader<T> {
         let nn = if nn < 4 { 4 } else { nn };
         let nn = if nn > self.buf.len() { self.buf.len() } else { nn };
 
-        let buf = vec::mut_view(self.buf, self.nbuf, nn);
+        let buf = vec::mut_slice(self.buf, self.nbuf, nn);
         let nn  = self.reader.read(buf, buf.len());
 
         self.nbuf += nn;
@@ -341,7 +341,7 @@ pub impl<T: io::Reader> Base64Reader<T> {
         let nr = self.nbuf / 4 * 4; // total read bytes (except fringe bytes)
         let nw = self.nbuf / 4 * 3; // size of decoded bytes
 
-        let buf = vec::mut_view(self.buf, 0, nr);
+        let buf = vec::mut_slice(self.buf, 0, nr);
 
         let ndecoded = if nw > len {
             let res = self.base64.decode(self.outbuf, buf);
@@ -411,8 +411,8 @@ fn base64encode(table: &[u8], dst: &[mut u8], src: &[const u8]) {
 
 fn base64decode(decode_map: &[u8], dst: &[mut u8], src: &[const u8]) -> DecodeResult {
     let mut ndecoded = 0u;
-    let mut dst = vec::mut_view(dst, 0, dst.len());
-    let mut src = vec::const_view(src, 0, src.len());
+    let mut dst = vec::mut_slice(dst, 0, dst.len());
+    let mut src = vec::const_slice(src, 0, src.len());
     let mut end = false;
 
     while src.len() > 0 && !end {
@@ -425,7 +425,7 @@ fn base64decode(decode_map: &[u8], dst: &[mut u8], src: &[const u8]) -> DecodeRe
                 fail!(~"malformed base64 string");
             }
             let chr = src[0];
-            src = vec::const_view(src, 1, src.len());
+            src = vec::const_slice(src, 1, src.len());
             if char::is_whitespace(chr as char) {
                 loop;
             }
@@ -448,7 +448,7 @@ fn base64decode(decode_map: &[u8], dst: &[mut u8], src: &[const u8]) -> DecodeRe
         dst[1] = if buf_len > 2 { buf[1]<<4 | buf[2]>>2 } else { 0 };
         dst[2] = if buf_len > 3 { buf[2]<<6 | buf[3]    } else { 0 };
 
-        dst = vec::mut_view(dst, 3, dst.len());
+        dst = vec::mut_slice(dst, 3, dst.len());
         ndecoded += buf_len - 1;
     }
 

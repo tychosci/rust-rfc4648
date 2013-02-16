@@ -152,7 +152,7 @@ pub impl<T: io::Writer> Base16Writer<T> {
     }
 
     fn write(&self, buf: &[const u8]) {
-        let mut buf = vec::const_view(buf, 0, buf.len());
+        let mut buf = vec::const_slice(buf, 0, buf.len());
 
         while buf.len() > 0 {
             let buflen = buf.len();
@@ -160,11 +160,11 @@ pub impl<T: io::Writer> Base16Writer<T> {
             let nn = if nn > buflen { buflen } else { nn };
 
             if nn > 0 {
-                self.base16.encode(self.outbuf, vec::const_view(buf, 0, nn));
-                self.writer.write(vec::mut_view(self.outbuf, 0, nn * 2));
+                self.base16.encode(self.outbuf, vec::const_slice(buf, 0, nn));
+                self.writer.write(vec::mut_slice(self.outbuf, 0, nn * 2));
             }
 
-            buf = vec::const_view(buf, nn, buflen);
+            buf = vec::const_slice(buf, nn, buflen);
         }
     }
 }
@@ -213,7 +213,7 @@ pub impl<T: io::Reader> Base16Reader<T> {
         let nn = if nn < 2 { 2 } else { nn };
         let nn = if nn > self.buf.len() { self.buf.len() } else { nn };
 
-        let buf = vec::mut_view(self.buf, self.nbuf, nn);
+        let buf = vec::mut_slice(self.buf, self.nbuf, nn);
         let nn  = self.reader.read(buf, buf.len());
 
         self.nbuf += nn;
@@ -224,7 +224,7 @@ pub impl<T: io::Reader> Base16Reader<T> {
         let nr = self.nbuf / 2 * 2; // total read bytes (except fringe bytes)
         let nw = self.nbuf / 2;     // size of decoded bytes
 
-        let buf = vec::mut_view(self.buf, 0, nr);
+        let buf = vec::mut_slice(self.buf, 0, nr);
 
         let ndecoded = if nw > len {
             let res = self.base16.decode(self.outbuf, buf);
