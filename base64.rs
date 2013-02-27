@@ -219,7 +219,7 @@ pub struct Base64Writer<T> {
     priv mut nbuf: uint
 }
 
-pub impl<T: io::Writer> Base64Writer<T> {
+impl<T: io::Writer> Base64Writer<T> {
     static fn new(base64: &a/Base64, writer: &a/T) -> Base64Writer/&a<T> {
         Base64Writer {
             base64: base64,
@@ -284,7 +284,7 @@ pub impl<T: io::Writer> Base64Writer<T> {
     }
 }
 
-pub impl<T: io::Writer> Drop for Base64Writer<T> {
+impl<T: io::Writer> Drop for Base64Writer<T> {
     fn finalize(&self) {}
 }
 
@@ -298,7 +298,7 @@ pub struct Base64Reader<T> {
     priv mut end: bool
 }
 
-pub impl<T: io::Reader> Base64Reader<T> {
+impl<T: io::Reader> Base64Reader<T> {
     static fn new(base64: &a/Base64, reader: &a/T) -> Base64Reader/&a<T> {
         Base64Reader {
             base64: base64,

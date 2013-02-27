@@ -142,7 +142,7 @@ pub struct Base16Writer<T> {
     priv mut outbuf: [u8 * 1024]
 }
 
-pub impl<T: io::Writer> Base16Writer<T> {
+impl<T: io::Writer> Base16Writer<T> {
     static fn new(base16: &a/Base16, writer: &a/T) -> Base16Writer/&a<T> {
         Base16Writer {
             base16: base16,
@@ -169,7 +169,7 @@ pub impl<T: io::Writer> Base16Writer<T> {
     }
 }
 
-pub impl<T: io::Writer> Drop for Base16Writer<T> {
+impl<T: io::Writer> Drop for Base16Writer<T> {
     fn finalize(&self) {}
 }
 
@@ -182,7 +182,7 @@ pub struct Base16Reader<T> {
     priv mut noutbuf: uint
 }
 
-pub impl<T: io::Reader> Base16Reader<T> {
+impl<T: io::Reader> Base16Reader<T> {
     static fn new(base16: &a/Base16, reader: &a/T) -> Base16Reader/&a<T> {
         Base16Reader {
             base16: base16,
