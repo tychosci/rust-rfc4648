@@ -211,7 +211,7 @@ pub struct Base32Writer<T> {
     priv mut nbuf: uint
 }
 
-impl<T: io::Writer> Base32Writer<T> {
+pub impl<T: io::Writer> Base32Writer<T> {
     static fn new(base32: &a/Base32, writer: &a/T) -> Base32Writer/&a<T> {
         Base32Writer {
             base32: base32,
@@ -290,7 +290,7 @@ pub struct Base32Reader<T> {
     priv mut end: bool
 }
 
-impl<T: io::Reader> Base32Reader<T> {
+pub impl<T: io::Reader> Base32Reader<T> {
     static fn new(base32: &a/Base32, reader: &a/T) -> Base32Reader/&a<T> {
         Base32Reader {
             base32: base32,
