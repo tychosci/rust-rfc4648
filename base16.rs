@@ -58,9 +58,9 @@ pub struct Base16 {
 }
 
 #[inline(always)]
-pure fn encoded_len(src_length: uint) -> uint { src_length * 2 }
+fn encoded_len(src_length: uint) -> uint { src_length * 2 }
 #[inline(always)]
-pure fn decoded_len(src_length: uint) -> uint { src_length / 2 }
+fn decoded_len(src_length: uint) -> uint { src_length / 2 }
 
 impl BinaryEncoder for Base16 {
     fn encode(&self, dst: &[mut u8], src: &[const u8]) {
@@ -136,14 +136,14 @@ pub fn decode(src: &[const u8]) -> ~[u8] {
     BASE16.decode_bytes(src)
 }
 
-pub struct Base16Writer<T> {
-    priv base16: &Base16,
-    priv writer: &T,
+pub struct Base16Writer<'a, 'b, T> {
+    priv base16: &'a Base16,
+    priv writer: &'b T,
     priv mut outbuf: [u8 * 1024]
 }
 
 pub impl<T: io::Writer> Base16Writer<T> {
-    static fn new(base16: &a/Base16, writer: &a/T) -> Base16Writer/&a<T> {
+    static fn new(base16: &'a Base16, writer: &'b T) -> Base16Writer<'a, 'b, T> {
         Base16Writer {
             base16: base16,
             writer: writer,
@@ -173,9 +173,9 @@ impl<T: io::Writer> Drop for Base16Writer<T> {
     fn finalize(&self) {}
 }
 
-pub struct Base16Reader<T> {
-    priv base16: &Base16,
-    priv reader: &T,
+pub struct Base16Reader<'a, 'b, T> {
+    priv base16: &'a Base16,
+    priv reader: &'b T,
     priv mut buf: [u8 * 1024],
     priv mut outbuf: [u8 * 512],
     priv mut nbuf: uint,
@@ -183,7 +183,7 @@ pub struct Base16Reader<T> {
 }
 
 pub impl<T: io::Reader> Base16Reader<T> {
-    static fn new(base16: &a/Base16, reader: &a/T) -> Base16Reader/&a<T> {
+    static fn new(base16: &'a Base16, reader: &'b T) -> Base16Reader<'a, 'b, T> {
         Base16Reader {
             base16: base16,
             reader: reader,

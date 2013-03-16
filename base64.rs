@@ -98,12 +98,12 @@ pub struct Base64 {
 }
 
 #[inline(always)]
-pure fn encoded_len(src_length: uint) -> uint {
+fn encoded_len(src_length: uint) -> uint {
     (src_length + 2) / 3 * 4
 }
 
 #[inline(always)]
-pure fn decoded_len(src_length: uint) -> uint {
+fn decoded_len(src_length: uint) -> uint {
     src_length / 4 * 3
 }
 
@@ -211,16 +211,16 @@ pub fn urlsafe_decode(src: &[const u8]) -> ~[u8] {
     BASE64_URL.decode_bytes(src)
 }
 
-pub struct Base64Writer<T> {
-    priv base64: &Base64,
-    priv writer: &T,
+pub struct Base64Writer<'a, 'b, T> {
+    priv base64: &'a Base64,
+    priv writer: &'b T,
     priv mut outbuf: [u8 * 1024],
     priv mut buf: [u8 * 3],
     priv mut nbuf: uint
 }
 
 pub impl<T: io::Writer> Base64Writer<T> {
-    static fn new(base64: &a/Base64, writer: &a/T) -> Base64Writer/&a<T> {
+    static fn new(base64: &'a Base64, writer: &'b T) -> Base64Writer<'a, 'b, T> {
         Base64Writer {
             base64: base64,
             writer: writer,
@@ -288,9 +288,9 @@ impl<T: io::Writer> Drop for Base64Writer<T> {
     fn finalize(&self) {}
 }
 
-pub struct Base64Reader<T> {
-    priv base64: &Base64,
-    priv reader: &T,
+pub struct Base64Reader<'a, 'b, T> {
+    priv base64: &'a Base64,
+    priv reader: &'b T,
     priv mut buf: [u8 * 1024],
     priv mut outbuf: [u8 * 768],
     priv mut nbuf: uint,
@@ -299,7 +299,7 @@ pub struct Base64Reader<T> {
 }
 
 pub impl<T: io::Reader> Base64Reader<T> {
-    static fn new(base64: &a/Base64, reader: &a/T) -> Base64Reader/&a<T> {
+    static fn new(base64: &'a Base64, reader: &'b T) -> Base64Reader<'a, 'b, T> {
         Base64Reader {
             base64: base64,
             reader: reader,

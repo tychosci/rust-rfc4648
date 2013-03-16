@@ -90,12 +90,12 @@ pub struct Base32 {
 }
 
 #[inline(always)]
-pure fn encoded_len(src_length: uint) -> uint {
+fn encoded_len(src_length: uint) -> uint {
     (src_length + 4) / 5 * 8
 }
 
 #[inline(always)]
-pure fn decoded_len(src_length: uint) -> uint {
+fn decoded_len(src_length: uint) -> uint {
     src_length / 8 * 5
 }
 
@@ -203,16 +203,16 @@ pub fn hex_decode(src: &[const u8]) -> ~[u8] {
     BASE32_HEX.decode_bytes(src)
 }
 
-pub struct Base32Writer<T> {
-    priv base32: &Base32,
-    priv writer: &T,
+pub struct Base32Writer<'a, 'b, T> {
+    priv base32: &'a Base32,
+    priv writer: &'b T,
     priv mut outbuf: [u8 * 1024],
     priv mut buf: [u8 * 5],
     priv mut nbuf: uint
 }
 
 pub impl<T: io::Writer> Base32Writer<T> {
-    static fn new(base32: &a/Base32, writer: &a/T) -> Base32Writer/&a<T> {
+    static fn new(base32: &'a Base32, writer: &'b T) -> Base32Writer<'a, 'b, T> {
         Base32Writer {
             base32: base32,
             writer: writer,
@@ -280,9 +280,9 @@ impl<T: io::Writer> Drop for Base32Writer<T> {
     fn finalize(&self) {}
 }
 
-pub struct Base32Reader<T> {
-    priv base32: &Base32,
-    priv reader: &T,
+pub struct Base32Reader<'a, 'b, T> {
+    priv base32: &'a Base32,
+    priv reader: &'b T,
     priv mut buf: [u8 * 1024],
     priv mut outbuf: [u8 * 640],
     priv mut nbuf: uint,
@@ -291,7 +291,7 @@ pub struct Base32Reader<T> {
 }
 
 pub impl<T: io::Reader> Base32Reader<T> {
-    static fn new(base32: &a/Base32, reader: &a/T) -> Base32Reader/&a<T> {
+    static fn new(base32: &'a Base32, reader: &'b T) -> Base32Reader<'a, 'b, T> {
         Base32Reader {
             base32: base32,
             reader: reader,
