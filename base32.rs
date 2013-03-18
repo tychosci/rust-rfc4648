@@ -17,7 +17,6 @@
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-use core::vec::bytes;
 use super::util::DecodeResult;
 use super::util::BinaryEncoder;
 use super::util::BinaryDecoder;
@@ -74,12 +73,12 @@ const DECODE_MAP_HEX: [u8*256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
 ];
 
-pub const BASE32_STD: &Base32 = &Base32 {
+pub const BASE32_STD: &'static Base32 = &Base32 {
     table: TABLE_STD,
     decode_map: DECODE_MAP_STD,
 };
 
-pub const BASE32_HEX: &Base32 = &Base32 {
+pub const BASE32_HEX: &'static Base32 = &Base32 {
     table: TABLE_HEX,
     decode_map: DECODE_MAP_HEX,
 };
@@ -100,7 +99,7 @@ fn decoded_len(src_length: uint) -> uint {
 }
 
 impl BinaryEncoder for Base32 {
-    fn encode(&self, dst: &[mut u8], src: &[const u8]) {
+    fn encode(&self, dst: &mut [u8], src: &[const u8]) {
         base32encode(self.table, dst, src);
     }
 
@@ -121,7 +120,7 @@ impl BinaryEncoder for Base32 {
 }
 
 impl BinaryDecoder for Base32 {
-    fn decode(&self, dst: &[mut u8], src: &[const u8]) -> DecodeResult {
+    fn decode(&self, dst: &mut [u8], src: &[const u8]) -> DecodeResult {
         base32decode(self.decode_map, dst, src)
     }
 
@@ -203,181 +202,181 @@ pub fn hex_decode(src: &[const u8]) -> ~[u8] {
     BASE32_HEX.decode_bytes(src)
 }
 
-pub struct Base32Writer<'a, 'b, T> {
-    priv base32: &'a Base32,
-    priv writer: &'b T,
-    priv mut outbuf: [u8 * 1024],
-    priv mut buf: [u8 * 5],
-    priv mut nbuf: uint
-}
+// pub struct Base32Writer<'a, 'b, T> {
+//     priv base32: &'a Base32,
+//     priv writer: &'b T,
+//     priv mut outbuf: [u8 * 1024],
+//     priv mut buf: [u8 * 5],
+//     priv mut nbuf: uint
+// }
+//
+// pub impl<T: io::Writer> Base32Writer<T> {
+//     static fn new(base32: &'a Base32, writer: &'b T) -> Base32Writer<'a, 'b, T> {
+//         Base32Writer {
+//             base32: base32,
+//             writer: writer,
+//             outbuf: [0, ..1024],
+//             buf: [0, ..5],
+//             nbuf: 0
+//         }
+//     }
+//
+//     fn write(&self, buf: &[const u8]) {
+//         let buflen = buf.len();
+//         let mut buf = vec::const_slice(buf, 0, buflen);
+//
+//         if self.nbuf > 0 {
+//             let mut i = 0;
+//             while i < buflen && self.nbuf < 5 {
+//                 self.buf[self.nbuf] = buf[i];
+//                 self.nbuf += 1;
+//                 i += 1;
+//             }
+//
+//             buf = vec::const_slice(buf, i, buflen);
+//             if self.nbuf < 5 {
+//                 return;
+//             }
+//
+//             self.base32.encode(self.outbuf, vec::mut_slice(self.buf, 0, 5));
+//             self.writer.write(vec::mut_slice(self.outbuf, 0, 8));
+//             self.nbuf = 0;
+//         }
+//
+//         while buf.len() >= 5 {
+//             let buflen = buf.len();
+//             let nn = buflen / 5 * 8;
+//             let nn = if nn > buflen { buflen } else { nn };
+//             let nn = nn - nn % 8;
+//
+//             if nn > 0 {
+//                 self.base32.encode(self.outbuf, vec::const_slice(buf, 0, nn));
+//                 self.writer.write(vec::mut_slice(self.outbuf, 0, nn / 8 * 5));
+//             }
+//
+//             buf = vec::const_slice(buf, nn, buflen);
+//         }
+//
+//         for uint::range(0, buf.len()) |i| {
+//             self.buf[i] = buf[i];
+//         }
+//         self.nbuf = buf.len();
+//     }
+//
+//     fn close(self) {
+//         if self.nbuf > 0 {
+//             let nbuf = self.nbuf;
+//             self.nbuf = 0;
+//
+//             let buf = vec::mut_slice(self.buf, 0, nbuf);
+//             self.base32.encode(self.outbuf, buf);
+//             self.writer.write(vec::mut_slice(self.outbuf, 0, 8));
+//         }
+//     }
+// }
+//
+// impl<T: io::Writer> Drop for Base32Writer<T> {
+//     fn finalize(&self) {}
+// }
+//
+// pub struct Base32Reader<'a, 'b, T> {
+//     priv base32: &'a Base32,
+//     priv reader: &'b T,
+//     priv mut buf: [u8 * 1024],
+//     priv mut outbuf: [u8 * 640],
+//     priv mut nbuf: uint,
+//     priv mut noutbuf: uint,
+//     priv mut end: bool
+// }
+//
+// pub impl<T: io::Reader> Base32Reader<T> {
+//     static fn new(base32: &'a Base32, reader: &'b T) -> Base32Reader<'a, 'b, T> {
+//         Base32Reader {
+//             base32: base32,
+//             reader: reader,
+//             buf: [0, ..1024],
+//             outbuf: [0, ..640],
+//             nbuf: 0,
+//             noutbuf: 0,
+//             end: false
+//         }
+//     }
+//
+//     fn read(&self, p: &mut [u8], len: uint) -> uint {
+//         // use leftover output (decoded bytes) if it exists
+//         if self.noutbuf > 0 {
+//             bytes::copy_memory(p, self.outbuf, len);
+//
+//             let n = if len > self.noutbuf { self.noutbuf } else { len };
+//             self.noutbuf -= n;
+//             // shift unread bytes to head
+//             for uint::range(0, self.noutbuf) |i| {
+//                 self.outbuf[i] = self.outbuf[i+n];
+//             }
+//
+//             return n;
+//         }
+//         // calculate least required # of bytes to read
+//         let nn = len / 5 * 8;
+//         let nn = if nn < 8 { 8 } else { nn };
+//         let nn = if nn > self.buf.len() { self.buf.len() } else { nn };
+//
+//         let buf = vec::mut_slice(self.buf, self.nbuf, nn);
+//         let nn  = self.reader.read(buf, buf.len());
+//
+//         self.nbuf += nn;
+//         if self.nbuf < 8 {
+//             fail!(~"malformed base32 input");
+//         }
+//
+//         let nr = self.nbuf / 8 * 8; // total read bytes (except fringe bytes)
+//         let nw = self.nbuf / 8 * 5; // size of decoded bytes
+//
+//         let buf = vec::mut_slice(self.buf, 0, nr);
+//
+//         let ndecoded = if nw > len {
+//             let res = self.base32.decode(self.outbuf, buf);
+//             // copy self.outbuf[0:len] to p
+//             bytes::copy_memory(p, self.outbuf, len);
+//             // shift unread bytes to head
+//             for uint::range(0, res.ndecoded - len) |i| {
+//                 self.outbuf[i] = self.outbuf[i+len];
+//             }
+//             self.noutbuf = res.ndecoded - len;
+//             self.end = res.end;
+//             len
+//         } else {
+//             let res = self.base32.decode(p, buf);
+//             self.end = res.end;
+//             res.ndecoded
+//         };
+//         self.nbuf -= nr;
+//         // shift undecoded bytes to head
+//         for uint::range(0, self.nbuf) |i| {
+//             self.buf[i] = self.buf[i+nr];
+//         }
+//
+//         return ndecoded;
+//     }
+//
+//     fn read_bytes(&self, len: uint) -> ~[u8] {
+//         let mut buf = vec::with_capacity(len);
+//
+//         unsafe { vec::raw::set_len(&mut buf, len); }
+//
+//         let nread = self.read(buf, len);
+//
+//         unsafe { vec::raw::set_len(&mut buf, nread); }
+//
+//         buf
+//     }
+//
+//     fn eof(&self) -> bool {
+//         self.noutbuf == 0 && (self.end || self.reader.eof())
+//     }
+// }
 
-pub impl<T: io::Writer> Base32Writer<T> {
-    static fn new(base32: &'a Base32, writer: &'b T) -> Base32Writer<'a, 'b, T> {
-        Base32Writer {
-            base32: base32,
-            writer: writer,
-            outbuf: [0, ..1024],
-            buf: [0, ..5],
-            nbuf: 0
-        }
-    }
-
-    fn write(&self, buf: &[const u8]) {
-        let buflen = buf.len();
-        let mut buf = vec::const_slice(buf, 0, buflen);
-
-        if self.nbuf > 0 {
-            let mut i = 0;
-            while i < buflen && self.nbuf < 5 {
-                self.buf[self.nbuf] = buf[i];
-                self.nbuf += 1;
-                i += 1;
-            }
-
-            buf = vec::const_slice(buf, i, buflen);
-            if self.nbuf < 5 {
-                return;
-            }
-
-            self.base32.encode(self.outbuf, vec::mut_slice(self.buf, 0, 5));
-            self.writer.write(vec::mut_slice(self.outbuf, 0, 8));
-            self.nbuf = 0;
-        }
-
-        while buf.len() >= 5 {
-            let buflen = buf.len();
-            let nn = buflen / 5 * 8;
-            let nn = if nn > buflen { buflen } else { nn };
-            let nn = nn - nn % 8;
-
-            if nn > 0 {
-                self.base32.encode(self.outbuf, vec::const_slice(buf, 0, nn));
-                self.writer.write(vec::mut_slice(self.outbuf, 0, nn / 8 * 5));
-            }
-
-            buf = vec::const_slice(buf, nn, buflen);
-        }
-
-        for uint::range(0, buf.len()) |i| {
-            self.buf[i] = buf[i];
-        }
-        self.nbuf = buf.len();
-    }
-
-    fn close(self) {
-        if self.nbuf > 0 {
-            let nbuf = self.nbuf;
-            self.nbuf = 0;
-
-            let buf = vec::mut_slice(self.buf, 0, nbuf);
-            self.base32.encode(self.outbuf, buf);
-            self.writer.write(vec::mut_slice(self.outbuf, 0, 8));
-        }
-    }
-}
-
-impl<T: io::Writer> Drop for Base32Writer<T> {
-    fn finalize(&self) {}
-}
-
-pub struct Base32Reader<'a, 'b, T> {
-    priv base32: &'a Base32,
-    priv reader: &'b T,
-    priv mut buf: [u8 * 1024],
-    priv mut outbuf: [u8 * 640],
-    priv mut nbuf: uint,
-    priv mut noutbuf: uint,
-    priv mut end: bool
-}
-
-pub impl<T: io::Reader> Base32Reader<T> {
-    static fn new(base32: &'a Base32, reader: &'b T) -> Base32Reader<'a, 'b, T> {
-        Base32Reader {
-            base32: base32,
-            reader: reader,
-            buf: [0, ..1024],
-            outbuf: [0, ..640],
-            nbuf: 0,
-            noutbuf: 0,
-            end: false
-        }
-    }
-
-    fn read(&self, p: &[mut u8], len: uint) -> uint {
-        // use leftover output (decoded bytes) if it exists
-        if self.noutbuf > 0 {
-            bytes::copy_memory(p, self.outbuf, len);
-
-            let n = if len > self.noutbuf { self.noutbuf } else { len };
-            self.noutbuf -= n;
-            // shift unread bytes to head
-            for uint::range(0, self.noutbuf) |i| {
-                self.outbuf[i] = self.outbuf[i+n];
-            }
-
-            return n;
-        }
-        // calculate least required # of bytes to read
-        let nn = len / 5 * 8;
-        let nn = if nn < 8 { 8 } else { nn };
-        let nn = if nn > self.buf.len() { self.buf.len() } else { nn };
-
-        let buf = vec::mut_slice(self.buf, self.nbuf, nn);
-        let nn  = self.reader.read(buf, buf.len());
-
-        self.nbuf += nn;
-        if self.nbuf < 8 {
-            fail!(~"malformed base32 input");
-        }
-
-        let nr = self.nbuf / 8 * 8; // total read bytes (except fringe bytes)
-        let nw = self.nbuf / 8 * 5; // size of decoded bytes
-
-        let buf = vec::mut_slice(self.buf, 0, nr);
-
-        let ndecoded = if nw > len {
-            let res = self.base32.decode(self.outbuf, buf);
-            // copy self.outbuf[0:len] to p
-            bytes::copy_memory(p, self.outbuf, len);
-            // shift unread bytes to head
-            for uint::range(0, res.ndecoded - len) |i| {
-                self.outbuf[i] = self.outbuf[i+len];
-            }
-            self.noutbuf = res.ndecoded - len;
-            self.end = res.end;
-            len
-        } else {
-            let res = self.base32.decode(p, buf);
-            self.end = res.end;
-            res.ndecoded
-        };
-        self.nbuf -= nr;
-        // shift undecoded bytes to head
-        for uint::range(0, self.nbuf) |i| {
-            self.buf[i] = self.buf[i+nr];
-        }
-
-        return ndecoded;
-    }
-
-    fn read_bytes(&self, len: uint) -> ~[u8] {
-        let mut buf = vec::with_capacity(len);
-
-        unsafe { vec::raw::set_len(&mut buf, len); }
-
-        let nread = self.read(buf, len);
-
-        unsafe { vec::raw::set_len(&mut buf, nread); }
-
-        buf
-    }
-
-    fn eof(&self) -> bool {
-        self.noutbuf == 0 && (self.end || self.reader.eof())
-    }
-}
-
-fn base32encode(table: &[u8], dst: &[mut u8], src: &[const u8]) {
+fn base32encode(table: &[u8], dst: &mut [u8], src: &[const u8]) {
     let src_length = src.len();
     let dst_length = dst.len();
 
@@ -412,7 +411,7 @@ fn base32encode(table: &[u8], dst: &[mut u8], src: &[const u8]) {
     }
 }
 
-fn base32decode(decode_map: &[u8], dst: &[mut u8], src: &[const u8]) -> DecodeResult {
+fn base32decode(decode_map: &[u8], dst: &mut [u8], src: &[const u8]) -> DecodeResult {
     let mut ndecoded = 0u;
     let mut dst = vec::mut_slice(dst, 0, dst.len());
     let mut src = vec::const_slice(src, 0, src.len());
@@ -483,12 +482,12 @@ fn base32decode(decode_map: &[u8], dst: &[mut u8], src: &[const u8]) -> DecodeRe
 mod tests {
     use super::*;
 
-    fn t(source: &[&str], expect: &[&str], cb: fn&((&[u8])) -> ~[u8]) {
+    fn t(source: &[&str], expect: &[&str], cb: &fn((&[u8])) -> ~[u8]) {
         let source = source.map(|b| str::to_bytes(*b));
         let expect = expect.map(|b| str::to_bytes(*b));
         let actual = source.map(|e| cb(*e));
         debug!("expect: %?, actual: %?", expect, actual);
-        assert expect == actual;
+        fail_unless!(expect == actual);
     }
 
     #[test]
@@ -527,6 +526,7 @@ mod tests {
         t(source, expect, hex_decode);
     }
 
+/*
     #[test]
     fn test_base32_writer() {
         let source1 = str::to_bytes("f");
@@ -567,4 +567,6 @@ mod tests {
 
         assert expect == actual;
     }
+*/
+
 }

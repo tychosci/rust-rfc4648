@@ -45,18 +45,10 @@ pub trait FromBase64 {
     fn from_base64_urlsafe(&self) -> ~[u8];
 }
 
-pub trait Rfc4648:
-    FromBase16 FromBase32 FromBase64
-    ToBase16 ToBase32 ToBase64 {
-}
-
-impl Rfc4648 for &[const u8];
-impl Rfc4648 for &str;
-
 macro_rules! mk_impl_for_bytes(
     ($trait_name:ident =>
     $( $method_name:ident -> $fn_name:path ;)+) => (
-        impl $trait_name for &[const u8] {
+        impl $trait_name for &'self const [u8] {
             $(fn $method_name(&self) -> ~[u8] {
                 $fn_name(*self)
             })+
@@ -65,7 +57,7 @@ macro_rules! mk_impl_for_bytes(
 )
 macro_rules! mk_impl_for_str(
     ($trait_name:ident, [$($method_name:ident),+]) => (
-        impl $trait_name for &str {
+        impl $trait_name for &'self str {
             $(fn $method_name(&self) -> ~[u8] {
                 str::byte_slice(*self, |b| b.$method_name())
             })+
