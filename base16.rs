@@ -62,7 +62,7 @@ fn encoded_len(src_length: uint) -> uint { src_length * 2 }
 fn decoded_len(src_length: uint) -> uint { src_length / 2 }
 
 impl BinaryEncoder for Base16 {
-    fn encode(&self, dst: &mut [u8], src: &const [u8]) {
+    fn encode(&self, dst: &mut [u8], src: &[u8]) {
         base16encode(self.table, dst, src);
     }
 
@@ -70,7 +70,7 @@ impl BinaryEncoder for Base16 {
         encoded_len(src_length)
     }
 
-    fn encode_bytes(&self, src: &const [u8]) -> ~[u8] {
+    fn encode_bytes(&self, src: &[u8]) -> ~[u8] {
         let dst_length = self.encoded_len(src.len());
         let mut dst = vec::with_capacity(dst_length);
 
@@ -83,7 +83,7 @@ impl BinaryEncoder for Base16 {
 }
 
 impl BinaryDecoder for Base16 {
-    fn decode(&self, dst: &mut [u8], src: &const [u8]) -> DecodeResult {
+    fn decode(&self, dst: &mut [u8], src: &[u8]) -> DecodeResult {
         base16decode(self.decode_map, dst, src)
     }
 
@@ -91,7 +91,7 @@ impl BinaryDecoder for Base16 {
         decoded_len(src_length)
     }
 
-    fn decode_bytes(&self, src: &const [u8]) -> ~[u8] {
+    fn decode_bytes(&self, src: &[u8]) -> ~[u8] {
         let dst_length = self.decoded_len(src.len());
         let mut dst = vec::with_capacity(dst_length);
 
@@ -116,7 +116,7 @@ impl BinaryDecoder for Base16 {
  *
  * hex-encoded bytes
  */
-pub fn encode(src: &const [u8]) -> ~[u8] {
+pub fn encode(src: &[u8]) -> ~[u8] {
     BASE16.encode_bytes(src)
 }
 
@@ -131,7 +131,7 @@ pub fn encode(src: &const [u8]) -> ~[u8] {
  *
  * decoded bytes
  */
-pub fn decode(src: &const [u8]) -> ~[u8] {
+pub fn decode(src: &[u8]) -> ~[u8] {
     BASE16.decode_bytes(src)
 }
 
@@ -150,7 +150,7 @@ pub fn decode(src: &const [u8]) -> ~[u8] {
 //         }
 //     }
 //
-//     fn write(&self, buf: &const [u8]) {
+//     fn write(&self, buf: &[u8]) {
 //         let mut buf = vec::const_slice(buf, 0, buf.len());
 //
 //         while buf.len() > 0 {
@@ -265,14 +265,14 @@ pub fn decode(src: &const [u8]) -> ~[u8] {
 //     }
 // }
 
-fn base16encode(table: &[u8], dst: &mut [u8], src: &const [u8]) {
+fn base16encode(table: &[u8], dst: &mut [u8], src: &[u8]) {
     for uint::range(0, src.len()) |j| {
         dst[j+1*j]     = table[src[j]>>4];
         dst[j+1*j + 1] = table[src[j] & 0x0f];
     }
 }
 
-fn base16decode(decode_map: &[u8], dst: &mut [u8], src: &const [u8]) -> DecodeResult {
+fn base16decode(decode_map: &[u8], dst: &mut [u8], src: &[u8]) -> DecodeResult {
     let mut src_length = src.len();
     let mut i = 0u;
     let mut j = 0u;

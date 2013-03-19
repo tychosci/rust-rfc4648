@@ -109,7 +109,7 @@ fn decoded_len(src_length: uint) -> uint {
 }
 
 impl BinaryEncoder for Base64 {
-    fn encode(&self, dst: &mut [u8], src: &const [u8]) {
+    fn encode(&self, dst: &mut [u8], src: &[u8]) {
         base64encode(self.table, dst, src);
     }
 
@@ -117,7 +117,7 @@ impl BinaryEncoder for Base64 {
         encoded_len(src_length)
     }
 
-    fn encode_bytes(&self, src: &const [u8]) -> ~[u8] {
+    fn encode_bytes(&self, src: &[u8]) -> ~[u8] {
         let dst_length = self.encoded_len(src.len());
         let mut dst = vec::with_capacity(dst_length);
 
@@ -130,7 +130,7 @@ impl BinaryEncoder for Base64 {
 }
 
 impl BinaryDecoder for Base64 {
-    fn decode(&self, dst: &mut [u8], src: &const [u8]) -> DecodeResult {
+    fn decode(&self, dst: &mut [u8], src: &[u8]) -> DecodeResult {
         base64decode(self.decode_map, dst, src)
     }
 
@@ -138,7 +138,7 @@ impl BinaryDecoder for Base64 {
         decoded_len(src_length)
     }
 
-    fn decode_bytes(&self, src: &const [u8]) -> ~[u8] {
+    fn decode_bytes(&self, src: &[u8]) -> ~[u8] {
         let dst_length = self.decoded_len(src.len());
         let mut dst = vec::with_capacity(dst_length);
 
@@ -163,7 +163,7 @@ impl BinaryDecoder for Base64 {
  *
  * base64-encoded bytes
  */
-pub fn encode(src: &const [u8]) -> ~[u8] {
+pub fn encode(src: &[u8]) -> ~[u8] {
     BASE64_STD.encode_bytes(src)
 }
 
@@ -178,7 +178,7 @@ pub fn encode(src: &const [u8]) -> ~[u8] {
  *
  * base64-urlsafe-encoded bytes
  */
-pub fn urlsafe_encode(src: &const [u8]) -> ~[u8] {
+pub fn urlsafe_encode(src: &[u8]) -> ~[u8] {
     BASE64_URL.encode_bytes(src)
 }
 
@@ -193,7 +193,7 @@ pub fn urlsafe_encode(src: &const [u8]) -> ~[u8] {
  *
  * decoded bytes
  */
-pub fn decode(src: &const [u8]) -> ~[u8] {
+pub fn decode(src: &[u8]) -> ~[u8] {
     BASE64_STD.decode_bytes(src)
 }
 
@@ -208,7 +208,7 @@ pub fn decode(src: &const [u8]) -> ~[u8] {
  *
  * decoded bytes
  */
-pub fn urlsafe_decode(src: &const [u8]) -> ~[u8] {
+pub fn urlsafe_decode(src: &[u8]) -> ~[u8] {
     BASE64_URL.decode_bytes(src)
 }
 
@@ -231,7 +231,7 @@ pub fn urlsafe_decode(src: &const [u8]) -> ~[u8] {
 //         }
 //     }
 //
-//     fn write(&self, buf: &const [u8]) {
+//     fn write(&self, buf: &[u8]) {
 //         let buflen  = buf.len();
 //         let mut buf = vec::const_slice(buf, 0, buflen);
 //
@@ -386,7 +386,7 @@ pub fn urlsafe_decode(src: &const [u8]) -> ~[u8] {
 //     }
 // }
 
-fn base64encode(table: &[u8], dst: &mut [u8], src: &const [u8]) {
+fn base64encode(table: &[u8], dst: &mut [u8], src: &[u8]) {
     let src_length = src.len();
     let dst_length = dst.len();
 
@@ -410,7 +410,7 @@ fn base64encode(table: &[u8], dst: &mut [u8], src: &const [u8]) {
     }
 }
 
-fn base64decode(decode_map: &[u8], dst: &mut [u8], src: &const [u8]) -> DecodeResult {
+fn base64decode(decode_map: &[u8], dst: &mut [u8], src: &[u8]) -> DecodeResult {
     let mut ndecoded = 0u;
     let mut dst = vec::mut_slice(dst, 0, dst.len());
     let mut src = vec::const_slice(src, 0, src.len());
