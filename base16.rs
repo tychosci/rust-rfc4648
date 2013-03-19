@@ -22,12 +22,12 @@ use super::util::BinaryEncoder;
 use super::util::BinaryDecoder;
 
 // 0123456789ABCDEF
-const TABLE: [u8*16] = [
+static TABLE: [u8*16] = [
     48, 49, 50, 51, 52, 53, 54, 55,
     56, 57, 65, 66, 67, 68, 69, 70,
 ];
 
-const DECODE_MAP: [u8*256] = [
+static DECODE_MAP: [u8*256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
@@ -46,7 +46,7 @@ const DECODE_MAP: [u8*256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
 ];
 
-pub const BASE16: &'static Base16 = &Base16 {
+pub static BASE16: &'static Base16 = &Base16 {
     table: TABLE,
     decode_map: DECODE_MAP,
 };

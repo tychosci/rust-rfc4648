@@ -21,21 +21,21 @@ use super::util::DecodeResult;
 use super::util::BinaryEncoder;
 use super::util::BinaryDecoder;
 
-const PAD: u8 = 61u8;
+static PAD: u8 = 61u8;
 
 // ABCDEFGHIJKLMNOPQRSTUVWXYZ234567
-const TABLE_STD: [u8*32] = [
+static TABLE_STD: [u8*32] = [
     65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80,
     81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 50, 51, 52, 53, 54, 55,
 ];
 
 // 0123456789ABCDEFGHIJKLMNOPQRSTUV
-const TABLE_HEX: [u8*32] = [
+static TABLE_HEX: [u8*32] = [
     48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70,
     71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86,
 ];
 
-const DECODE_MAP_STD: [u8*256] = [
+static DECODE_MAP_STD: [u8*256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
@@ -54,7 +54,7 @@ const DECODE_MAP_STD: [u8*256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
 ];
 
-const DECODE_MAP_HEX: [u8*256] = [
+static DECODE_MAP_HEX: [u8*256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
@@ -73,12 +73,12 @@ const DECODE_MAP_HEX: [u8*256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
 ];
 
-pub const BASE32_STD: &'static Base32 = &Base32 {
+pub static BASE32_STD: &'static Base32 = &Base32 {
     table: TABLE_STD,
     decode_map: DECODE_MAP_STD,
 };
 
-pub const BASE32_HEX: &'static Base32 = &Base32 {
+pub static BASE32_HEX: &'static Base32 = &Base32 {
     table: TABLE_HEX,
     decode_map: DECODE_MAP_HEX,
 };
