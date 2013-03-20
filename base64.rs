@@ -1,6 +1,4 @@
 /*!
- *
- * An `option` containing the byte index of the first matching substring
  * Base64 module
  *
  * See <http://tools.ietf.org/html/rfc4648#section-4> for details.
