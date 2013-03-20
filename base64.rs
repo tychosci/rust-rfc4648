@@ -413,7 +413,7 @@ fn base64encode(table: &[u8], dst: &mut [u8], src: &[u8]) {
 fn base64decode(decode_map: &[u8], dst: &mut [u8], src: &[u8]) -> DecodeResult {
     let mut ndecoded = 0u;
     let mut dst = vec::mut_slice(dst, 0, dst.len());
-    let mut src = vec::const_slice(src, 0, src.len());
+    let mut src = vec::slice(src, 0, src.len());
     let mut end = false;
 
     while src.len() > 0 && !end {
@@ -426,7 +426,7 @@ fn base64decode(decode_map: &[u8], dst: &mut [u8], src: &[u8]) -> DecodeResult {
                 fail!(~"malformed base64 string");
             }
             let chr = src[0];
-            src = vec::const_slice(src, 1, src.len());
+            src = vec::slice(src, 1, src.len());
             if char::is_whitespace(chr as char) {
                 loop;
             }
