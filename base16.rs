@@ -22,12 +22,12 @@ use super::util::BinaryEncoder;
 use super::util::BinaryDecoder;
 
 // 0123456789ABCDEF
-static TABLE: [u8*16] = [
+static TABLE: [u8, ..16] = [
     48, 49, 50, 51, 52, 53, 54, 55,
     56, 57, 65, 66, 67, 68, 69, 70,
 ];
 
-static DECODE_MAP: [u8*256] = [
+static DECODE_MAP: [u8, ..256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
@@ -52,8 +52,8 @@ pub static BASE16: &'static Base16 = &Base16 {
 };
 
 pub struct Base16 {
-    priv table: [u8*16],
-    priv decode_map: [u8*256],
+    priv table: [u8, ..16],
+    priv decode_map: [u8, ..256],
 }
 
 #[inline(always)]
@@ -310,7 +310,7 @@ mod tests {
 
         let actual = encode(source);
 
-        fail_unless!(expect == actual);
+        assert_eq!(expect, actual);
     }
 
     #[test]
@@ -320,7 +320,7 @@ mod tests {
 
         let actual = decode(source);
 
-        fail_unless!(expect == actual);
+        assert_eq!(expect, actual);
     }
 
 /*

@@ -26,7 +26,7 @@ static PAD: u8 = 61u8;
 // ABCDEFGHIJKLMNOPQRSTUVWXYZ
 // abcdefghijklmnopqrstuvwxyz
 // 0123456789+/
-static TABLE_STD: [u8*64] = [
+static TABLE_STD: [u8, ..64] = [
      65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,  78,  79,  80,
      81,  82,  83,  84,  85,  86,  87,  88,  89,  90,  97,  98,  99, 100, 101, 102,
     103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118,
@@ -36,14 +36,14 @@ static TABLE_STD: [u8*64] = [
 // ABCDEFGHIJKLMNOPQRSTUVWXYZ
 // abcdefghijklmnopqrstuvwxyz
 // 0123456789-_
-static TABLE_URL: [u8*64] = [
+static TABLE_URL: [u8, ..64] = [
      65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,  78,  79,  80,
      81,  82,  83,  84,  85,  86,  87,  88,  89,  90,  97,  98,  99, 100, 101, 102,
     103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118,
     119, 120, 121, 122,  48,  49,  50,  51,  52,  53,  54,  55,  56,  57,  45,  95,
 ];
 
-static DECODE_MAP_STD: [u8*256] = [
+static DECODE_MAP_STD: [u8, ..256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,  62, 255, 255, 255,  63,
@@ -62,7 +62,7 @@ static DECODE_MAP_STD: [u8*256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
 ];
 
-static DECODE_MAP_URL: [u8*256] = [
+static DECODE_MAP_URL: [u8, ..256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,  62, 255, 255,
@@ -92,8 +92,8 @@ pub static BASE64_URL: &'static Base64 = &Base64 {
 };
 
 pub struct Base64 {
-    priv table: [u8*64],
-    priv decode_map: [u8*256],
+    priv table: [u8, ..64],
+    priv decode_map: [u8, ..256],
 }
 
 #[inline(always)]
@@ -462,8 +462,7 @@ mod tests {
         let source = source.map(|b| str::to_bytes(*b));
         let expect = expect.map(|b| str::to_bytes(*b));
         let actual = source.map(|e| cb(*e));
-        debug!("expect: %?, actual: %?", expect, actual);
-        fail_unless!(expect == actual);
+        assert_eq!(expect, actual);
     }
 
     #[test]

@@ -24,18 +24,18 @@ use super::util::BinaryDecoder;
 static PAD: u8 = 61u8;
 
 // ABCDEFGHIJKLMNOPQRSTUVWXYZ234567
-static TABLE_STD: [u8*32] = [
+static TABLE_STD: [u8, ..32] = [
     65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80,
     81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 50, 51, 52, 53, 54, 55,
 ];
 
 // 0123456789ABCDEFGHIJKLMNOPQRSTUV
-static TABLE_HEX: [u8*32] = [
+static TABLE_HEX: [u8, ..32] = [
     48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70,
     71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86,
 ];
 
-static DECODE_MAP_STD: [u8*256] = [
+static DECODE_MAP_STD: [u8, ..256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
@@ -54,7 +54,7 @@ static DECODE_MAP_STD: [u8*256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
 ];
 
-static DECODE_MAP_HEX: [u8*256] = [
+static DECODE_MAP_HEX: [u8, ..256] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
@@ -84,8 +84,8 @@ pub static BASE32_HEX: &'static Base32 = &Base32 {
 };
 
 pub struct Base32 {
-    priv table: [u8*32],
-    priv decode_map: [u8*256],
+    priv table: [u8, ..32],
+    priv decode_map: [u8, ..256],
 }
 
 #[inline(always)]
@@ -486,8 +486,7 @@ mod tests {
         let source = source.map(|b| str::to_bytes(*b));
         let expect = expect.map(|b| str::to_bytes(*b));
         let actual = source.map(|e| cb(*e));
-        debug!("expect: %?, actual: %?", expect, actual);
-        fail_unless!(expect == actual);
+        assert_eq!(expect, actual);
     }
 
     #[test]
