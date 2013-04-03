@@ -49,7 +49,7 @@ macro_rules! mk_impl_for_bytes(
     ($trait_name:ident =>
     $( $method_name:ident -> $fn_name:path ;)+) => (
         impl $trait_name for &'self [u8] {
-            $(fn $method_name(&self) -> ~[u8] {
+            $(#[inline] fn $method_name(&self) -> ~[u8] {
                 $fn_name(*self)
             })+
         }
@@ -58,7 +58,8 @@ macro_rules! mk_impl_for_bytes(
 macro_rules! mk_impl_for_str(
     ($trait_name:ident, [$($method_name:ident),+]) => (
         impl $trait_name for &'self str {
-            $(fn $method_name(&self) -> ~[u8] {
+
+            $(#[inline] fn $method_name(&self) -> ~[u8] {
                 str::byte_slice(*self, |b| b.$method_name())
             })+
         }

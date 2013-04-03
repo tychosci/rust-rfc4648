@@ -56,20 +56,18 @@ pub struct Base16 {
     priv decode_map: [u8, ..256],
 }
 
-#[inline(always)]
-fn encoded_len(src_length: uint) -> uint { src_length * 2 }
-#[inline(always)]
-fn decoded_len(src_length: uint) -> uint { src_length / 2 }
-
 impl BinaryEncoder for Base16 {
+    #[inline]
     fn encode(&self, dst: &mut [u8], src: &[u8]) {
         base16encode(self.table, dst, src);
     }
 
+    #[inline]
     fn encoded_len(&self, src_length: uint) -> uint {
-        encoded_len(src_length)
+        src_length * 2
     }
 
+    #[inline]
     fn encode_bytes(&self, src: &[u8]) -> ~[u8] {
         let dst_length = self.encoded_len(src.len());
         let mut dst = vec::with_capacity(dst_length);
@@ -83,14 +81,17 @@ impl BinaryEncoder for Base16 {
 }
 
 impl BinaryDecoder for Base16 {
+    #[inline]
     fn decode(&self, dst: &mut [u8], src: &[u8]) -> DecodeResult {
         base16decode(self.decode_map, dst, src)
     }
 
+    #[inline]
     fn decoded_len(&self, src_length: uint) -> uint {
-        decoded_len(src_length)
+        src_length / 2
     }
 
+    #[inline]
     fn decode_bytes(&self, src: &[u8]) -> ~[u8] {
         let dst_length = self.decoded_len(src.len());
         let mut dst = vec::with_capacity(dst_length);
@@ -116,6 +117,7 @@ impl BinaryDecoder for Base16 {
  *
  * hex-encoded bytes
  */
+#[inline]
 pub fn encode(src: &[u8]) -> ~[u8] {
     BASE16.encode_bytes(src)
 }
@@ -131,6 +133,7 @@ pub fn encode(src: &[u8]) -> ~[u8] {
  *
  * decoded bytes
  */
+#[inline]
 pub fn decode(src: &[u8]) -> ~[u8] {
     BASE16.decode_bytes(src)
 }
