@@ -138,43 +138,33 @@ pub fn decode(src: &[u8]) -> ~[u8] {
     BASE16.decode_bytes(src)
 }
 
-// pub struct Base16Writer<'a, 'b, T> {
-//     priv base16: &'a Base16,
-//     priv writer: &'b T,
-//     priv mut outbuf: [u8 * 1024]
-// }
-//
-// pub impl<T: io::Writer> Base16Writer<T> {
-//     static fn new(base16: &'a Base16, writer: &'b T) -> Base16Writer<'a, 'b, T> {
-//         Base16Writer {
-//             base16: base16,
-//             writer: writer,
-//             outbuf: [0, ..1024]
-//         }
-//     }
-//
-//     fn write(&self, buf: &[u8]) {
-//         let mut buf = vec::const_slice(buf, 0, buf.len());
-//
-//         while buf.len() > 0 {
-//             let buflen = buf.len();
-//             let nn = self.outbuf.len() / 2;
-//             let nn = if nn > buflen { buflen } else { nn };
-//
-//             if nn > 0 {
-//                 self.base16.encode(self.outbuf, vec::const_slice(buf, 0, nn));
-//                 self.writer.write(vec::mut_slice(self.outbuf, 0, nn * 2));
-//             }
-//
-//             buf = vec::const_slice(buf, nn, buflen);
-//         }
-//     }
-// }
-//
-// impl<T: io::Writer> Drop for Base16Writer<T> {
-//     fn finalize(&self) {}
-// }
-//
+pub struct Base16Writer {
+    priv base16: &'static Base16,
+    priv writer: @io::Writer,
+    priv outbuf: [u8, ..1024]
+}
+
+pub impl Base16Writer {
+    fn new(base16: &'static Base16, writer: @io::Writer) -> Base16Writer {
+        Base16Writer { base16: base16, writer: writer, outbuf: [0, ..1024] }
+    }
+
+    fn write(&mut self, buf: &[u8]) {
+        let mut buf = vec::slice(buf, 0, buf.len());
+
+        while buf.len() > 0 {
+            let buflen = buf.len();
+            let nn = self.outbuf.len() / 2;
+            let nn = if nn > buflen { buflen } else { nn };
+            if (nn > 0) {
+                self.base16.encode(self.outbuf, vec::slice(buf, 0, nn));
+                self.writer.write(vec::slice(self.outbuf, 0, nn * 2));
+            }
+            buf = vec::slice(buf, nn, buflen);
+        }
+    }
+}
+
 // pub struct Base16Reader<'a, 'b, T> {
 //     priv base16: &'a Base16,
 //     priv reader: &'b T,
@@ -326,22 +316,22 @@ mod tests {
         assert_eq!(expect, actual);
     }
 
-/*
     #[test]
     fn test_base16_writer() {
         let source1 = str::to_bytes("fo");
         let source2 = str::to_bytes("o");
-        let expect  = str::to_bytes("666F6F");
+        let expect = str::to_bytes("666F6F");
 
-        let actual  = io::with_bytes_writer(|writer| {
-            let writer = Base16Writer::new(BASE16, &writer);
+        let actual = io::with_bytes_writer(|writer| {
+            let mut writer = Base16Writer::new(BASE16, writer);
             writer.write(source1);
             writer.write(source2);
         });
 
-        assert expect == actual;
+        assert_eq!(expect, actual);
     }
 
+/*
     #[test]
     fn test_base16_reader() {
         let source = str::to_bytes("666f6f");

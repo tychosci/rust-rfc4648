@@ -210,83 +210,80 @@ pub fn urlsafe_decode(src: &[u8]) -> ~[u8] {
     BASE64_URL.decode_bytes(src)
 }
 
-// pub struct Base64Writer<'a, 'b, T> {
-//     priv base64: &'a Base64,
-//     priv writer: &'b T,
-//     priv mut outbuf: [u8 * 1024],
-//     priv mut buf: [u8 * 3],
-//     priv mut nbuf: uint
-// }
-//
-// pub impl<T: io::Writer> Base64Writer<T> {
-//     static fn new(base64: &'a Base64, writer: &'b T) -> Base64Writer<'a, 'b, T> {
-//         Base64Writer {
-//             base64: base64,
-//             writer: writer,
-//             outbuf: [0, ..1024],
-//             buf: [0, ..3],
-//             nbuf: 0
-//         }
-//     }
-//
-//     fn write(&self, buf: &[u8]) {
-//         let buflen  = buf.len();
-//         let mut buf = vec::const_slice(buf, 0, buflen);
-//
-//         if self.nbuf > 0 {
-//             let mut i = 0;
-//             while i < buflen && self.nbuf < 3 {
-//                 self.buf[self.nbuf] = buf[i];
-//                 self.nbuf += 1;
-//                 i += 1;
-//             }
-//
-//             buf = vec::const_slice(buf, i, buflen);
-//             if self.nbuf < 3 {
-//                 return;
-//             }
-//
-//             self.base64.encode(self.outbuf, vec::mut_slice(self.buf, 0, 3));
-//             self.writer.write(vec::mut_slice(self.outbuf, 0, 4));
-//             self.nbuf = 0;
-//         }
-//
-//         while buf.len() >= 3 {
-//             let nleft = buf.len();
-//             let nn = self.outbuf.len() / 4 * 3;
-//             let nn = if nn > nleft { nleft } else { nn };
-//             let nn = nn - nn % 3;
-//
-//             if nn > 0 {
-//                 self.base64.encode(self.outbuf, vec::const_slice(buf, 0, nn));
-//                 self.writer.write(vec::mut_slice(self.outbuf, 0, nn / 3 * 4));
-//             }
-//
-//             buf = vec::const_slice(buf, nn, nleft);
-//         }
-//
-//         for uint::range(0, buf.len()) |i| {
-//             self.buf[i] = buf[i];
-//         }
-//         self.nbuf += buf.len();
-//     }
-//
-//     fn close(self) {
-//         if self.nbuf > 0 {
-//             let nbuf = self.nbuf;
-//             self.nbuf = 0;
-//
-//             let buf = vec::mut_slice(self.buf, 0, nbuf);
-//             self.base64.encode(self.outbuf, buf);
-//             self.writer.write(vec::mut_slice(self.outbuf, 0, 4));
-//         }
-//     }
-// }
-//
-// impl<T: io::Writer> Drop for Base64Writer<T> {
-//     fn finalize(&self) {}
-// }
-//
+pub struct Base64Writer {
+    priv base64: &'static Base64,
+    priv writer: @io::Writer,
+    priv outbuf: [u8, ..1024],
+    priv buf: [u8, ..3],
+    priv nbuf: uint
+}
+
+pub impl Base64Writer {
+    fn new(base64: &'static Base64, writer: @io::Writer) -> Base64Writer {
+        Base64Writer {
+            base64: base64,
+            writer: writer,
+            outbuf: [0, ..1024],
+            buf: [0, ..3],
+            nbuf: 0
+        }
+    }
+
+    fn write(&mut self, buf: &[u8]) {
+        let buflen  = buf.len();
+        let mut buf = vec::slice(buf, 0, buflen);
+
+        if self.nbuf > 0 {
+            let mut i = 0;
+
+            while i < buflen && self.nbuf < 3 {
+                self.buf[self.nbuf] = buf[i];
+                self.nbuf += 1;
+                i += 1;
+            }
+
+            buf = vec::slice(buf, i, buflen);
+            if self.nbuf < 3 { return; }
+
+            self.base64.encode(self.outbuf, vec::slice(self.buf, 0, 3));
+            self.writer.write(vec::slice(self.outbuf, 0, 4));
+
+            self.nbuf = 0;
+        }
+
+        while buf.len() >= 3 {
+            let buflen = buf.len();
+            let nn = self.outbuf.len() / 4 * 3;
+            let nn = if nn > buflen { buflen } else { nn };
+            let nn = nn - nn % 3;
+
+            if nn > 0 {
+                self.base64.encode(self.outbuf, vec::slice(buf, 0, nn));
+                self.writer.write(vec::slice(self.outbuf, 0, nn / 3 * 4));
+            }
+
+            buf = vec::slice(buf, nn, buflen);
+        }
+
+        for uint::range(0, buf.len()) |i| {
+            self.buf[i] = buf[i];
+        }
+        self.nbuf += buf.len();
+    }
+
+    fn close(self) {
+        let mut self = self;
+
+        if self.nbuf > 0 {
+            let nbuf = self.nbuf;
+
+            let buf = vec::slice(self.buf, 0, nbuf);
+            self.base64.encode(self.outbuf, buf);
+            self.writer.write(vec::slice(self.outbuf, 0, 4));
+        }
+    }
+}
+
 // pub struct Base64Reader<'a, 'b, T> {
 //     priv base64: &'a Base64,
 //     priv reader: &'b T,
@@ -497,23 +494,23 @@ mod tests {
         t(source, expect, urlsafe_decode);
     }
 
-/*
     #[test]
     fn test_base64_writer() {
         let source1 = str::to_bytes("f");
         let source2 = str::to_bytes("oobar");
-        let expect  = str::to_bytes("Zm9vYmFy");
+        let expect = str::to_bytes("Zm9vYmFy");
 
         let actual = io::with_bytes_writer(|writer| {
-            let writer = Base64Writer::new(BASE64_STD, &writer);
+            let mut writer = Base64Writer::new(BASE64_STD, writer);
             writer.write(source1);
             writer.write(source2);
             writer.close();
         });
 
-        assert expect == actual;
+        assert_eq!(expect, actual);
     }
 
+/*
     #[test]
     fn test_base64_reader() {
         let source = ["Zg==", "Zm8=", "Zm8+", "Zm9vYg==", "Zm9vYmE=", "Zm8/YmE/"];

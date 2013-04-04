@@ -202,83 +202,78 @@ pub fn hex_decode(src: &[u8]) -> ~[u8] {
     BASE32_HEX.decode_bytes(src)
 }
 
-// pub struct Base32Writer<'a, 'b, T> {
-//     priv base32: &'a Base32,
-//     priv writer: &'b T,
-//     priv mut outbuf: [u8 * 1024],
-//     priv mut buf: [u8 * 5],
-//     priv mut nbuf: uint
-// }
-//
-// pub impl<T: io::Writer> Base32Writer<T> {
-//     static fn new(base32: &'a Base32, writer: &'b T) -> Base32Writer<'a, 'b, T> {
-//         Base32Writer {
-//             base32: base32,
-//             writer: writer,
-//             outbuf: [0, ..1024],
-//             buf: [0, ..5],
-//             nbuf: 0
-//         }
-//     }
-//
-//     fn write(&self, buf: &[const u8]) {
-//         let buflen = buf.len();
-//         let mut buf = vec::const_slice(buf, 0, buflen);
-//
-//         if self.nbuf > 0 {
-//             let mut i = 0;
-//             while i < buflen && self.nbuf < 5 {
-//                 self.buf[self.nbuf] = buf[i];
-//                 self.nbuf += 1;
-//                 i += 1;
-//             }
-//
-//             buf = vec::const_slice(buf, i, buflen);
-//             if self.nbuf < 5 {
-//                 return;
-//             }
-//
-//             self.base32.encode(self.outbuf, vec::mut_slice(self.buf, 0, 5));
-//             self.writer.write(vec::mut_slice(self.outbuf, 0, 8));
-//             self.nbuf = 0;
-//         }
-//
-//         while buf.len() >= 5 {
-//             let buflen = buf.len();
-//             let nn = buflen / 5 * 8;
-//             let nn = if nn > buflen { buflen } else { nn };
-//             let nn = nn - nn % 8;
-//
-//             if nn > 0 {
-//                 self.base32.encode(self.outbuf, vec::const_slice(buf, 0, nn));
-//                 self.writer.write(vec::mut_slice(self.outbuf, 0, nn / 8 * 5));
-//             }
-//
-//             buf = vec::const_slice(buf, nn, buflen);
-//         }
-//
-//         for uint::range(0, buf.len()) |i| {
-//             self.buf[i] = buf[i];
-//         }
-//         self.nbuf = buf.len();
-//     }
-//
-//     fn close(self) {
-//         if self.nbuf > 0 {
-//             let nbuf = self.nbuf;
-//             self.nbuf = 0;
-//
-//             let buf = vec::mut_slice(self.buf, 0, nbuf);
-//             self.base32.encode(self.outbuf, buf);
-//             self.writer.write(vec::mut_slice(self.outbuf, 0, 8));
-//         }
-//     }
-// }
-//
-// impl<T: io::Writer> Drop for Base32Writer<T> {
-//     fn finalize(&self) {}
-// }
-//
+pub struct Base32Writer {
+    priv base32: &'static Base32,
+    priv writer: @io::Writer,
+    priv outbuf: [u8, ..1024],
+    priv buf: [u8, ..5],
+    priv nbuf: uint
+}
+
+pub impl Base32Writer {
+    fn new(base32: &'static Base32, writer: @io::Writer) -> Base32Writer {
+        Base32Writer {
+            base32: base32,
+            writer: writer,
+            outbuf: [0, ..1024],
+            buf: [0, ..5],
+            nbuf: 0
+        }
+    }
+
+    fn write(&mut self, buf: &[u8]) {
+        let buflen = buf.len();
+        let mut buf = vec::slice(buf, 0, buflen);
+
+        if self.nbuf > 0 {
+            let mut i = 0;
+
+            while i < buflen && self.nbuf < 5 {
+                self.buf[self.nbuf] = buf[i];
+                self.nbuf += 1;
+                i += 1;
+            }
+
+            buf = vec::slice(buf, i, buflen);
+            if self.nbuf < 5 { return; }
+
+            self.base32.encode(self.outbuf, vec::slice(self.buf, 0, 5));
+            self.writer.write(vec::slice(self.outbuf, 0, 8));
+
+            self.nbuf = 0;
+        }
+
+        while buf.len() >= 5 {
+            let buflen = buf.len();
+            let nn = self.outbuf.len() / 8 * 5;
+            let nn = if nn > buflen { buflen } else { nn };
+            let nn = nn - nn % 5;
+            if (nn > 0) {
+                self.base32.encode(self.outbuf, vec::slice(buf, 0, nn));
+                self.writer.write(vec::slice(self.outbuf, 0, nn / 8 * 5));
+            }
+            buf = vec::slice(buf, nn, buflen);
+        }
+
+        for uint::range(0, buf.len()) |i| {
+            self.buf[i] = buf[i];
+        }
+        self.nbuf = buf.len();
+    }
+
+    fn close(self) {
+        let mut self = self;
+
+        if self.nbuf > 0 {
+            let nbuf = self.nbuf.clone();
+
+            let buf = vec::slice(self.buf, 0, nbuf);
+            self.base32.encode(self.outbuf, buf);
+            self.writer.write(vec::slice(self.outbuf, 0, 8));
+        }
+    }
+}
+
 // pub struct Base32Reader<'a, 'b, T> {
 //     priv base32: &'a Base32,
 //     priv reader: &'b T,
@@ -525,23 +520,24 @@ mod tests {
         t(source, expect, hex_decode);
     }
 
-/*
+
     #[test]
     fn test_base32_writer() {
         let source1 = str::to_bytes("f");
         let source2 = str::to_bytes("ooba");
-        let expect  = str::to_bytes("MZXW6YTB");
+        let expect = str::to_bytes("MZXW6YTB");
 
-        let actual  = io::with_bytes_writer(|writer| {
-            let writer = Base32Writer::new(BASE32_STD, &writer);
+        let actual = io::with_bytes_writer(|writer| {
+            let mut writer = Base32Writer::new(BASE32_STD, writer);
             writer.write(source1);
             writer.write(source2);
             writer.close();
         });
 
-        assert expect == actual;
+        assert_eq!(expect, actual);
     }
 
+/*
     #[test]
     fn test_base32_reader() {
         let source = ["MY======", "MZXQ====", "MZXW6===",
