@@ -58,7 +58,7 @@ pub struct Base16 {
 
 impl BinaryEncoder for Base16 {
     #[inline]
-    fn encode(&self, dst: &mut [u8], src: &[u8]) {
+    fn encode(&self, dst: &mut [u8], src: &const [u8]) {
         base16encode(self.table, dst, src);
     }
 
@@ -68,7 +68,7 @@ impl BinaryEncoder for Base16 {
     }
 
     #[inline]
-    fn encode_bytes(&self, src: &[u8]) -> ~[u8] {
+    fn encode_bytes(&self, src: &const [u8]) -> ~[u8] {
         let dst_length = self.encoded_len(src.len());
         let mut dst = vec::with_capacity(dst_length);
 
@@ -82,7 +82,7 @@ impl BinaryEncoder for Base16 {
 
 impl BinaryDecoder for Base16 {
     #[inline]
-    fn decode(&self, dst: &mut [u8], src: &[u8]) -> DecodeResult {
+    fn decode(&self, dst: &mut [u8], src: &const [u8]) -> DecodeResult {
         base16decode(self.decode_map, dst, src)
     }
 
@@ -92,7 +92,7 @@ impl BinaryDecoder for Base16 {
     }
 
     #[inline]
-    fn decode_bytes(&self, src: &[u8]) -> ~[u8] {
+    fn decode_bytes(&self, src: &const [u8]) -> ~[u8] {
         let dst_length = self.decoded_len(src.len());
         let mut dst = vec::with_capacity(dst_length);
 
@@ -176,98 +176,93 @@ pub struct Base16Reader {
 
 // TODO: modernize
 
-// pub impl<T: io::Reader> Base16Reader<T> {
-//     static fn new(base16: &'a Base16, reader: &'b T) -> Base16Reader<'a, 'b, T> {
-//         Base16Reader {
-//             base16: base16,
-//             reader: reader,
-//             buf: [0, ..1024],
-//             outbuf: [0, ..512],
-//             nbuf: 0,
-//             noutbuf: 0
-//         }
-//     }
-//
-//     fn read(&self, p: &mut [u8], len: uint) -> uint {
-//         // use leftover output (decoded bytes) if it exists
-//         if self.noutbuf > 0 {
-//             bytes::copy_memory(p, self.outbuf, len);
-//
-//             let n = if len > self.noutbuf { self.noutbuf } else { len };
-//             self.noutbuf -= n;
-//             // shift unread bytes to head
-//             for uint::range(0, self.noutbuf) |i| {
-//                 self.outbuf[i] = self.outbuf[i+n];
-//             }
-//
-//             return n;
-//         }
-//         // calculate least required # of bytes to read
-//         let nn = len * 2;
-//         let nn = if nn < 2 { 2 } else { nn };
-//         let nn = if nn > self.buf.len() { self.buf.len() } else { nn };
-//
-//         let buf = vec::mut_slice(self.buf, self.nbuf, nn);
-//         let nn  = self.reader.read(buf, buf.len());
-//
-//         self.nbuf += nn;
-//         if self.nbuf < 2 {
-//             fail!(~"malformed base64 input");
-//         }
-//
-//         let nr = self.nbuf / 2 * 2; // total read bytes (except fringe bytes)
-//         let nw = self.nbuf / 2;     // size of decoded bytes
-//
-//         let buf = vec::mut_slice(self.buf, 0, nr);
-//
-//         let ndecoded = if nw > len {
-//             let res = self.base16.decode(self.outbuf, buf);
-//             // copy self.outbuf[0:len] to p
-//             bytes::copy_memory(p, self.outbuf, len);
-//             // shift unread bytes to head
-//             for uint::range(0, res.ndecoded - len) |i| {
-//                 self.outbuf[i] = self.outbuf[i+len];
-//             }
-//             self.noutbuf = res.ndecoded - len;
-//             len
-//         } else {
-//             let res = self.base16.decode(p, buf);
-//             res.ndecoded
-//         };
-//         self.nbuf -= nr;
-//         // shift undecoded bytes to head
-//         for uint::range(0, self.nbuf) |i| {
-//             self.buf[i] = self.buf[i+nr];
-//         }
-//
-//         return ndecoded;
-//     }
-//
-//     fn read_bytes(&self, len: uint) -> ~[u8] {
-//         let mut buf = vec::with_capacity(len);
-//
-//         unsafe { vec::raw::set_len(&mut buf, len); }
-//
-//         let nread = self.read(buf, len);
-//
-//         unsafe { vec::raw::set_len(&mut buf, nread); }
-//
-//         buf
-//     }
-//
-//     fn eof(&self) -> bool {
-//         self.noutbuf == 0 && self.reader.eof()
-//     }
-// }
+pub impl Base16Reader {
+    fn new(base16: &'static Base16, reader: @io::Reader) -> Base16Reader {
+        Base16Reader {
+            base16: base16,
+            reader: reader,
+            buf: [0, ..1024],
+            outbuf: [0, ..512],
+            nbuf: 0,
+            noutbuf: 0
+        }
+    }
 
-fn base16encode(table: &[u8], dst: &mut [u8], src: &[u8]) {
+    fn read(&mut self, p: &mut [u8], len: uint) -> uint {
+        // NOTE: These borrowing is required to suppress odd loaning errors.
+        let selfbuf: &mut [u8] = self.buf;
+        let selfoutbuf: &mut [u8] = self.outbuf;
+        let selfnbuf: &mut uint = &mut self.nbuf;
+        let selfnoutbuf: &mut uint = &mut self.noutbuf;
+
+        // use leftover output (decoded bytes) if it exists
+        if self.noutbuf > 0 {
+            unsafe { vec::raw::copy_memory(p, selfoutbuf, len); }
+
+            let n = if len > self.noutbuf { self.noutbuf } else { len };
+            *selfnoutbuf -= n;
+            // shift unread bytes to head
+            for uint::range(0, *selfnoutbuf) |i| {
+                selfoutbuf[i] = selfoutbuf[i+n];
+            }
+
+            return n;
+        }
+
+        // calculate least required # of bytes to read
+        let nn = len * 2;
+        let nn = if nn < 2 { 2 } else { nn };
+        let nn = if nn > self.buf.len() { self.buf.len() } else { nn };
+
+        let buf = vec::mut_slice(selfbuf, self.nbuf, nn);
+        let nn  = self.reader.read(buf, buf.len());
+
+        *selfnbuf += nn;
+        if self.nbuf < 2 {
+            fail!(~"malformed base64 input");
+        }
+
+        let nr = self.nbuf / 2 * 2; // total read bytes (except fringe bytes)
+        let nw = self.nbuf / 2;     // size of decoded bytes
+
+        let buf = vec::mut_slice(selfbuf, 0, nr);
+
+        let ndecoded = if nw > len {
+            let res = self.base16.decode(selfoutbuf, buf);
+            // copy self.outbuf[0:len] to p
+            unsafe { vec::raw::copy_memory(p, selfoutbuf, len); }
+            // shift unread bytes to head
+            for uint::range(0, res.ndecoded - len) |i| {
+                selfoutbuf[i] = selfoutbuf[i+len];
+            }
+            *selfnoutbuf = res.ndecoded - len;
+            len
+        } else {
+            let res = self.base16.decode(p, buf);
+            res.ndecoded
+        };
+        *selfnbuf -= nr;
+        // shift undecoded bytes to head
+        for uint::range(0, self.nbuf) |i| {
+            selfbuf[i] = selfbuf[i+nr];
+        }
+
+        ndecoded
+    }
+
+    fn eof(&self) -> bool {
+        self.noutbuf == 0 && self.reader.eof()
+    }
+}
+
+fn base16encode(table: &[u8], dst: &mut [u8], src: &const [u8]) {
     for uint::range(0, src.len()) |j| {
         dst[j+1*j]     = table[src[j]>>4];
         dst[j+1*j + 1] = table[src[j] & 0x0f];
     }
 }
 
-fn base16decode(decode_map: &[u8], dst: &mut [u8], src: &[u8]) -> DecodeResult {
+fn base16decode(decode_map: &[u8], dst: &mut [u8], src: &const [u8]) -> DecodeResult {
     let mut src_length = src.len();
     let mut i = 0u;
     let mut j = 0u;
@@ -333,25 +328,35 @@ mod tests {
         assert_eq!(expect, actual);
     }
 
-/*
+    // FIXME: temporary fix for the testcase
+    fn read_bytes(rd: &mut Base16Reader, len: uint) -> ~[u8] {
+        let mut buf = vec::with_capacity(len);
+
+        unsafe { vec::raw::set_len(&mut buf, len); }
+
+        let nread = rd.read(buf, len);
+
+        unsafe { vec::raw::set_len(&mut buf, nread); }
+
+        buf
+    }
+
     #[test]
     fn test_base16_reader() {
         let source = str::to_bytes("666f6f");
         let expect = str::to_bytes("foo");
 
         let actual = io::with_bytes_reader(source, |reader| {
-            let reader = Base16Reader::new(BASE16, &reader);
+            let mut reader = Base16Reader::new(BASE16, reader);
 
             io::with_bytes_writer(|writer| {
                 while !reader.eof() {
-                    let buf = reader.read_bytes(1);
+                    let buf = read_bytes(&mut reader, 1);
                     writer.write(buf);
                 }
             })
         });
 
-        assert expect == actual;
+        assert_eq!(expect, actual);
     }
-*/
-
 }

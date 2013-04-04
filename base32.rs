@@ -90,7 +90,7 @@ pub struct Base32 {
 
 impl BinaryEncoder for Base32 {
     #[inline]
-    fn encode(&self, dst: &mut [u8], src: &[u8]) {
+    fn encode(&self, dst: &mut [u8], src: &const [u8]) {
         base32encode(self.table, dst, src);
     }
 
@@ -100,7 +100,7 @@ impl BinaryEncoder for Base32 {
     }
 
     #[inline]
-    fn encode_bytes(&self, src: &[u8]) -> ~[u8] {
+    fn encode_bytes(&self, src: &const [u8]) -> ~[u8] {
         let dst_length = self.encoded_len(src.len());
         let mut dst = vec::with_capacity(dst_length);
 
@@ -114,7 +114,7 @@ impl BinaryEncoder for Base32 {
 
 impl BinaryDecoder for Base32 {
     #[inline]
-    fn decode(&self, dst: &mut [u8], src: &[u8]) -> DecodeResult {
+    fn decode(&self, dst: &mut [u8], src: &const [u8]) -> DecodeResult {
         base32decode(self.decode_map, dst, src)
     }
 
@@ -124,7 +124,7 @@ impl BinaryDecoder for Base32 {
     }
 
     #[inline]
-    fn decode_bytes(&self, src: &[u8]) -> ~[u8] {
+    fn decode_bytes(&self, src: &const [u8]) -> ~[u8] {
         let dst_length = self.decoded_len(src.len());
         let mut dst = vec::with_capacity(dst_length);
 
@@ -373,7 +373,7 @@ pub struct Base32Reader {
 //     }
 // }
 
-fn base32encode(table: &[u8], dst: &mut [u8], src: &[u8]) {
+fn base32encode(table: &[u8], dst: &mut [u8], src: &const [u8]) {
     let src_length = src.len();
     let dst_length = dst.len();
 
@@ -408,10 +408,10 @@ fn base32encode(table: &[u8], dst: &mut [u8], src: &[u8]) {
     }
 }
 
-fn base32decode(decode_map: &[u8], dst: &mut [u8], src: &[u8]) -> DecodeResult {
+fn base32decode(decode_map: &[u8], dst: &mut [u8], src: &const [u8]) -> DecodeResult {
     let mut ndecoded = 0u;
     let mut dst = vec::mut_slice(dst, 0, dst.len());
-    let mut src = vec::slice(src, 0, src.len());
+    let mut src = vec::const_slice(src, 0, src.len());
     let mut end = false;
 
     while src.len() > 0 && !end {
@@ -424,7 +424,7 @@ fn base32decode(decode_map: &[u8], dst: &mut [u8], src: &[u8]) -> DecodeResult {
                 fail!(~"malformed base32 string");
             }
             let chr = src[0];
-            src = vec::slice(src, 1, src.len());
+            src = vec::const_slice(src, 1, src.len());
             if char::is_whitespace(chr as char) {
                 loop;
             }
