@@ -294,94 +294,87 @@ pub struct Base64Reader {
     priv end: bool
 }
 
-// TODO: modernize
+pub impl Base64Reader {
+    fn new(base64: &'static Base64, reader: @io::Reader) -> Base64Reader {
+        Base64Reader {
+            base64: base64,
+            reader: reader,
+            buf: [0, ..1024],
+            outbuf: [0, ..768],
+            nbuf: 0,
+            noutbuf: 0,
+            end: false
+        }
+    }
 
-// pub impl<T: io::Reader> Base64Reader<T> {
-//     static fn new(base64: &'a Base64, reader: &'b T) -> Base64Reader<'a, 'b, T> {
-//         Base64Reader {
-//             base64: base64,
-//             reader: reader,
-//             buf: [0, ..1024],
-//             outbuf: [0, ..768],
-//             nbuf: 0,
-//             noutbuf: 0,
-//             end: false
-//         }
-//     }
-//
-//     fn read(&self, p: &mut [u8], len: uint) -> uint {
-//         // use leftover output (decoded bytes) if it exists
-//         if self.noutbuf > 0 {
-//             bytes::copy_memory(p, self.outbuf, len);
-//
-//             let n = if len > self.noutbuf { self.noutbuf } else { len };
-//             self.noutbuf -= n;
-//             // shift unread bytes to head
-//             for uint::range(0, self.noutbuf) |i| {
-//                 self.outbuf[i] = self.outbuf[i+n];
-//             }
-//
-//             return n;
-//         }
-//         // calculate least required # of bytes to read
-//         let nn = len / 3 * 4;
-//         let nn = if nn < 4 { 4 } else { nn };
-//         let nn = if nn > self.buf.len() { self.buf.len() } else { nn };
-//
-//         let buf = vec::mut_slice(self.buf, self.nbuf, nn);
-//         let nn  = self.reader.read(buf, buf.len());
-//
-//         self.nbuf += nn;
-//         if self.nbuf < 4 {
-//             fail!(~"malformed base64 input");
-//         }
-//
-//         let nr = self.nbuf / 4 * 4; // total read bytes (except fringe bytes)
-//         let nw = self.nbuf / 4 * 3; // size of decoded bytes
-//
-//         let buf = vec::mut_slice(self.buf, 0, nr);
-//
-//         let ndecoded = if nw > len {
-//             let res = self.base64.decode(self.outbuf, buf);
-//             // copy self.outbuf[0:len] to p
-//             bytes::copy_memory(p, self.outbuf, len);
-//             // shift unread bytes to head
-//             for uint::range(0, res.ndecoded - len) |i| {
-//                 self.outbuf[i] = self.outbuf[i+len];
-//             }
-//             self.noutbuf = res.ndecoded - len;
-//             self.end = res.end;
-//             len
-//         } else {
-//             let res = self.base64.decode(p, buf);
-//             self.end = res.end;
-//             res.ndecoded
-//         };
-//         self.nbuf -= nr;
-//         // shift undecoded bytes to head
-//         for uint::range(0, self.nbuf) |i| {
-//             self.buf[i] = self.buf[i+nr];
-//         }
-//
-//         return ndecoded;
-//     }
-//
-//     fn read_bytes(&self, len: uint) -> ~[u8] {
-//         let mut buf = vec::with_capacity(len);
-//
-//         unsafe { vec::raw::set_len(&mut buf, len); }
-//
-//         let nread = self.read(buf, len);
-//
-//         unsafe { vec::raw::set_len(&mut buf, nread); }
-//
-//         buf
-//     }
-//
-//     fn eof(&self) -> bool {
-//         self.noutbuf == 0 && (self.end || self.reader.eof())
-//     }
-// }
+    fn read(&mut self, p: &mut [u8], len: uint) -> uint {
+        // NOTE: These borrowing is required to suppress odd loaning errors.
+        let selfbuf: &mut [u8] = self.buf;
+        let selfoutbuf: &mut [u8] = self.outbuf;
+        let selfnbuf: &mut uint = &mut self.nbuf;
+        let selfnoutbuf: &mut uint = &mut self.noutbuf;
+        let selfend: &mut bool = &mut self.end;
+
+        // use leftover output (decoded bytes) if it exists
+        if self.noutbuf > 0 {
+            unsafe { vec::raw::copy_memory(p, selfoutbuf, len); }
+
+            let n = if len > self.noutbuf { self.noutbuf } else { len };
+            *selfnoutbuf -= n;
+            // shift unread bytes to head
+            for uint::range(0, self.noutbuf) |i| {
+                selfoutbuf[i] = selfoutbuf[i+n];
+            }
+
+            return n;
+        }
+        // calculate least required # of bytes to read
+        let nn = len / 3 * 4;
+        let nn = if nn < 4 { 4 } else { nn };
+        let nn = if nn > self.buf.len() { self.buf.len() } else { nn };
+
+        let buf = vec::mut_slice(selfbuf, self.nbuf, nn);
+        let nn  = self.reader.read(buf, buf.len());
+
+        *selfnbuf += nn;
+        if self.nbuf < 4 {
+            fail!(~"malformed base64 input");
+        }
+
+        let nr = self.nbuf / 4 * 4; // total read bytes (except fringe bytes)
+        let nw = self.nbuf / 4 * 3; // size of decoded bytes
+
+        let buf = vec::mut_slice(selfbuf, 0, nr);
+
+        let ndecoded = if nw > len {
+            let res = self.base64.decode(selfoutbuf, buf);
+            // copy self.outbuf[0:len] to p
+            unsafe { vec::raw::copy_memory(p, selfoutbuf, len); }
+            // shift unread bytes to head
+            for uint::range(0, res.ndecoded - len) |i| {
+                selfoutbuf[i] = selfoutbuf[i+len];
+            }
+            *selfnoutbuf = res.ndecoded - len;
+            *selfend = res.end;
+            len
+        } else {
+            let res = self.base64.decode(p, buf);
+            *selfend = res.end;
+            res.ndecoded
+        };
+        *selfnbuf -= nr;
+        // shift undecoded bytes to head
+        for uint::range(0, self.nbuf) |i| {
+            selfbuf[i] = selfbuf[i+nr];
+        }
+
+        ndecoded
+    }
+
+    fn eof(&self) -> bool {
+        self.noutbuf == 0 && (self.end || self.reader.eof())
+    }
+}
 
 fn base64encode(table: &[u8], dst: &mut [u8], src: &const [u8]) {
     let src_length = src.len();
@@ -512,7 +505,18 @@ mod tests {
         assert_eq!(expect, actual);
     }
 
-/*
+    fn read_bytes(rd: &mut Base64Reader, len: uint) -> ~[u8] {
+        let mut buf = vec::with_capacity(len);
+
+        unsafe { vec::raw::set_len(&mut buf, len); }
+
+        let nread = rd.read(buf, len);
+
+        unsafe { vec::raw::set_len(&mut buf, nread); }
+
+        buf
+    }
+
     #[test]
     fn test_base64_reader() {
         let source = ["Zg==", "Zm8=", "Zm8+", "Zm9vYg==", "Zm9vYmE=", "Zm8/YmE/"];
@@ -522,19 +526,17 @@ mod tests {
 
         let actual = source.map(|e| {
             io::with_bytes_reader(*e, |reader| {
-                let reader = Base64Reader::new(BASE64_STD, &reader);
+                let mut reader = Base64Reader::new(BASE64_STD, reader);
 
                 io::with_bytes_writer(|writer| {
                     while !reader.eof() {
-                        let buf = reader.read_bytes(1);
+                        let buf = read_bytes(&mut reader, 1);
                         writer.write(buf);
                     }
                 })
             })
         });
 
-        assert expect == actual;
+        assert_eq!(expect, actual);
     }
-*/
-
 }
