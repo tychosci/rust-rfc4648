@@ -149,18 +149,18 @@ pub impl Base16Writer {
         Base16Writer { base16: base16, writer: writer, outbuf: [0, ..1024] }
     }
 
-    fn write(&mut self, buf: &[u8]) {
-        let mut buf = vec::slice(buf, 0, buf.len());
+    fn write(&mut self, buf: &const [u8]) {
+        let mut buf = vec::const_slice(buf, 0, buf.len());
 
         while buf.len() > 0 {
             let buflen = buf.len();
             let nn = self.outbuf.len() / 2;
             let nn = if nn > buflen { buflen } else { nn };
             if (nn > 0) {
-                self.base16.encode(self.outbuf, vec::slice(buf, 0, nn));
+                self.base16.encode(self.outbuf, vec::const_slice(buf, 0, nn));
                 self.writer.write(vec::slice(self.outbuf, 0, nn * 2));
             }
-            buf = vec::slice(buf, nn, buflen);
+            buf = vec::const_slice(buf, nn, buflen);
         }
     }
 }

@@ -221,9 +221,9 @@ pub impl Base32Writer {
         }
     }
 
-    fn write(&mut self, buf: &[u8]) {
+    fn write(&mut self, buf: &const [u8]) {
         let buflen = buf.len();
-        let mut buf = vec::slice(buf, 0, buflen);
+        let mut buf = vec::const_slice(buf, 0, buflen);
 
         if self.nbuf > 0 {
             let mut i = 0;
@@ -234,7 +234,7 @@ pub impl Base32Writer {
                 i += 1;
             }
 
-            buf = vec::slice(buf, i, buflen);
+            buf = vec::const_slice(buf, i, buflen);
             if self.nbuf < 5 { return; }
 
             self.base32.encode(self.outbuf, vec::slice(self.buf, 0, 5));
@@ -249,10 +249,10 @@ pub impl Base32Writer {
             let nn = if nn > buflen { buflen } else { nn };
             let nn = nn - nn % 5;
             if (nn > 0) {
-                self.base32.encode(self.outbuf, vec::slice(buf, 0, nn));
+                self.base32.encode(self.outbuf, vec::const_slice(buf, 0, nn));
                 self.writer.write(vec::slice(self.outbuf, 0, nn / 8 * 5));
             }
-            buf = vec::slice(buf, nn, buflen);
+            buf = vec::const_slice(buf, nn, buflen);
         }
 
         for uint::range(0, buf.len()) |i| {

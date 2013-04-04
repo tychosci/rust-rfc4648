@@ -229,9 +229,9 @@ pub impl Base64Writer {
         }
     }
 
-    fn write(&mut self, buf: &[u8]) {
+    fn write(&mut self, buf: &const [u8]) {
         let buflen  = buf.len();
-        let mut buf = vec::slice(buf, 0, buflen);
+        let mut buf = vec::const_slice(buf, 0, buflen);
 
         if self.nbuf > 0 {
             let mut i = 0;
@@ -242,7 +242,7 @@ pub impl Base64Writer {
                 i += 1;
             }
 
-            buf = vec::slice(buf, i, buflen);
+            buf = vec::const_slice(buf, i, buflen);
             if self.nbuf < 3 { return; }
 
             self.base64.encode(self.outbuf, vec::slice(self.buf, 0, 3));
@@ -258,11 +258,11 @@ pub impl Base64Writer {
             let nn = nn - nn % 3;
 
             if nn > 0 {
-                self.base64.encode(self.outbuf, vec::slice(buf, 0, nn));
+                self.base64.encode(self.outbuf, vec::const_slice(buf, 0, nn));
                 self.writer.write(vec::slice(self.outbuf, 0, nn / 3 * 4));
             }
 
-            buf = vec::slice(buf, nn, buflen);
+            buf = vec::const_slice(buf, nn, buflen);
         }
 
         for uint::range(0, buf.len()) |i| {

@@ -7,8 +7,6 @@
 
 extern mod rfc4648;
 
-use core::io::Reader;
-use core::io::ReaderUtil;
 use core::path::Path;
 use rfc4648::base64::BASE64_STD;
 use rfc4648::base64::Base64Writer;
@@ -35,8 +33,8 @@ fn main() {
     }
 }
 
-fn encode(filename: &Path, writer: io::Writer) {
-    let writer = Base64Writer::new(BASE64_STD, &writer);
+fn encode(filename: &Path, writer: @io::Writer) {
+    let mut writer = Base64Writer::new(BASE64_STD, writer);
     let reader = io::file_reader(filename).get();
 
     let mut buf = [0, ..1024];
@@ -47,9 +45,9 @@ fn encode(filename: &Path, writer: io::Writer) {
     writer.close();
 }
 
-fn decode(filename: &Path, writer: io::Writer) {
+fn decode(filename: &Path, writer: @io::Writer) {
     let reader = io::file_reader(filename).get();
-    let reader = Base64Reader::new(BASE64_STD, &reader);
+    let mut reader = Base64Reader::new(BASE64_STD, reader);
 
     let mut buf = [0, ..1024];
     while !reader.eof() {
