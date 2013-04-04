@@ -284,16 +284,18 @@ pub impl Base64Writer {
     }
 }
 
-// pub struct Base64Reader<'a, 'b, T> {
-//     priv base64: &'a Base64,
-//     priv reader: &'b T,
-//     priv mut buf: [u8 * 1024],
-//     priv mut outbuf: [u8 * 768],
-//     priv mut nbuf: uint,
-//     priv mut noutbuf: uint,
-//     priv mut end: bool
-// }
-//
+pub struct Base64Reader {
+    priv base64: &'static Base64,
+    priv reader: @io::Reader,
+    priv buf: [u8, ..1024],
+    priv outbuf: [u8, ..768],
+    priv nbuf: uint,
+    priv noutbuf: uint,
+    priv end: bool
+}
+
+// TODO: modernize
+
 // pub impl<T: io::Reader> Base64Reader<T> {
 //     static fn new(base64: &'a Base64, reader: &'b T) -> Base64Reader<'a, 'b, T> {
 //         Base64Reader {

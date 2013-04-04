@@ -165,15 +165,17 @@ pub impl Base16Writer {
     }
 }
 
-// pub struct Base16Reader<'a, 'b, T> {
-//     priv base16: &'a Base16,
-//     priv reader: &'b T,
-//     priv mut buf: [u8 * 1024],
-//     priv mut outbuf: [u8 * 512],
-//     priv mut nbuf: uint,
-//     priv mut noutbuf: uint
-// }
-//
+pub struct Base16Reader {
+    priv base16: &'static Base16,
+    priv reader: @io::Reader,
+    priv buf: [u8, ..1024],
+    priv outbuf: [u8, ..512],
+    priv nbuf: uint,
+    priv noutbuf: uint
+}
+
+// TODO: modernize
+
 // pub impl<T: io::Reader> Base16Reader<T> {
 //     static fn new(base16: &'a Base16, reader: &'b T) -> Base16Reader<'a, 'b, T> {
 //         Base16Reader {

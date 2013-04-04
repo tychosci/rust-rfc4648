@@ -274,16 +274,18 @@ pub impl Base32Writer {
     }
 }
 
-// pub struct Base32Reader<'a, 'b, T> {
-//     priv base32: &'a Base32,
-//     priv reader: &'b T,
-//     priv mut buf: [u8 * 1024],
-//     priv mut outbuf: [u8 * 640],
-//     priv mut nbuf: uint,
-//     priv mut noutbuf: uint,
-//     priv mut end: bool
-// }
-//
+pub struct Base32Reader {
+    priv base32: &'static Base32,
+    priv reader: @io::Reader,
+    priv buf: [u8, ..1024],
+    priv outbuf: [u8, ..640],
+    priv nbuf: uint,
+    priv noutbuf: uint,
+    priv end: bool
+}
+
+// TODO: modernize
+
 // pub impl<T: io::Reader> Base32Reader<T> {
 //     static fn new(base32: &'a Base32, reader: &'b T) -> Base32Reader<'a, 'b, T> {
 //         Base32Reader {
