@@ -158,7 +158,7 @@ impl BinaryDecoder for Base64 {
  * base64-encoded bytes
  */
 #[inline]
-pub fn encode(src: &[u8]) -> ~[u8] {
+pub fn encode(src: &const [u8]) -> ~[u8] {
     BASE64_STD.encode_bytes(src)
 }
 
@@ -174,7 +174,7 @@ pub fn encode(src: &[u8]) -> ~[u8] {
  * base64-urlsafe-encoded bytes
  */
 #[inline]
-pub fn urlsafe_encode(src: &[u8]) -> ~[u8] {
+pub fn urlsafe_encode(src: &const [u8]) -> ~[u8] {
     BASE64_URL.encode_bytes(src)
 }
 
@@ -190,7 +190,7 @@ pub fn urlsafe_encode(src: &[u8]) -> ~[u8] {
  * decoded bytes
  */
 #[inline]
-pub fn decode(src: &[u8]) -> ~[u8] {
+pub fn decode(src: &const [u8]) -> ~[u8] {
     BASE64_STD.decode_bytes(src)
 }
 
@@ -206,7 +206,7 @@ pub fn decode(src: &[u8]) -> ~[u8] {
  * decoded bytes
  */
 #[inline]
-pub fn urlsafe_decode(src: &[u8]) -> ~[u8] {
+pub fn urlsafe_decode(src: &const [u8]) -> ~[u8] {
     BASE64_URL.decode_bytes(src)
 }
 

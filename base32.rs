@@ -150,7 +150,7 @@ impl BinaryDecoder for Base32 {
  * base32-encoded bytes
  */
 #[inline]
-pub fn encode(src: &[u8]) -> ~[u8] {
+pub fn encode(src: &const [u8]) -> ~[u8] {
     BASE32_STD.encode_bytes(src)
 }
 
@@ -166,7 +166,7 @@ pub fn encode(src: &[u8]) -> ~[u8] {
  * base32-hex-encoded bytes
  */
 #[inline]
-pub fn hex_encode(src: &[u8]) -> ~[u8] {
+pub fn hex_encode(src: &const [u8]) -> ~[u8] {
     BASE32_HEX.encode_bytes(src)
 }
 
@@ -182,7 +182,7 @@ pub fn hex_encode(src: &[u8]) -> ~[u8] {
  * decoded bytes
  */
 #[inline]
-pub fn decode(src: &[u8]) -> ~[u8] {
+pub fn decode(src: &const [u8]) -> ~[u8] {
     BASE32_STD.decode_bytes(src)
 }
 
@@ -198,7 +198,7 @@ pub fn decode(src: &[u8]) -> ~[u8] {
  * decoded bytes
  */
 #[inline]
-pub fn hex_decode(src: &[u8]) -> ~[u8] {
+pub fn hex_decode(src: &const [u8]) -> ~[u8] {
     BASE32_HEX.decode_bytes(src)
 }
 

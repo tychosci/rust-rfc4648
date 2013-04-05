@@ -118,7 +118,7 @@ impl BinaryDecoder for Base16 {
  * hex-encoded bytes
  */
 #[inline]
-pub fn encode(src: &[u8]) -> ~[u8] {
+pub fn encode(src: &const [u8]) -> ~[u8] {
     BASE16.encode_bytes(src)
 }
 
@@ -134,7 +134,7 @@ pub fn encode(src: &[u8]) -> ~[u8] {
  * decoded bytes
  */
 #[inline]
-pub fn decode(src: &[u8]) -> ~[u8] {
+pub fn decode(src: &const [u8]) -> ~[u8] {
     BASE16.decode_bytes(src)
 }
 
@@ -173,8 +173,6 @@ pub struct Base16Reader {
     priv nbuf: uint,
     priv noutbuf: uint
 }
-
-// TODO: modernize
 
 pub impl Base16Reader {
     fn new(base16: &'static Base16, reader: @io::Reader) -> Base16Reader {

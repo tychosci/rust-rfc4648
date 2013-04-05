@@ -48,7 +48,7 @@ pub trait FromBase64 {
 macro_rules! mk_impl_for_bytes(
     ($trait_name:ident =>
     $( $method_name:ident -> $fn_name:path ;)+) => (
-        impl<'self> $trait_name for &'self [u8] {
+        impl<'self> $trait_name for &'self const [u8] {
             $(#[inline] fn $method_name(&self) -> ~[u8] {
                 $fn_name(*self)
             })+
