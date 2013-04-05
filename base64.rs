@@ -384,19 +384,35 @@ fn base64encode(table: &[u8], dst: &mut [u8], src: &const [u8]) {
         fail!(~"dst's length should be divisible by 4");
     }
 
-    for uint::range(0, (src_length + 2) / 3) |i| {
-        let src_curr = 3 * i;
-        let dst_curr = 4 * i;
-        let remain = src_length - src_curr;
+    let mut i = 0;
+    let mut dst = dst;
+    if src_length > 2 {
+        while i < src_length - 2 {
+            let n = (src[i] as uint)<<16 | (src[i+1] as uint)<<8 | (src[i+2] as uint);
 
-        let n = (src[src_curr+0] as uint)<<16
-            | if remain > 1 { (src[src_curr+1] as uint)<<8 } else { 0 }
-            | if remain > 2 { (src[src_curr+2] as uint)    } else { 0 };
+            dst[0] = table[n>>18 & 0x3f];
+            dst[1] = table[n>>12 & 0x3f];
+            dst[2] = table[n>>6  & 0x3f];
+            dst[3] = table[n     & 0x3f];
+            dst = vec::mut_slice(dst, 4, dst.len());
 
-        dst[dst_curr+0] = table[n>>18 & 0x3f];
-        dst[dst_curr+1] = table[n>>12 & 0x3f];
-        dst[dst_curr+2] = if remain > 1 { table[n>>6 & 0x3f] } else { PAD };
-        dst[dst_curr+3] = if remain > 2 { table[n    & 0x3f] } else { PAD };
+            i += 3;
+        }
+    }
+
+    let pad = src_length - i;
+    if (pad == 1) {
+        let n = (src[i] as uint)<<16;
+        dst[0] = table[n>>18 & 0x3f];
+        dst[1] = table[n>>12 & 0x3f];
+        dst[2] = PAD;
+        dst[3] = PAD;
+    } else if (pad == 2) {
+        let n = (src[i] as uint)<<16 | (src[i+1] as uint)<<8;
+        dst[0] = table[n>>18 & 0x3f];
+        dst[1] = table[n>>12 & 0x3f];
+        dst[2] = table[n>>6  & 0x3f];
+        dst[3] = PAD;
     }
 }
 
