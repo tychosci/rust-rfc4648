@@ -380,11 +380,6 @@ fn base32encode(table: &[u8], dst: &mut [u8], src: &const [u8]) {
         let dst_curr = 8 * i;
         let remain = src_length - src_curr;
 
-        dst[dst_curr+0] = 0; dst[dst_curr+1] = 0;
-        dst[dst_curr+2] = 0; dst[dst_curr+3] = 0;
-        dst[dst_curr+4] = 0; dst[dst_curr+5] = 0;
-        dst[dst_curr+6] = 0; dst[dst_curr+7] = 0;
-
         let n = (src[src_curr+0] as u64)<<32
             | if remain > 1 { (src[src_curr+1] as u64)<<24 } else { 0 }
             | if remain > 2 { (src[src_curr+2] as u64)<<16 } else { 0 }
