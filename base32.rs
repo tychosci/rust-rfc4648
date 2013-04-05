@@ -467,6 +467,7 @@ fn base32decode(decode_map: &[u8], dst: &mut [u8], src: &const [u8]) -> DecodeRe
 #[cfg(test)]
 mod tests {
     use super::*;
+    use core::rand::RngUtil;
 
     fn t(source: &[&str], expect: &[&str], cb: &fn((&[u8])) -> ~[u8]) {
         let source = source.map(|b| str::to_bytes(*b));
@@ -511,6 +512,16 @@ mod tests {
         t(source, expect, hex_decode);
     }
 
+    #[test]
+    fn test_randomly() {
+        let r = rand::task_rng();
+        for 1000.times {
+            let source = r.gen_str(r.gen_uint_range(1, 30));
+            do str::byte_slice(source) |b| {
+                assert_eq!(b.to_owned(), decode(encode(b)));
+            }
+        }
+    }
 
     #[test]
     fn test_base32_writer() {

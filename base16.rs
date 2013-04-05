@@ -290,6 +290,7 @@ fn base16decode(decode_map: &[u8], dst: &mut [u8], src: &const [u8]) -> DecodeRe
 #[cfg(test)]
 mod tests {
     use super::*;
+    use core::rand::RngUtil;
 
     #[test]
     fn test_encode() {
@@ -309,6 +310,17 @@ mod tests {
         let actual = decode(source);
 
         assert_eq!(expect, actual);
+    }
+
+    #[test]
+    fn test_randomly() {
+        let r = rand::task_rng();
+        for 1000.times {
+            let source = r.gen_str(r.gen_uint_range(1, 30));
+            do str::byte_slice(source) |b| {
+                assert_eq!(b.to_owned(), decode(encode(b)));
+            }
+        }
     }
 
     #[test]
