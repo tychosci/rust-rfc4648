@@ -467,7 +467,7 @@ mod tests {
     use super::*;
     use core::rand::RngUtil;
 
-    fn t(source: &[&str], expect: &[&str], cb: &fn((&[u8])) -> ~[u8]) {
+    fn t(source: &[&str], expect: &[&str], cb: &fn(&[u8]) -> ~[u8]) {
         let source = source.map(|b| str::to_bytes(*b));
         let expect = expect.map(|b| str::to_bytes(*b));
         let actual = source.map(|e| cb(*e));
