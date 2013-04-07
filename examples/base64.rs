@@ -1,9 +1,9 @@
 extern mod rfc4648;
 
-use core::io::Writer;
-use core::io::WriterUtil;
+use rfc4648::FromBase64;
+use rfc4648::ToBase64;
+
 use core::path::Path;
-use rfc4648::*;
 
 fn main() {
     let args = os::args();
@@ -18,13 +18,13 @@ fn main() {
     }
 
     match io::read_whole_file(&Path(args[2])) {
+        Err(msg) => {
+            stderr.write_line(fmt!("Error: %s", msg));
+        }
         Ok(data) => match args[1] {
             ~"encode" => stdout.write(data.to_base64()),
             ~"decode" => stdout.write(data.from_base64()),
             _         => return
-        },
-        Err(msg) => {
-            stderr.write_line(fmt!("Error: %s", msg));
         }
     }
 }
