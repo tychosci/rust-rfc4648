@@ -18,8 +18,8 @@
  */
 
 use super::util::DecodeResult;
-use super::util::BinaryEncoder;
-use super::util::BinaryDecoder;
+use super::util::Encoder;
+use super::util::Decoder;
 
 static PAD: u8 = 61u8;
 
@@ -96,7 +96,7 @@ pub struct Base64 {
     priv decode_map: [u8, ..256],
 }
 
-impl BinaryEncoder for Base64 {
+impl Encoder for Base64 {
     #[inline]
     fn encode(&self, dst: &mut [u8], src: &const [u8]) {
         base64encode(self.table, dst, src);
@@ -120,7 +120,7 @@ impl BinaryEncoder for Base64 {
     }
 }
 
-impl BinaryDecoder for Base64 {
+impl Decoder for Base64 {
     #[inline]
     fn decode(&self, dst: &mut [u8], src: &const [u8]) -> DecodeResult {
         base64decode(self.decode_map, dst, src)

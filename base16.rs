@@ -18,8 +18,8 @@
  */
 
 use super::util::DecodeResult;
-use super::util::BinaryEncoder;
-use super::util::BinaryDecoder;
+use super::util::Encoder;
+use super::util::Decoder;
 
 // 0123456789ABCDEF
 static TABLE: [u8, ..16] = [
@@ -56,7 +56,7 @@ pub struct Base16 {
     priv decode_map: [u8, ..256],
 }
 
-impl BinaryEncoder for Base16 {
+impl Encoder for Base16 {
     #[inline]
     fn encode(&self, dst: &mut [u8], src: &const [u8]) {
         base16encode(self.table, dst, src);
@@ -80,7 +80,7 @@ impl BinaryEncoder for Base16 {
     }
 }
 
-impl BinaryDecoder for Base16 {
+impl Decoder for Base16 {
     #[inline]
     fn decode(&self, dst: &mut [u8], src: &const [u8]) -> DecodeResult {
         base16decode(self.decode_map, dst, src)

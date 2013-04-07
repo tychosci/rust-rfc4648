@@ -18,8 +18,8 @@
  */
 
 use super::util::DecodeResult;
-use super::util::BinaryEncoder;
-use super::util::BinaryDecoder;
+use super::util::Encoder;
+use super::util::Decoder;
 
 static PAD: u8 = 61u8;
 
@@ -88,7 +88,7 @@ pub struct Base32 {
     priv decode_map: [u8, ..256],
 }
 
-impl BinaryEncoder for Base32 {
+impl Encoder for Base32 {
     #[inline]
     fn encode(&self, dst: &mut [u8], src: &const [u8]) {
         base32encode(self.table, dst, src);
@@ -112,7 +112,7 @@ impl BinaryEncoder for Base32 {
     }
 }
 
-impl BinaryDecoder for Base32 {
+impl Decoder for Base32 {
     #[inline]
     fn decode(&self, dst: &mut [u8], src: &const [u8]) -> DecodeResult {
         base32decode(self.decode_map, dst, src)

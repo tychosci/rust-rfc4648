@@ -4,13 +4,13 @@ pub struct DecodeResult {
     ndecoded: uint,
 }
 
-pub trait BinaryEncoder {
+pub trait Encoder {
     fn encode(&self, dst: &mut [u8], src: &const [u8]);
     fn encoded_len(&self, src_length: uint) -> uint;
     fn encode_bytes(&self, src: &[u8]) -> ~[u8];
 }
 
-pub trait BinaryDecoder {
+pub trait Decoder {
     fn decode(&self, dst: &mut [u8], src: &const [u8]) -> DecodeResult;
     fn decoded_len(&self, src_length: uint) -> uint;
     fn decode_bytes(&self, src: &const [u8]) -> ~[u8];
