@@ -533,6 +533,7 @@ mod tests {
         assert_eq!(expect, actual);
     }
 
+    // FIXME: temporary fix for the testcase
     fn read_bytes(rd: &mut Base64Reader, len: uint) -> ~[u8] {
         let mut buf = vec::with_capacity(len);
 
