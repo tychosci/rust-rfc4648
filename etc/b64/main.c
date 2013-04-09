@@ -55,6 +55,9 @@ main(int argc, char **argv)
 		goto err;
 	}
 
+	free(src);
+	free(dst);
+
 	return 0;
 err:
 	if (errno) perror("b64");
