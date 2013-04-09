@@ -358,7 +358,6 @@ mod tests {
 
         let actual = io::with_bytes_reader(source, |reader| {
             let mut reader = Base16Reader::new(BASE16, reader);
-
             io::with_bytes_writer(|writer| {
                 while !reader.eof() {
                     let buf = read_bytes(&mut reader, 1);

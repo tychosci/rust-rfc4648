@@ -24,7 +24,7 @@ fn main() {
         Ok(data) => match args[1] {
             ~"encode" => stdout.write(data.to_base64()),
             ~"decode" => stdout.write(data.from_base64()),
-            _         => return
+            _         => ()
         }
     }
 }

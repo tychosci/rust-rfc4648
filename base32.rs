@@ -564,7 +564,6 @@ mod tests {
         let actual = source.map(|e| {
             io::with_bytes_reader(*e, |reader| {
                 let mut reader = Base32Reader::new(BASE32_STD, reader);
-
                 io::with_bytes_writer(|writer| {
                     while !reader.eof() {
                         let buf = read_bytes(&mut reader, 1);
