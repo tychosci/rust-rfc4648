@@ -33,13 +33,13 @@ main(int argc, char **argv)
 	cmd = argv[1];
 	filename = argv[2];
 	src = dst = NULL;
+	nconv = 0;
 
 	if (!(fp = fopen(filename, "rb"))) goto err;
 	if (file_length(fp, &src_len) == -1) goto err;
 	if (!(src = malloc(src_len))) goto err;
 	fread(src, src_len, 1, fp); fclose(fp); fp = NULL;
 
-	nconv = 0;
 	if (!strcmp("encode", cmd)) {
 		dst = malloc(modp_b64_encode_len(src_len));
 		nconv = modp_b64_encode(dst, src, src_len);
